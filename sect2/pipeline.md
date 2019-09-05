@@ -19,7 +19,7 @@
 ## <span class="head">オプション無しのPipeline</span>
 Javaは型付けが静的だからBeamを使う上ではわりと安心できるが、各Objectの定義のためにimportが必要になるから、import文がごつくなるかもです。
 
-```java=
+```java
 import org.apache.beam.sdk.Pipeline;
 import org.apache.beam.sdk.options.PipelineOptions;
 
@@ -36,6 +36,7 @@ JavaのBeam SDKで新たにインスタンスを作るときは、\*\*\*.create(
 `pipeline`のソースを変更したり、GCPのプロジェクトIDを変更したりするたびに、いちいちbuildし直すのは面倒。なので、`pipeline`が実行時オプションを受け取れるようにしておくと便利です。
 
 `pipeline`への実行時オプション渡し方は二通り。
+
 1. 前もってプログラム内で定義
 2. command lineで実行時に指定
 
@@ -70,7 +71,7 @@ PipelineOptionsを継承したインターフェースを定義します。Dataf
 
 アノテーションを使って、default値、およびhelpメッセージも定義できるが、各アノテーションのimportが必要。
 
-```java=
+```java
 import org.apache.beam.sdk.options.Default;
 import org.apache.beam.sdk.options.Description;
 import org.apache.beam.sdk.options.PipelineOptions;

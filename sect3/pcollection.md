@@ -23,7 +23,7 @@
 
 `PCollection`を作るにも、読み込み用の`PTransform`を`pipeline`に適用することになる。なので一番初めは、`pipeline` objectに対して`PTransform`を適用する、って意味でやや特殊。code上では特殊感はありませんが...
 
-```java=
+```java
 import org.apache.beam.sdk.Pipeline;
 import org.apache.beam.sdk.options.PipelineOptions;
 import org.apache.beam.sdk.values.PCollection;
@@ -49,7 +49,7 @@ GCSの場合、ローカルで実行すると認証エラー。回避するに�
 2. キーファイルの作成
 3. キーファイルのパスを環境変数`GOOGLE_APPLICATION_CREDENTIAL`にexport
 
-```bash=
+```bash
 $ export GOOGLE_APPLICATION_CREDENTIAL=/path/to/credential/file
 ```
 
@@ -58,7 +58,7 @@ IntelliJで環境変数の設定も可能です。気が向けば書きます。
 ## <span class="head">in-memoryデータの読み込み</span>
 dataをソースにベタ打ちしてもok。リストを`Create.of`に渡してあげればよい。リストの各要素が、テキストファイルの一行として扱われます。
 
-```java=
+```java
 import java.util.*;
 // pipeline
 import org.apache.beam.sdk.Pipeline;

@@ -19,7 +19,7 @@
 
 `Flatten`をapplyする前に、まず複数の`PCollection`をlistにしておく必要がある。`PCollectionList.of`でlistの初期化をし、`and`を繋いでいく。
 
-```java=
+```java
 import org.apache.beam.sdk.values.PCollection;
 import org.apache.beam.sdk.values.PCollectionList;
 
@@ -32,7 +32,7 @@ PCollectionList<String> col = PCollectionList.of(col1).and(col2);
 
 これができれば、`Flatten.pCollections`をapplyしておしまい。
 
-```java=
+```java
 import java.util.Arrays;
 import java.util.List;
 // beam sdk

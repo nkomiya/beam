@@ -18,13 +18,13 @@
 今までの例だと、`ParDo`は一つの`PCollection`を返すだけでした。ですが、`ParDo`は任意の個数の`PCollection`をapplyの戻り値として返すことができるようです。
 Outputの各`PCollection`は`CoGroupByKey`で出てきたtagで管理します。まずtagの作成についてですが、前と違って以下のように代入します。右辺でも型を明示的にしていすることで、型OutputTのCoderの推測をしてくれるっぽいです。"new TupleTag<>()"、みたいに省略すると実行時にエラーとなる場合があります。
 
-```java=
+```java
 TupleTag<OutputT> mytag = new TupleTag<OutputT>(){}; 
 ```
 
 次に`DoFn`の実装ですが、複数の出力先を作ってあげるためにOutputReceiverを使わず、MultiOutputReceiverを使います。getメソッドを使うと、通常のOutputReceiverが取れます。
 
-```java=
+```java
 new DoFn<InputT,OutputT>() {
     @ProcessElement
     public void method(@Element InputT e, MultiOutputReceiver out) {
@@ -36,7 +36,7 @@ new DoFn<InputT,OutputT>() {
 
 最後に`ParDo`のapplyですが、MultiOutputReceiverにtagを伝えてあげる必要があります。
 
-```java=
+```java
 apply( 
   ParDo.of( new DoFn<InputT,OutputT>(){
     ...
@@ -52,7 +52,7 @@ applyの結果`PCollectionTuple`が得られますが、特定のtagを付けた
 code例として、名前・性別のkey/valueペアを持っていて、それを男女で分割してみます。このcode例だと単純な分割をするだけなので、`Partition`の方がはるかにラクに実装できる気はしますが...
 （`PCollection`の要素と出力先が一対一対応でないときに便利なメソッドなのかと思ってます）
 
-```java=
+```java
 import java.util.Arrays;
 import java.util.List;
 // beam sdk

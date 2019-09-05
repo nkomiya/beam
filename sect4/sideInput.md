@@ -17,7 +17,7 @@
 Side inputを使うと、`ParDo`変換においてinputの`PColletion`とは別に、追加でデータが渡されます。`DoFn`での各要素の処理において、共通の値を参照させることが可です。
 Side inputの形で`DoFn`にデータを渡すには、viewとやらを作ってやる必要があります。String型の`PCollection`があって、総文字数のviewを作りたければ、以下のようになります。
 
-```java=
+```java
 PCollection<String> txt = ...;
 PCollectionView<Integer> tot = txt
                 .apply(MapElements.into(TypeDescriptors.integers()).via(x -> x.length()))
@@ -28,7 +28,7 @@ PCollectionView<Integer> tot = txt
 
 Side inputで渡すデータは実行時に決定されるべきであって、ハードコードするんじゃない、って公式ガイドは言ってます（ハードコードするなら、わざわざSide inputで渡す必要は無いと思います）。基本的には、Side inputはpipelineのソースに依存して決めるものなのかと思います。
 
-```java=
+```java
 import java.util.List;
 import java.util.Arrays;
 // beam sdk

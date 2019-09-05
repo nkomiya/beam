@@ -34,13 +34,13 @@ map処理を行うケースはこんな感じ。
 いきなり本格編なのであれなのですが...。  
 先で触れたとおり、`ParDo`に限らず`PCollection`に変換を加える場合は`apply`メソッドを使う。`ParDo`の場合はこんな感じ。基本的にはnewでインスタンスを作りますかね。
 
-```java=
+```java
 [ PCollection ].apply( ParDo.of( [DoFnのサブクラスのインスタンス] ) )
 ```
 
 書くべきなのはInput / Outputの型と、InputのPCollectionの各要素に対して行われる処理だけでokで、要素抽出などはSDKがやってくれる。`DoFn`のサブクラスの宣言の例はこんな感じ。
 
-```java=
+```java
 static class MyDoFn extends DoFn<String, Integer> {
     @ProcessElement
     static void mymethod(@Element String in, OutputReceiver<Integer> o) {
@@ -104,7 +104,7 @@ inputの`PCollection`は適当に分割されるので、`DoFn`インスタン�
 ## <span class="head">やってみよう - DoFn お手軽編</span>
 もし簡単な処理をしたいだけで、`DoFn`のサブクラスを定義するまでもない...という場合は、匿名クラスを使って処理を書いてもok。`apply( ParDo.of(...) )`を次のように変える。
 
-```java=
+```java
 ... 中略 ...
 
 apply( ParDo.of(

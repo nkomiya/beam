@@ -22,7 +22,7 @@ Beam SDKが作ってくれてる合成変換は[org.apache.beam.sdk.transform](h
 特に難しいことはない。`PCollection`を受け取って、`PCollection`を返す`PTransform`のサブクラスを作れば良い。  
 `PTransform`のサブクラスの`expand`メソッドをオーバーライドする。`expand`の中の処理が順に実行される感じです。
 
-```java=
+```java
 static class MyTransform extends PTransform<PCollection<InputT>,PCollection<OutputT>> {
     @Override
     public PCollection<OutputT> expand(InputT input) {
@@ -34,13 +34,13 @@ static class MyTransform extends PTransform<PCollection<InputT>,PCollection<Outp
 
 作った合成変換をapplyするには、サブクラスのインスタンスをapplyに渡せば良い。
 
-```java=
+```java
 apply( new MyTransform() )
 ```
 
 code例として、公式ガイドに載ってる単語数登場回数をカウントするcodeの劣化版。
 
-```java=
+```java
 import java.util.List;
 import java.util.Arrays;
 // beam sdk
@@ -113,7 +113,7 @@ public class Main {
 
 例を考えるのが面倒だったので、複数の`PCollection`を"変換が一つの合成変換"を使って結合する例。
 
-```java=
+```java
 import java.util.Arrays;
 import java.util.List;
 // beam

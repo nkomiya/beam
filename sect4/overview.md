@@ -28,7 +28,7 @@
 
 **単一のPTransform**
 
-```java=
+```java
 [ Output ] = [ Input ].apply( [ Transform ] );
 ```
 
@@ -36,7 +36,7 @@
 
 **複数のPTransform**
 
-```java=
+```java
 [ Output ] = [ Input ]
                 .apply( [ Transform 1 ] )
                 .apply( [ Transform 2 ] ) ... 
@@ -50,7 +50,7 @@
 
 Inputの`PCollection`がimmutable、つまり**変更されないまま**のは少し嬉しい。なぜなら、分岐処理が可能になるので。
 
-```java=
+```java
 // まずdataset読み込み
 [ 親 PCollection ] = [ Input source].apply( [ 読み込み PTransform] )
 // 同じ親をもとに、PCollectionを作る

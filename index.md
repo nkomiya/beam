@@ -33,7 +33,7 @@
     + [Side Input](./sect4/sideInput.html)
     + [ParDo発展編](./sect4/pardo2.html)
     + [Composite transform](./sect4/composite.html)
-6. [Pipeline I/O](./sect5/io.md)
-7. [エンコードと型安全性](./sect6/coder.md)
+6. [Pipeline I/O](./sect5/io.html)
+7. [データのエンコードと型安全性](./sect6/coder.md)
 8. window
 9. trigger

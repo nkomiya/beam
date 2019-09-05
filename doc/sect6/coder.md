@@ -16,9 +16,10 @@
 # データのエンコードと型安全性
 Beamではパイプラインにおける`PCollection`は、中間データも含めてバイト列と相互に変換できる必要があります。この変換を行うオブジェクトはBeamでは`Coder`とよばれ、元データとバイト列の間で変換することをencode / decodeと読んでいます。
 
-JavaのBeam SDKでは、様々な型（Integer, Long, String, ... etc.）に対して`Coder`のサブクラスが定義されてます。基本的には暗黙的に`Coder`サブクラスが指定されて、encode / decodeをしてくれます。
+JavaのBeam SDKでは、様々な型（Integer, Long, String, ... etc.）に対して`Coder`のサブクラスが定義されてます。（基本的には明示的に指定しなくても）`Coder`サブクラスを使えば（）
 
-注意点としては、一つの型に対して`Coder`は一意に決めなくてもよく、`PTransform`の前後で`Coder`を変えたりできます。たとえば整数型の`PCollection`に対し、inputは`BigEndianIntegerCoder`、outputは`VarIntCoder`、みたいな話です。
+Note that coders do not necessarily have a 1:1 relationship with types. For example, the Integer type can have multiple valid coders, and input and output data can use different Integer coders. A transform might have Integer-typed input data that uses BigEndianIntegerCoder, and Integer-typed output data that uses VarIntCoder.
+
 
 
 ## <span class="head">Coderの指定</span>
@@ -71,36 +72,3 @@ pipeline
 `Create`は引数の型情報を参照しないらしいので、あまり型推測を信頼すべきでなく、`withCoder`で明示的に指定した方がよいようです。
 
 ## <span class="head">デフォルトのCoderを指定する</span>
-`Pipeline`オブジェクトは`CoderRegistry`を持っていて、これを使うとdefaultの`Coder`を取得したり、Javaの型ごとにdefaultの`Coder`を指定することができます。
-
-`CoderRegistry`は`Pipeline`オブジェクトの`getCoderRegistry`メソッドを使って取得可能でき、`CoderRegistry`オブジェクトの`getCoder`メソッドにclassインスタンスを渡すと、渡したクラスのdefaultの`Coder`が得られます。
-
-```java
-import org.apache.beam.sdk.Pipeline;
-import org.apache.beam.sdk.coders.CannotProvideCoderException;
-import org.apache.beam.sdk.coders.CoderRegistry;
-
-public class Cofact {
-    public static void main(String[] args) {
-        Pipeline pipeline = Pipeline.create();
-        CoderRegistry cr = pipeline.getCoderRegistry();
-
-        // Integerの型を調べる
-        try {
-            System.out.println(cr.getCoder(Integer.class));
-        } catch (CannotProvideCoderException e) {}
-    }
-}
-```
-
-defaultの`Coder`を変更したければ、`registerCoder`メソッドを用います。
-引数には、`Coder`を指定したい型のclassオブジェクトと、指定したい`Coder`サブクラスの
-オブジェクトを`of`で作成して渡します。
-
-```java
-cr.registerCoderForClass(Integer.class,BigEndianIntegerCoder.of());
-```
-
-## <span class="head">自作クラスにCoderを指定する</span>
-
-If your pipeline program defines a custom data type, you can use the @DefaultCoder annotation to specify the coder to use with that type. For example, let’s say you have a custom data type for which you want to use SerializableCoder. You can use the @DefaultCoder annotation as follows:

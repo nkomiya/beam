@@ -36,7 +36,7 @@ valueがリストだったりしたときに。
 
 まず、`combine`で行う結合処理部分について。
 
-```java=
+```java
 public static class SumOver implements SerializableFunction<Iterable<Integer>, Integer> {
     @Override
     public Integer apply(Iterable<Integer> in) {
@@ -53,7 +53,7 @@ public static class SumOver implements SerializableFunction<Iterable<Integer>, I
 
 作ったサブクラスのインスタンスを`Combine.globally`に渡せばokです。
 
-```java=
+```java
 import java.util.List;
 import java.util.ArrayList;
 import org.apache.beam.sdk.Pipeline;
@@ -88,7 +88,7 @@ public class Main {
 
 code例
 
-```java=
+```java
 import java.util.List;
 import java.util.ArrayList;
 // beak sdk
@@ -139,7 +139,7 @@ Beamは並行処理が前提。なので、寄せ集め係が複数体できる�
 
 code例
 
-```java=
+```java
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
@@ -236,13 +236,13 @@ importすべきクラスは、
 
 みたいな。`combine`のやり方は２パターンあって、
 
-```java=
+```java
 [ Output ] = [ Input ].apply(Sum.integersPerKey());
 ```
 
 のように、型ごとにメソッドが定義されてる場合と、
 
-```java=
+```java
 [ Output ] = [ Input ].apply(Mean.<K,V>perKey(()))
 ```
 
@@ -250,7 +250,7 @@ importすべきクラスは、
 
 合計を取る場合のcode例
 
-```java=
+```java
 import java.util.Arrays;
 import java.util.List;
 // beam sdk

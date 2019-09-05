@@ -19,7 +19,7 @@
 `Partition`を使うには、datasetの分割の仕方を決める関数と分割数を定義する必要がある。分割数はcommind lineのオプションとして渡すことはできるものの、pipeline graphの構築時には決定されている必要がある。つまり、pipeline実行時に動的に分割数を決めることはできない。
 また、`Partition`に渡す関数は、0以上、分割数未満の整数値を返す関数である。この戻り値が同じ組にdatasetが分割される。
 
-```java=
+```java
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;

@@ -16,14 +16,16 @@
 # Overview
 ## <span class="head">Beamによるデータ処理</span>
 Beamを使ったプログラミング、および実行の際に、ユーザが決めるべきことは
-1. Beamプログラミング  
-    + 実行時オプションの定義
-    + Inputの定義
-    + 行う変換処理の定義
-    + Outputの定義
+
+1. Beamプログラミング
+  + 実行時オプションの定義
+  + Inputの定義
+  + 行う変換処理の定義
+  + Outputの定義
+
 2. Pipelineの実行
-    + 実行環境（Runner）の指定
-    + 実行時オプションの指定
+  + 実行環境（Runner）の指定
+  + 実行時オプションの指定
 
 Beamが動く環境はたくさんある。ローカルだったらDirectRunner、
 DataflowだったらDataflowRunnerみたいな。詳しくは[こちら](https://beam.apache.org/documentation/runners/capability-matrix/)を参照。

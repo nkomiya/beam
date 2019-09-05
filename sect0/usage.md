@@ -20,7 +20,7 @@ Mavenはリポジトリ管理機能つきのbuildツールです。Mavenリポ�
 ですが、設定ファイルがxmlなのが嫌なところですかね...。設定ファイルは幸い一つなので、テンプレ的なやつを作ればとりあえずはokなはずです。
 Beamを使う上で簡単なのは、Dataflowの公式ドキュメントに載っているサンプルをdownloadする方法です。無駄はあるかと思いますが...。
 
-```bash=
+```bash
 $ BEAM_VERSION=2.13.0
 $ GROUP_ID=[Javaのパッケージ名]
 $ ARTIFACT_ID=[出力フォルダ名]
@@ -39,7 +39,7 @@ $ mvn archetype:generate \
 コマンドを実行すると、カレントディレクトリにDversionで指定したディレクトリができるはずです。
 欲しいのはpom.xmlのみなので、その他もろもろは全て消します。
 
-```bash=
+```bash
 $ rm -r ${ARTIFACT_ID}/src/main/java/*; \
   rm -r ${ARTIFACT_ID}/src/test/java/*; \
   cd ${ARTIFACT_ID}/src; \
@@ -53,7 +53,7 @@ $ rm -r ${ARTIFACT_ID}/src/main/java/*; \
 ### build
 buildするだけならシンプル。Mavenプロジェクトのルートに移動し、次のコマンドを実行します。
 
-```bash=
+```bash
 $ mvn compile
 ```
 
@@ -62,7 +62,7 @@ $ mvn compile
 ### ローカルでの実行
 実行したいクラスをDexec.mainClassで、コマンドライン引数をDexec.argsに渡す。
 
-```bash=
+```bash
 $ mvn exec:java -Dexec.mainClass=path.to.class \
   -Dexec.args="--arg1=hoge --arg2=fuga"
 ```
@@ -72,7 +72,7 @@ $ mvn exec:java -Dexec.mainClass=path.to.class \
 ### Dataflowでの実行
 Mavenとbeamの両方でRunnerの指定が必要。
 
-```bash=
+```bash
 $ mvn -Pdataflow-runner exec:java -Dexec.mainClass=path.to.class \
   -Dexec.args="--runner=DataflowRunner \
     --tempLocation=gs://bucket名 \

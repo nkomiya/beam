@@ -20,7 +20,7 @@ Beam SDKでは[様々なストレージ](https://beam.apache.org/documentation/i
 ## <span class="head">Inputデータの読み込み</span>
 既出なので特に難しいことは無いかと思います...
 
-```java=
+```java
 Pipeline pipeline = Pipeline.create();
 PCollection<String> lines = pipeline
     .apply(TextIO.read().from("/path/to/file"));
@@ -32,7 +32,7 @@ PCollection<String> lines = pipeline
 ## <span class="head">ファイル出力</span>
 こちらも既出なので...
 
-```java=
+```java
 PCollection<String> output = ...;
 output.apply(TextIO.write().to("/path/to/file"));
 ```
@@ -45,7 +45,7 @@ output.apply(TextIO.write().to("/path/to/file"));
 
 動作は単一ファイルの読み込みと同じで、String型の`PCollection`を返します。
 
-```java=
+```java
 import org.apache.beam.sdk.Pipeline;
 import org.apache.beam.sdk.io.TextIO;
 
@@ -74,7 +74,7 @@ public class Main {
 
 って感じです。
 
-```java=
+```java
 import java.util.ArrayList;
 import java.util.List;
 // beam sdk

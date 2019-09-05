@@ -20,6 +20,7 @@
 想定としては同じタイプのkeyを持つ複数のsource（dataに関連のある複数のsource、みたいな）があって、それらを結合して一つにしたい...って感じ？
 
 例として挙げられているのは
+
 1. 名前とemailのdataset
 2. 名前と電話番号のdataset
 
@@ -29,7 +30,7 @@
 
 `TupleTag`の作り方はこんな感じで、まとめたいkev/valueペアにおける、valueの型を指定してあげる。
 
-```java=
+```java
 import org.apache.beak.sdk.values.TupleTag;
 TupleTag<valueの型> tag = new TupleTag<>();
 ```
@@ -39,7 +40,7 @@ TupleTag<valueの型> tag = new TupleTag<>();
 
 二つの`KV`型の`PCollection`を結合するときの`KeyedPCollectionTuple`の使い方はこんな感じ。
 
-```java=
+```java
 import org.apache.beam.sdk.transform.join.KeyedPCollectionTuple;
 PCollection<KV<K,V1>> p1 = ...
 PCollection<KV<K,V2>> p1 = ...
@@ -50,7 +51,7 @@ KeyedPCollectionTuple.of( p1tag,p1 ).and( p2tag,p2 );
 
 長々やってきましたが、あとは`KeyedPCollectionTuple`に`CoGroupByKey`をapplyすればおしまいです。
 
-```java=
+```java
 apply(CoGroupByKey.create())
 ```
 
@@ -66,7 +67,7 @@ Keyでひとまとめにする、という意味では`GroupByKey`と同じで�
 例でだした、emailと住所の動くやつ。長い。。。
 ただ、`PCollection`を作成、import、出力のための整形が大半です。。。
 
-```java=
+```java
 import java.util.List;
 import java.util.Arrays;
 // pipeline
