@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="generator" content="pandoc">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+  <title></title>
+  <style type="text/css">code{white-space: pre;}</style>
+  <style type="text/css">
+div.sourceCode { overflow-x: auto; }
+table.sourceCode, tr.sourceCode, td.lineNumbers, td.sourceCode {
+  margin: 0; padding: 0; vertical-align: baseline; border: none; }
+table.sourceCode { width: 100%; line-height: 100%; }
+td.lineNumbers { text-align: right; padding-right: 4px; padding-left: 4px; color: #aaaaaa; border-right: 1px solid #aaaaaa; }
+td.sourceCode { padding-left: 5px; }
+code > span.kw { color: #007020; font-weight: bold; } /* Keyword */
+code > span.dt { color: #902000; } /* DataType */
+code > span.dv { color: #40a070; } /* DecVal */
+code > span.bn { color: #40a070; } /* BaseN */
+code > span.fl { color: #40a070; } /* Float */
+code > span.ch { color: #4070a0; } /* Char */
+code > span.st { color: #4070a0; } /* String */
+code > span.co { color: #60a0b0; font-style: italic; } /* Comment */
+code > span.ot { color: #007020; } /* Other */
+code > span.al { color: #ff0000; font-weight: bold; } /* Alert */
+code > span.fu { color: #06287e; } /* Function */
+code > span.er { color: #ff0000; font-weight: bold; } /* Error */
+code > span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+code > span.cn { color: #880000; } /* Constant */
+code > span.sc { color: #4070a0; } /* SpecialChar */
+code > span.vs { color: #4070a0; } /* VerbatimString */
+code > span.ss { color: #bb6688; } /* SpecialString */
+code > span.im { } /* Import */
+code > span.va { color: #19177c; } /* Variable */
+code > span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+code > span.op { color: #666666; } /* Operator */
+code > span.bu { } /* BuiltIn */
+code > span.ex { } /* Extension */
+code > span.pp { color: #bc7a00; } /* Preprocessor */
+code > span.at { color: #7d9029; } /* Attribute */
+code > span.do { color: #ba2121; font-style: italic; } /* Documentation */
+code > span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+code > span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+  </style>
+  <link rel="stylesheet" href="../github.css">
+  <!--[if lt IE 9]>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/html5shiv/3.7.3/html5shiv-printshiv.min.js"></script>
+  <![endif]-->
+</head>
+<body>
+<style type="text/css">
+  .head { 
+    border-left:5px solid #00f;
+    padding:3px 0 3px 10px;
+    font-weight: bold;
+  }
+  .lhead { 
+    border-left:5px solid #00f;
+    padding:3px 0 3px 10px;
+    font-size:14pt;
+    font-weight: bold;
+  }
+</style>
+<p><a href="../index.html">topへ</a></p>
+<h1 id="pipeline-io">Pipeline I/O</h1>
+<p>基本的には外部ソースからのデータの読み込み、および外部ソースへのデータ出力、っていう形になるかと思います。 Beam SDKでは<a href="https://beam.apache.org/documentation/io/built-in/">様々なストレージ</a>へのread/write変換が用意されてる。</p>
+<h2 id="inputデータの読み込み"><span class="head">Inputデータの読み込み</span></h2>
+<p>既出なので特に難しいことは無いかと思います...</p>
+<div class="sourceCode"><pre class="sourceCode java"><code class="sourceCode java">Pipeline pipeline = Pipeline.<span class="fu">create</span>();
+PCollection&lt;<span class="bu">String</span>&gt; lines = pipeline
+    .<span class="fu">apply</span>(TextIO.<span class="fu">read</span>().<span class="fu">from</span>(<span class="st">&quot;/path/to/file&quot;</span>));</code></pre></div>
+<p><code>from</code>に渡している/path/to/fileは、ローカル上のファイルでもGCSでもAmazon S3...etc、で大体同じ。 ローカルファイルなら普通に相対パス or 絶対パス、GCSなら&quot;gs://[バケット名]/[ファイル名]&quot;って感じになります。</p>
+<h2 id="ファイル出力"><span class="head">ファイル出力</span></h2>
+<p>こちらも既出なので...</p>
+<div class="sourceCode"><pre class="sourceCode java"><code class="sourceCode java">PCollection&lt;<span class="bu">String</span>&gt; output = ...;
+output.<span class="fu">apply</span>(TextIO.<span class="fu">write</span>().<span class="fu">to</span>(<span class="st">&quot;/path/to/file&quot;</span>));</code></pre></div>
+<p>ちょくちょく書いていた、<code>withoutSharding()</code>を付けておくと出力ファイルが分割されないので便利。</p>
+<h2 id="複数ファイルの読み込み"><span class="head">複数ファイルの読み込み</span></h2>
+<p>同じくそこまで難しくないですが、複数ファイルの読み込みのためにワイルドカードが使えます。 ただ、これは読み込み元のファイルシステムに依存するので気をつけろ、とのことです。</p>
+<p>動作は単一ファイルの読み込みと同じで、String型の<code>PCollection</code>を返します。</p>
+<div class="sourceCode"><pre class="sourceCode java"><code class="sourceCode java"><span class="kw">import</span><span class="im"> org.apache.beam.sdk.Pipeline;</span>
+<span class="kw">import</span><span class="im"> org.apache.beam.sdk.io.TextIO;</span>
+
+<span class="kw">public</span> <span class="kw">class</span> Main {
+    <span class="kw">public</span> <span class="dt">static</span> <span class="dt">void</span> <span class="fu">main</span>(<span class="bu">String</span>[] args) {
+        Pipeline pipeline = Pipeline.<span class="fu">create</span>();
+        pipeline
+                .<span class="fu">apply</span>(TextIO.<span class="fu">read</span>().<span class="fu">from</span>(<span class="st">&quot;./?.txt&quot;</span>))
+                .<span class="fu">apply</span>(TextIO.<span class="fu">write</span>().<span class="fu">to</span>(<span class="st">&quot;test&quot;</span>).<span class="fu">withoutSharding</span>())
+        ;
+        pipeline.<span class="fu">run</span>();
+    }
+}</code></pre></div>
+<p>もし複数のソースからデータを読み込む場合は、個別に<code>read</code>変換をしたあとで、<code>Flatten</code>をapplyしてくれとのこと。</p>
+<h2 id="複数ファイルへの出力"><span class="head">複数ファイルへの出力</span></h2>
+<p>基本的に出力ファイルは分割される。ファイル名は</p>
+<p>(指定したファイル名)-00000-of-00005</p>
+<p>みたいになる。ファイル結合はしなくてもよいが、拡張子はきちんとしたい...、みたいなときは<code>withSuffix</code>で拡張子が指定できる。ファイル名は</p>
+<p>(指定したファイル名)-00000-of-00005(指定した拡張子)</p>
+<p>って感じです。</p>
+<div class="sourceCode"><pre class="sourceCode java"><code class="sourceCode java"><span class="kw">import</span><span class="im"> java.util.ArrayList;</span>
+<span class="kw">import</span><span class="im"> java.util.List;</span>
+<span class="co">// beam sdk</span>
+<span class="kw">import</span><span class="im"> org.apache.beam.sdk.Pipeline;</span>
+<span class="kw">import</span><span class="im"> org.apache.beam.sdk.io.TextIO;</span>
+<span class="kw">import</span><span class="im"> org.apache.beam.sdk.transforms.Create;</span>
+
+<span class="kw">public</span> <span class="kw">class</span> Main {
+    <span class="kw">public</span> <span class="dt">static</span> <span class="dt">void</span> <span class="fu">main</span>(<span class="bu">String</span>[] args) {
+        <span class="bu">List</span>&lt;<span class="bu">String</span>&gt; input = <span class="kw">new</span> <span class="bu">ArrayList</span>&lt;<span class="bu">String</span>&gt;(<span class="dv">10</span>) {{
+            <span class="kw">for</span> (<span class="dt">int</span> i = <span class="dv">1</span>; i &lt;= <span class="dv">10</span>; i++) {
+                <span class="fu">add</span>(<span class="bu">String</span>.<span class="fu">valueOf</span>(i));
+            }
+        }};
+        <span class="co">//</span>
+        Pipeline pipeline = Pipeline.<span class="fu">create</span>();
+        pipeline
+                .<span class="fu">apply</span>(Create.<span class="fu">of</span>(input))
+                .<span class="fu">apply</span>(TextIO.<span class="fu">write</span>().<span class="fu">to</span>(<span class="st">&quot;result&quot;</span>).<span class="fu">withSuffix</span>(<span class="st">&quot;.txt&quot;</span>))
+        ;
+        pipeline.<span class="fu">run</span>();
+    }
+}</code></pre></div>
+</body>
+</html>

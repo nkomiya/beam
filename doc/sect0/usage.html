@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="generator" content="pandoc">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+  <title></title>
+  <style type="text/css">code{white-space: pre;}</style>
+  <style type="text/css">
+div.sourceCode { overflow-x: auto; }
+table.sourceCode, tr.sourceCode, td.lineNumbers, td.sourceCode {
+  margin: 0; padding: 0; vertical-align: baseline; border: none; }
+table.sourceCode { width: 100%; line-height: 100%; }
+td.lineNumbers { text-align: right; padding-right: 4px; padding-left: 4px; color: #aaaaaa; border-right: 1px solid #aaaaaa; }
+td.sourceCode { padding-left: 5px; }
+code > span.kw { color: #007020; font-weight: bold; } /* Keyword */
+code > span.dt { color: #902000; } /* DataType */
+code > span.dv { color: #40a070; } /* DecVal */
+code > span.bn { color: #40a070; } /* BaseN */
+code > span.fl { color: #40a070; } /* Float */
+code > span.ch { color: #4070a0; } /* Char */
+code > span.st { color: #4070a0; } /* String */
+code > span.co { color: #60a0b0; font-style: italic; } /* Comment */
+code > span.ot { color: #007020; } /* Other */
+code > span.al { color: #ff0000; font-weight: bold; } /* Alert */
+code > span.fu { color: #06287e; } /* Function */
+code > span.er { color: #ff0000; font-weight: bold; } /* Error */
+code > span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+code > span.cn { color: #880000; } /* Constant */
+code > span.sc { color: #4070a0; } /* SpecialChar */
+code > span.vs { color: #4070a0; } /* VerbatimString */
+code > span.ss { color: #bb6688; } /* SpecialString */
+code > span.im { } /* Import */
+code > span.va { color: #19177c; } /* Variable */
+code > span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+code > span.op { color: #666666; } /* Operator */
+code > span.bu { } /* BuiltIn */
+code > span.ex { } /* Extension */
+code > span.pp { color: #bc7a00; } /* Preprocessor */
+code > span.at { color: #7d9029; } /* Attribute */
+code > span.do { color: #ba2121; font-style: italic; } /* Documentation */
+code > span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+code > span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+  </style>
+  <link rel="stylesheet" href="../github.css">
+  <!--[if lt IE 9]>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/html5shiv/3.7.3/html5shiv-printshiv.min.js"></script>
+  <![endif]-->
+</head>
+<body>
+<style type="text/css">
+  .head { 
+    border-left:5px solid #00f;
+    padding:3px 0 3px 10px;
+    font-weight: bold;
+  }
+  .lhead { 
+    border-left:5px solid #00f;
+    padding:3px 0 3px 10px;
+    font-size:14pt;
+    font-weight: bold;
+  }
+</style>
+<p><a href="../index.html">topへ</a></p>
+<h1 id="mavenの使い方">Mavenの使い方</h1>
+<h2 id="maven-projectの作成">Maven projectの作成</h2>
+<p>Mavenはリポジトリ管理機能つきのbuildツールです。Mavenリポジトリ上のパッケージを自分のプロジェクトで使ったり、自作のパッケージを公開したりできます（たぶん）。</p>
+<p>ですが、設定ファイルがxmlなのが嫌なところですかね...。設定ファイルは幸い一つなので、テンプレ的なやつを作ればとりあえずはokなはずです。 Beamを使う上で簡単なのは、Dataflowの公式ドキュメントに載っているサンプルをdownloadする方法です。無駄はあるかと思いますが...。</p>
+<div class="sourceCode"><pre class="sourceCode bash"><code class="sourceCode bash">$ <span class="va">BEAM_VERSION=</span>2.13.0
+$ <span class="va">GROUP_ID=</span>[<span class="ex">Java</span>のパッケージ名]
+$ <span class="va">ARTIFACT_ID=</span>[出力フォルダ名]
+$ <span class="va">VERSION=</span>[プロジェクトのバージョン]
+$ <span class="ex">mvn</span> archetype:generate \
+      -DarchetypeGroupId=org.apache.beam \
+      -DarchetypeArtifactId=beam-sdks-java-maven-archetypes-examples \
+      -DarchetypeVersion=<span class="va">$BEAM_VERSION</span> \
+      -DgroupId=<span class="va">$GROUP_ID</span> \
+      -DartifactId=<span class="va">$ARTIFACT_ID</span> \
+      -Dversion=<span class="va">$VERSION</span> \
+      -Dpackage=org.apache.beam.examples \
+      -DinteractiveMode=false</code></pre></div>
+<p>コマンドを実行すると、カレントディレクトリにDversionで指定したディレクトリができるはずです。 欲しいのはpom.xmlのみなので、その他もろもろは全て消します。</p>
+<div class="sourceCode"><pre class="sourceCode bash"><code class="sourceCode bash">$ <span class="fu">rm</span> -r <span class="va">${ARTIFACT_ID}</span>/src/main/java/*<span class="kw">;</span> <span class="kw">\</span>
+  <span class="fu">rm</span> -r <span class="va">${ARTIFACT_ID}</span>/src/test/java/*<span class="kw">;</span> <span class="kw">\</span>
+  <span class="bu">cd</span> <span class="va">${ARTIFACT_ID}</span>/src<span class="kw">;</span> <span class="kw">\</span>
+  <span class="fu">mkdir</span> -p main/java/<span class="va">$(</span><span class="bu">echo</span> <span class="va">$GROUP_ID</span> <span class="kw">|</span> <span class="fu">sed</span> <span class="st">&quot;s/\./\//g&quot;</span><span class="va">)</span> <span class="kw">&amp;&amp;</span> <span class="kw">\</span>
+  <span class="bu">echo</span> <span class="st">&quot;package </span><span class="va">${GROUP_ID}</span><span class="st">;&quot;</span> <span class="op">&gt;</span> main/java/<span class="va">$(</span><span class="bu">echo</span> <span class="va">$GROUP_ID</span> <span class="kw">|</span> <span class="fu">sed</span> <span class="st">&quot;s/\./\//g&quot;</span><span class="va">)</span>/Main.java<span class="kw">;</span> <span class="kw">\</span>
+  <span class="fu">mkdir</span> -p test/java/<span class="va">$(</span><span class="bu">echo</span> <span class="va">$GROUP_ID</span> <span class="kw">|</span> <span class="fu">sed</span> <span class="st">&quot;s/\./\//g&quot;</span><span class="va">)</span><span class="kw">;</span> <span class="kw">\</span>
+  <span class="bu">cd</span> ../..<span class="kw">;</span> <span class="kw">\</span>
+  <span class="bu">unset</span> <span class="va">BEAM_VERSION</span> <span class="va">GROUP_ID</span> <span class="va">ARTIFACT_ID</span> <span class="va">VERSION</span></code></pre></div>
+<h3 id="build">build</h3>
+<p>buildするだけならシンプル。Mavenプロジェクトのルートに移動し、次のコマンドを実行します。</p>
+<div class="sourceCode"><pre class="sourceCode bash"><code class="sourceCode bash">$ <span class="ex">mvn</span> compile</code></pre></div>
+<p>初回はリポジトリからbeam SDKを落とすので、buildに時間が掛かるかもです。</p>
+<h3 id="ローカルでの実行">ローカルでの実行</h3>
+<p>実行したいクラスをDexec.mainClassで、コマンドライン引数をDexec.argsに渡す。</p>
+<div class="sourceCode"><pre class="sourceCode bash"><code class="sourceCode bash">$ <span class="ex">mvn</span> exec:java -Dexec.mainClass=path.to.class \
+  -Dexec.args=<span class="st">&quot;--arg1=hoge --arg2=fuga&quot;</span></code></pre></div>
+<p>みたいな。実行時にbeamのSDKの指定もいるので、<code>java -cp=...</code>みたいにやるのは面倒くさい。</p>
+<h3 id="dataflowでの実行">Dataflowでの実行</h3>
+<p>Mavenとbeamの両方でRunnerの指定が必要。</p>
+<div class="sourceCode"><pre class="sourceCode bash"><code class="sourceCode bash">$ <span class="ex">mvn</span> -Pdataflow-runner exec:java -Dexec.mainClass=path.to.class \
+  -Dexec.args=<span class="st">&quot;--runner=DataflowRunner \</span>
+<span class="st">    --tempLocation=gs://bucket名 \</span>
+<span class="st">    --arg1=hoge --arg2=fuga ...&quot;</span></code></pre></div>
+<p>tempLocationは一時ファイル置き場で、cloud storageのバケットを指定する。たぶん必要？</p>
+</body>
+</html>

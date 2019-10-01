@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="generator" content="pandoc">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+  <title></title>
+  <style type="text/css">code{white-space: pre;}</style>
+  <style type="text/css">
+div.sourceCode { overflow-x: auto; }
+table.sourceCode, tr.sourceCode, td.lineNumbers, td.sourceCode {
+  margin: 0; padding: 0; vertical-align: baseline; border: none; }
+table.sourceCode { width: 100%; line-height: 100%; }
+td.lineNumbers { text-align: right; padding-right: 4px; padding-left: 4px; color: #aaaaaa; border-right: 1px solid #aaaaaa; }
+td.sourceCode { padding-left: 5px; }
+code > span.kw { color: #007020; font-weight: bold; } /* Keyword */
+code > span.dt { color: #902000; } /* DataType */
+code > span.dv { color: #40a070; } /* DecVal */
+code > span.bn { color: #40a070; } /* BaseN */
+code > span.fl { color: #40a070; } /* Float */
+code > span.ch { color: #4070a0; } /* Char */
+code > span.st { color: #4070a0; } /* String */
+code > span.co { color: #60a0b0; font-style: italic; } /* Comment */
+code > span.ot { color: #007020; } /* Other */
+code > span.al { color: #ff0000; font-weight: bold; } /* Alert */
+code > span.fu { color: #06287e; } /* Function */
+code > span.er { color: #ff0000; font-weight: bold; } /* Error */
+code > span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+code > span.cn { color: #880000; } /* Constant */
+code > span.sc { color: #4070a0; } /* SpecialChar */
+code > span.vs { color: #4070a0; } /* VerbatimString */
+code > span.ss { color: #bb6688; } /* SpecialString */
+code > span.im { } /* Import */
+code > span.va { color: #19177c; } /* Variable */
+code > span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+code > span.op { color: #666666; } /* Operator */
+code > span.bu { } /* BuiltIn */
+code > span.ex { } /* Extension */
+code > span.pp { color: #bc7a00; } /* Preprocessor */
+code > span.at { color: #7d9029; } /* Attribute */
+code > span.do { color: #ba2121; font-style: italic; } /* Documentation */
+code > span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+code > span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+  </style>
+  <link rel="stylesheet" href="../github.css">
+  <!--[if lt IE 9]>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/html5shiv/3.7.3/html5shiv-printshiv.min.js"></script>
+  <![endif]-->
+</head>
+<body>
+<style type="text/css">
+  .head { 
+    border-left:5px solid #00f;
+    padding:3px 0 3px 10px;
+    font-weight: bold;
+  }
+  .lhead { 
+    border-left:5px solid #00f;
+    padding:3px 0 3px 10px;
+    font-size:14pt;
+    font-weight: bold;
+  }
+</style>
+<p><a href="../index.html">topへ</a></p>
+<h1 id="データのエンコードと型安全性">データのエンコードと型安全性</h1>
+<p>Beamではパイプラインにおける<code>PCollection</code>は、中間データも含めてバイト列と相互に変換できる必要があります。この変換を行うオブジェクトはBeamでは<code>Coder</code>とよばれ、元データとバイト列の間で変換することをencode / decodeと読んでいます。</p>
+<p>JavaのBeam SDKでは、様々な型（Integer, Long, String, ... etc.）に対して<code>Coder</code>のサブクラスが定義されてます。基本的には暗黙的に<code>Coder</code>サブクラスが指定されて、encode / decodeをしてくれます。</p>
+<p>注意点としては、一つの型に対して<code>Coder</code>は一意に決めなくてもよく、<code>PTransform</code>の前後で<code>Coder</code>を変えたりできます。たとえば整数型の<code>PCollection</code>に対し、inputは<code>BigEndianIntegerCoder</code>、outputは<code>VarIntCoder</code>、みたいな話です。</p>
+<h2 id="coderの指定"><span class="head">Coderの指定</span></h2>
+<p>Beamでは全ての<code>PCollection</code>は<code>Coder</code>が指定されている必要があるそうですが、基本的には<code>PCollection</code>の型やapplyする<code>PTransform</code>の型から自動的に<code>Coder</code>を決めてくれます。 たとえば<code>DoFn&lt;Integer,String&gt;</code>の関数オブジェクトでは、outputはString型の<code>PCollection</code>になります。なので、outputの<code>PCollection</code>の<code>Coder</code>は、String型のdefaultの<code>Coder</code>（何も指定がなければ<code>StringUtf8Coder</code>）となります。<br />
+Beamで<code>Coder</code>がうまく推測出来ない場合は、ユーザ自身が明示的に<code>Coder</code>の指定を行わなければいけない場合もあるそうです。</p>
+<p><code>PCollection</code>の<code>Coder</code>を指定するには、<code>setCoder</code>メソッドを使います。たとえば、次のような感じです。</p>
+<pre class="java="><code>PCollection&lt;String&gt; pcol = ...;
+pcol.setCoder(StringUtf8Coder.of());</code></pre>
+<p><code>PCollection</code>にapplyを適用した後で、<code>Coder</code>の指定をすると実行時にエラーが出ます。</p>
+<pre class="java="><code>PCollection&lt;String&gt; pcol = ...;
+pcol.apply( ... );
+// pcolにapplyを適用した後なので、Coderを変更できない
+//pcol.setCoder(StringUtf8Coder.of());</code></pre>
+<p>Beamは通常のプログラミングと違って、コードの一番上から順に、一つの行の処理を終えるごとに次の行の処理に移るわけではありません。<br />
+たとえばBigQueryのテーブルをGCSにテキストファイルとしてエクスポートする、みたいなpipelineを実行すると、BigQueryのテーブルの大きさにもよるかもですが読み込みと同時に書き出しも行われます。<br />
+そのため、applyを適用した段階で<code>PCollection</code>がfinalizeされ、変更が不可となります。</p>
+<p><code>PCollection</code>の<code>Coder</code>を調べたければ、<code>getCoder</code>メソッドを用います。</p>
+<pre class="java="><code>PCollection&lt;String&gt; pcol = ...;
+
+// StringUtf8Coder,　と出力されるはずです
+System.out.pritnln(pcol.getCoder());</code></pre>
+<p>もし<code>Coder</code>の指定がなく、また自動決定がされていなければ、<code>getCoder</code>メソッドはエラーを返します。</p>
+<p>in-memoryのデータから<code>Create</code>メソッドで<code>PCollection</code>を作る場合は、<code>withCoder</code>メソッドを使って<code>Coder</code>の指定を行います。</p>
+<div class="sourceCode"><pre class="sourceCode java"><code class="sourceCode java">Pipeline pipeline = Pipeline.<span class="fu">create</span>();
+pipeline
+    .<span class="fu">apply</span>(
+        Create.<span class="fu">of</span>( [リスト] )
+        .<span class="fu">withCoder</span>( [Coder] )
+    )
+    ...</code></pre></div>
+<p><code>Create</code>は引数の型情報を参照しないらしいので、あまり型推測を信頼すべきでなく、<code>withCoder</code>で明示的に指定した方がよいようです。</p>
+<h2 id="デフォルトのcoderを指定する"><span class="head">デフォルトのCoderを指定する</span></h2>
+<p><code>Pipeline</code>オブジェクトは<code>CoderRegistry</code>を持っていて、これを使うとdefaultの<code>Coder</code>を取得したり、Javaの型ごとにdefaultの<code>Coder</code>を指定することができます。</p>
+<p><code>CoderRegistry</code>は<code>Pipeline</code>オブジェクトの<code>getCoderRegistry</code>メソッドを使って取得可能でき、<code>CoderRegistry</code>オブジェクトの<code>getCoder</code>メソッドにclassインスタンスを渡すと、渡したクラスのdefaultの<code>Coder</code>が得られます。</p>
+<div class="sourceCode"><pre class="sourceCode java"><code class="sourceCode java"><span class="kw">import</span><span class="im"> org.apache.beam.sdk.Pipeline;</span>
+<span class="kw">import</span><span class="im"> org.apache.beam.sdk.coders.CannotProvideCoderException;</span>
+<span class="kw">import</span><span class="im"> org.apache.beam.sdk.coders.CoderRegistry;</span>
+
+<span class="kw">public</span> <span class="kw">class</span> Cofact {
+    <span class="kw">public</span> <span class="dt">static</span> <span class="dt">void</span> <span class="fu">main</span>(<span class="bu">String</span>[] args) {
+        Pipeline pipeline = Pipeline.<span class="fu">create</span>();
+        CoderRegistry cr = pipeline.<span class="fu">getCoderRegistry</span>();
+
+        <span class="co">// Integerの型を調べる</span>
+        <span class="kw">try</span> {
+            <span class="bu">System</span>.<span class="fu">out</span>.<span class="fu">println</span>(cr.<span class="fu">getCoder</span>(<span class="bu">Integer</span>.<span class="fu">class</span>));
+        } <span class="kw">catch</span> (CannotProvideCoderException e) {}
+    }
+}</code></pre></div>
+<p>defaultの<code>Coder</code>を変更したければ、<code>registerCoder</code>メソッドを用います。 引数には、<code>Coder</code>を指定したい型のclassオブジェクトと、指定したい<code>Coder</code>サブクラスの オブジェクトを<code>of</code>で作成して渡します。</p>
+<div class="sourceCode"><pre class="sourceCode java"><code class="sourceCode java">cr.<span class="fu">registerCoderForClass</span>(<span class="bu">Integer</span>.<span class="fu">class</span>,BigEndianIntegerCoder.<span class="fu">of</span>());</code></pre></div>
+<h2 id="自作クラスにcoderを指定する"><span class="head">自作クラスにCoderを指定する</span></h2>
+<p>If your pipeline program defines a custom data type, you can use the <span class="citation" data-cites="DefaultCoder">@DefaultCoder</span> annotation to specify the coder to use with that type. For example, let’s say you have a custom data type for which you want to use SerializableCoder. You can use the <span class="citation" data-cites="DefaultCoder">@DefaultCoder</span> annotation as follows:</p>
+</body>
+</html>

@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="generator" content="pandoc">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+  <title></title>
+  <style type="text/css">code{white-space: pre;}</style>
+  <link rel="stylesheet" href="../github.css">
+  <!--[if lt IE 9]>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/html5shiv/3.7.3/html5shiv-printshiv.min.js"></script>
+  <![endif]-->
+</head>
+<body>
+<style type="text/css">
+  .head { 
+    border-left:5px solid #00f;
+    padding:3px 0 3px 10px;
+    font-weight: bold;
+  }
+  .lhead { 
+    border-left:5px solid #00f;
+    padding:3px 0 3px 10px;
+    font-size:14pt;
+    font-weight: bold;
+  }
+</style>
+<p><a href="../index.html">topへ</a></p>
+<h1 id="準備編">準備編</h1>
+<p>目次</p>
+<ul>
+<li><a href="#jdk">Open JDKのinstall</a></li>
+<li><a href="#maven">Apache Mavenのinstall</a></li>
+<li><a href="#jenv">Jenvのinstall</a></li>
+<li><a href="#intellij">IntelliJのinstall</a></li>
+</ul>
+<h2 id="open-jdkのinstall"><span id="jdk" class="lhead">Open JDKのinstall</span></h2>
+<p>Java8を使いたければ、Oracleの無償のJDKはもう利用不可。代替策として<a href="https://adoptopenjdk.net">AdoptOpenJDK</a>を利用する。欲しいversionを選んでダウンロードしておしまい。</p>
+<h2 id="mavenのinstall"><span id="maven" class="lhead">Mavenのinstall</span></h2>
+<p>brewでinstall、もしくは<a href="https://maven.apache.org/download.cgi">公式サイト</a>からバイナリファイルをダウンロード。</p>
+<h2 id="jenvのinstall"><span id="jenv" class="lhead">Jenvのinstall</span></h2>
+<p>pyenvのJava版。Git、もしくはhomebrewでinstallする。</p>
+<pre class="bash="><code>$ git clone https://github.com/gcuisinier/jenv.git ~/.jenv</code></pre>
+<p>.bash_profileにjenvの設定を追加。</p>
+<pre class="bash="><code>$ echo &#39;export PATH=&quot;$HOME/.jenv/bin:$PATH&quot;&#39; &gt;&gt; ~/.bash_profile
+$ echo &#39;eval &quot;$(jenv init -)&quot;&#39; &gt;&gt; ~/.bash_profile</code></pre>
+<p>Jenvは割と優秀で、環境変数の自動設定、mavenの有効化ができる。</p>
+<pre class="bash="><code>$ jenv enable-plugin export
+$ jenv enable-plugin maven</code></pre>
+<p>インストールが終わったら、</p>
+<pre class="bash="><code>$ java -version
+$ mvn -version</code></pre>
+<p>を行い、javaのversionが両者で一致してることとかをcheckしておしまい。</p>
+<h2 id="intellijのinstall"><span id="intellij" class="lhead">IntelliJのinstall</span></h2>
+<p>JDKのバージョン指定でかなりはまったのでメモ。とりあえずビルドが通るように、最低限の設定のみ触れておきます。</p>
+<h3 id="defaultのjdkのバージョンの指定">DefaultのJDKのバージョンの指定</h3>
+<p>特にMaven projectを作る場合、JDKのバージョンは1.5にされる模様です。なので、IntelliJにdefaultのJDKバージョンを教えてあげる必要があります。</p>
+<p>Settings &gt; Build,Execution,Development &gt; Compiler &gt; Java Compiler</p>
+<p>を選択。Project bytecode versionを&quot;8&quot;にしてください。 All modules will be compiled with project bytecode version, となってますが、実はこれだけでは不十分です...</p>
+<h3 id="defaultのpom.xmlの編集">defaultのpom.xmlの編集</h3>
+<p>Mavenプロジェクトの設定ファイルであるpom.xmlでもJDKのバージョン指定が必要です。毎回設定を変更するのは面倒なので、defaultのpom.xmlを編集しておきます。 再び、settingsから</p>
+<p>settings &gt; Editor &gt; File and code template</p>
+<p>を選択。Otherタブを選ぶとMavenが見つかるはずです。その中にMaven project.xmlがあると思うので、ファイル末尾にちょい足しします。</p>
+<pre class="xml="><code>... 中略 ...
+
+    &lt;groupId&gt;${GROUP_ID}&lt;/groupId&gt;
+    &lt;artifactId&gt;${ARTIFACT_ID}&lt;/artifactId&gt;
+    &lt;version&gt;${VERSION}&lt;/version&gt;
+    
+    &lt;!-- ここから --&gt;
+    &lt;properties&gt;
+        &lt;maven.compiler.source&gt;1.8&lt;/maven.compiler.source&gt;
+        &lt;maven.compiler.target&gt;1.8&lt;/maven.compiler.target&gt;
+    &lt;/properties&gt;
+    &lt;!-- ここまでを追加 --&gt;
+
+    ${END}
+&lt;/project&gt;</code></pre>
+<p>これで、新規プロジェクトを開く時に自動でJDKをうまいことしてくれると思います。</p>
+</body>
+</html>

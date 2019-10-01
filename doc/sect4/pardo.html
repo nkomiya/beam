@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="generator" content="pandoc">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+  <title></title>
+  <style type="text/css">code{white-space: pre;}</style>
+  <style type="text/css">
+div.sourceCode { overflow-x: auto; }
+table.sourceCode, tr.sourceCode, td.lineNumbers, td.sourceCode {
+  margin: 0; padding: 0; vertical-align: baseline; border: none; }
+table.sourceCode { width: 100%; line-height: 100%; }
+td.lineNumbers { text-align: right; padding-right: 4px; padding-left: 4px; color: #aaaaaa; border-right: 1px solid #aaaaaa; }
+td.sourceCode { padding-left: 5px; }
+code > span.kw { color: #007020; font-weight: bold; } /* Keyword */
+code > span.dt { color: #902000; } /* DataType */
+code > span.dv { color: #40a070; } /* DecVal */
+code > span.bn { color: #40a070; } /* BaseN */
+code > span.fl { color: #40a070; } /* Float */
+code > span.ch { color: #4070a0; } /* Char */
+code > span.st { color: #4070a0; } /* String */
+code > span.co { color: #60a0b0; font-style: italic; } /* Comment */
+code > span.ot { color: #007020; } /* Other */
+code > span.al { color: #ff0000; font-weight: bold; } /* Alert */
+code > span.fu { color: #06287e; } /* Function */
+code > span.er { color: #ff0000; font-weight: bold; } /* Error */
+code > span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+code > span.cn { color: #880000; } /* Constant */
+code > span.sc { color: #4070a0; } /* SpecialChar */
+code > span.vs { color: #4070a0; } /* VerbatimString */
+code > span.ss { color: #bb6688; } /* SpecialString */
+code > span.im { } /* Import */
+code > span.va { color: #19177c; } /* Variable */
+code > span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+code > span.op { color: #666666; } /* Operator */
+code > span.bu { } /* BuiltIn */
+code > span.ex { } /* Extension */
+code > span.pp { color: #bc7a00; } /* Preprocessor */
+code > span.at { color: #7d9029; } /* Attribute */
+code > span.do { color: #ba2121; font-style: italic; } /* Documentation */
+code > span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+code > span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+  </style>
+  <link rel="stylesheet" href="../github.css">
+  <!--[if lt IE 9]>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/html5shiv/3.7.3/html5shiv-printshiv.min.js"></script>
+  <![endif]-->
+</head>
+<body>
+<style type="text/css">
+  .head { 
+    border-left:5px solid #00f;
+    padding:3px 0 3px 10px;
+    font-weight: bold;
+  }
+  .lhead { 
+    border-left:5px solid #00f;
+    padding:3px 0 3px 10px;
+    font-size:14pt;
+    font-weight: bold;
+  }
+</style>
+<p><a href="../index.html">topへ</a></p>
+<h1 id="pardo">ParDo</h1>
+<p>並行処理（<strong>Par</strong>allel <strong>Do</strong>）の意味で<code>ParDo</code>なはずです。 <code>ParDo</code>は、<a href="https://enterprisezine.jp/dbonline/detail/4440"><em>Map/Shuffle/Reduce</em></a>モデルにおける&quot;map&quot;処理に似ているそうです。Inputを分割して、各要素を何かしらの値にマップする。文章中の単語の登場回数みたいな。<a href="https://jp.talend.com/resources/what-is-mapreduce/">ここ</a>の画像が分かりやすめです。 <img src="https://jp.talend.com/wp-content/uploads/what-is-mapreduce.jpg" alt="がぞう" /></p>
+<p>map処理を行うケースはこんな感じ。 1. datasetのフィルター<br />
+PCollection内の要素を調べ、いらない要素を捨てた新たなPCollectionに返す。欠損値を捨てる、みたいな処理。 2. datasetの整形や型変換<br />
+Inputのdatasetが必要なformatを持ってなかったりしたときに。csvの順序を変えたり、JSON文字列にしたり、みたいな。 3. PCollectionの要素の一部を引っ張りたい<br />
+PCollectionの要素が複数のfieldを持っているときに、要らないfieldを落とす。 4. datasetに演算を加えたい<br />
+身長と体重からBMIに変換する、みたいな。</p>
+<p>もし<code>ParDo</code>変換で自前の処理を加えたければ、Beam SDKの<code>DoFn</code>クラスを継承させたサブクラスを作る必要がある。<code>DoFn</code>は<strong>DoF</strong>u<strong>n</strong>ctionの意味だそう。</p>
+<h2 id="やってみよう---dofn-本格編"><span class="head">やってみよう - DoFn 本格編</span></h2>
+<p>いきなり本格編なのであれなのですが...。<br />
+先で触れたとおり、<code>ParDo</code>に限らず<code>PCollection</code>に変換を加える場合は<code>apply</code>メソッドを使う。<code>ParDo</code>の場合はこんな感じ。基本的にはnewでインスタンスを作りますかね。</p>
+<div class="sourceCode"><pre class="sourceCode java"><code class="sourceCode java">[ PCollection ].<span class="fu">apply</span>( ParDo.<span class="fu">of</span>( [DoFnのサブクラスのインスタンス] ) )</code></pre></div>
+<p>書くべきなのはInput / Outputの型と、InputのPCollectionの各要素に対して行われる処理だけでokで、要素抽出などはSDKがやってくれる。<code>DoFn</code>のサブクラスの宣言の例はこんな感じ。</p>
+<div class="sourceCode"><pre class="sourceCode java"><code class="sourceCode java"><span class="dt">static</span> <span class="kw">class</span> MyDoFn <span class="kw">extends</span> DoFn&lt;<span class="bu">String</span>, <span class="bu">Integer</span>&gt; {
+    <span class="at">@ProcessElement</span>
+    <span class="dt">static</span> <span class="dt">void</span> <span class="fu">mymethod</span>(<span class="at">@Element</span> <span class="bu">String</span> in, OutputReceiver&lt;<span class="bu">Integer</span>&gt; o) {
+        ...
+    }
+} </code></pre></div>
+<p>input, outputの型は<code>DoFn</code>の型引数で指定する。上の例だとinputはString型、outputはInteger型。 処理で行われるのは、<code>ProcessElement</code>アノテーションを付けたメソッドに書きます。メソッド名は何でも良いです。 また、<code>Element</code>アノテーションをつけた変数にinputの<code>PCollection</code>の要素が渡り、<code>OutputReceiver&lt;T&gt;</code>型の変数にoutputの<code>PCollection</code>に加えたいdataを突っ込む。</p>
+<div class="sourceCode"><pre class="sourceCode java"><code class="sourceCode java"><span class="kw">import</span><span class="im"> java.util.List;</span>
+<span class="kw">import</span><span class="im"> java.util.Arrays;</span>
+<span class="co">//</span>
+<span class="kw">import</span><span class="im"> org.apache.beam.sdk.Pipeline;</span>
+<span class="kw">import</span><span class="im"> org.apache.beam.sdk.options.PipelineOptions;</span>
+<span class="co">//</span>
+<span class="kw">import</span><span class="im"> org.apache.beam.sdk.transforms.Create;</span>
+<span class="kw">import</span><span class="im"> org.apache.beam.sdk.coders.StringUtf8Coder;</span>
+<span class="co">//</span>
+<span class="kw">import</span><span class="im"> org.apache.beam.sdk.transforms.DoFn;</span>
+<span class="kw">import</span><span class="im"> org.apache.beam.sdk.transforms.ParDo;</span>
+<span class="co">//</span>
+<span class="kw">public</span> <span class="kw">class</span> Main {
+    <span class="kw">public</span> <span class="dt">static</span> <span class="dt">void</span> <span class="fu">main</span>( <span class="bu">String</span>[] args ){
+        <span class="co">// input source</span>
+        <span class="bu">List</span>&lt;<span class="bu">String</span>&gt; input =　Arrays.<span class="fu">asList</span>(
+            <span class="st">&quot;To be, or not to be: that is the question: &quot;</span>,
+            <span class="st">&quot;Whether &#39;tis nobler in the mind to suffer &quot;</span>,
+            <span class="st">&quot;The slings and arrows of outrageous fortune, &quot;</span>,
+            <span class="st">&quot;Or to take arms against a sea of troubles, &quot;</span> );
+        <span class="co">//</span>
+        Pipeline pipeline = Pipeline.<span class="fu">create</span>();
+        <span class="co">//</span>
+        pipeline
+                .<span class="fu">apply</span>( <span class="st">&quot;ReadFromInMemoryData&quot;</span>, Create.<span class="fu">of</span>(input) )
+                .<span class="fu">apply</span>( <span class="st">&quot;Textlength&quot;</span>, ParDo.<span class="fu">of</span>( <span class="kw">new</span> <span class="fu">TextlengthFn</span>() ) );
+        <span class="co">//</span>
+        pipeline.<span class="fu">run</span>();
+    }
+
+    <span class="dt">static</span> <span class="kw">class</span> TextlengthFn <span class="kw">extends</span> DoFn&lt;<span class="bu">String</span>,<span class="bu">Integer</span>&gt; {
+        <span class="at">@ProcessElement</span>
+        <span class="kw">public</span> <span class="dt">void</span> <span class="fu">processElement</span>(<span class="at">@Element</span> <span class="bu">String</span> l, OutputReceiver&lt;<span class="bu">Integer</span>&gt; o){
+            o.<span class="fu">output</span>( l.<span class="fu">length</span>() );
+        }
+    }
+}</code></pre></div>
+<p>inputの<code>PCollection</code>は適当に分割されるので、<code>DoFn</code>インスタンスは複数回呼び出されることになる。ただ失敗時に備えるとかで複数回呼ばれることもあるため、分割した分だけ<code>DoFn</code>インスタンスが呼ばれる訳ではない。呼び出し回数はキャッシュできるけど、呼び出し回数に依存した処理は実装すべきでないとのこと。</p>
+<p>また、<code>PCollection</code>がimmutableであることを保証するため、メソッドの実装の際には以下の変数の値を いじくるな、とのこと。</p>
+<ul>
+<li><code>Element</code>アノテーションをつけた変数</li>
+<li><code>OutputReceiver</code>で出力をした後では、任意の変数</li>
+</ul>
+<h2 id="やってみよう---dofn-お手軽編"><span class="head">やってみよう - DoFn お手軽編</span></h2>
+<p>もし簡単な処理をしたいだけで、<code>DoFn</code>のサブクラスを定義するまでもない...という場合は、匿名クラスを使って処理を書いてもok。<code>apply( ParDo.of(...) )</code>を次のように変える。</p>
+<div class="sourceCode"><pre class="sourceCode java"><code class="sourceCode java"><span class="kw">... </span>中略 ...
+
+<span class="fu">apply</span>( ParDo.<span class="fu">of</span>(
+        <span class="kw">new</span> DoFn&lt;<span class="bu">String</span>, <span class="bu">Integer</span>&gt;() {
+            <span class="at">@ProcessElement</span>
+            <span class="kw">public</span> <span class="dt">void</span> <span class="fu">mymethod</span>(<span class="at">@Element</span> <span class="bu">String</span> l, OutputReceiver&lt;<span class="bu">Integer</span>&gt; o) {
+                o.<span class="fu">output</span>(l.<span class="fu">length</span>());
+            }
+        }))</code></pre></div>
+<h2 id="やってみよう---map編"><span class="head"> やってみよう - Map編</span></h2>
+<p>もし、inputの<code>PCollection</code>の各要素に一つの値を対応させるなら（数学的には写像）、<code>MapElements</code>メソッドが便利。上の場合、inputの<code>PCollection</code>の要素は文章中の一行で、行ごとに文字数を対応させているので、<code>MapElements</code>が使える。</p>
+<div class="sourceCode"><pre class="sourceCode java"><code class="sourceCode java"><span class="kw">import</span><span class="im"> org.apache.beam.sdk.transform.MapElements;</span>
+<span class="kw">import</span><span class="im"> org.apache.beam.sdk.values.TypeDescriptors;</span>
+
+<span class="kw">... </span>中略 ...
+
+<span class="co">/**</span> intoの中でoutputの要素の型、 
+<span class="co">/*</span>  viaの中で要素に施す変換を定義する <span class="co">*/</span>
+<span class="fu">apply</span>( MapElements.<span class="fu">into</span>(TypeDescriptors.<span class="fu">integers</span>() ).<span class="fu">via</span>( (<span class="bu">String</span> line) -&gt; line.<span class="fu">length</span>() ))</code></pre></div>
+<p><code>via</code>の中の処理は、Java8から追加された<a href="https://qiita.com/dev_npon/items/4edd925f0fafe969bd06">ラムダ式</a>を使っています。</p>
+</body>
+</html>
