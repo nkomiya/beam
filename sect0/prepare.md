@@ -1,17 +1,4 @@
-<style type="text/css">
-  .head { 
-    border-left:5px solid #00f;
-    padding:3px 0 3px 10px;
-    font-weight: bold;
-  }
-  .lhead { 
-    border-left:5px solid #00f;
-    padding:3px 0 3px 10px;
-    font-size:14pt;
-    font-weight: bold;
-  }
-</style>
-[topへ](../index.html)
+[topへ](../index.md)
 
 # 準備編
 目次
@@ -22,13 +9,15 @@
 + [IntelliJのinstall](#intellij)
 
 ## <span class="lhead" id="jdk">Open JDKのinstall</span>
-Java8を使いたければ、Oracleの無償のJDKはもう利用不可。代替策として[AdoptOpenJDK](https://adoptopenjdk.net)を利用する。欲しいversionを選んでダウンロードしておしまい。
+Java 8を使いたければ、Oracleの無償のJDKはもう利用不可。代替策として[AdoptOpenJDK](https://adoptopenjdk.net)のJava 8がLTSなので[^aoj]、こちらを利用します。
+[^aoj]: [https://adoptopenjdk.net/support.html](https://adoptopenjdk.net/support.html)
 
 ## <span class="lhead" id="maven">Mavenのinstall</span>
-brewでinstall、もしくは[公式サイト](https://maven.apache.org/download.cgi)からバイナリファイルをダウンロード。
+Mavenは使用するライブラリの依存関係を解消してくれたり、ユニットテストが簡単に実行できたり、自作パッケージの公開ができたり...、と色々できるJavaのビルドツールです。
+Homebrewでinstallするか、もしくは[公式サイト](https://maven.apache.org/download.cgi)からバイナリファイルをダウンロードしてください。
 
-## <span class="lhead" id="jenv">Jenvのinstall</span>
-pyenvのJava版。Git、もしくはhomebrewでinstallする。
+## <span class="lhead" id="jenv">jEnvのinstall</span>
+pyenvとかのJava版です。Git、Homebrewでインストール可能ですが、Gitを使ってinstallする方法をまとめます。
 
 ```bash=
 $ git clone https://github.com/gcuisinier/jenv.git ~/.jenv
@@ -37,11 +26,12 @@ $ git clone https://github.com/gcuisinier/jenv.git ~/.jenv
 .bash_profileにjenvの設定を追加。
 
 ```bash=
-$ echo 'export PATH="$HOME/.jenv/bin:$PATH"' >> ~/.bash_profile
+$ export JENV_ROOT="${HOME}/.jenv"
+$ echo 'export PATH="${JENV_ROOT}/bin:$PATH"' >> ~/.bash_profile
 $ echo 'eval "$(jenv init -)"' >> ~/.bash_profile
 ```
 
-Jenvは割と優秀で、環境変数の自動設定、mavenの有効化ができる。
+Jenvは割と優秀で、環境変数の自動設定、Mavenの設定とかができます。
 
 ```bash=
 $ jenv enable-plugin export
@@ -55,26 +45,25 @@ $ java -version
 $ mvn -version
 ```
 
-を行い、javaのversionが両者で一致してることとかをcheckしておしまい。
+を行い、javaのversionが両者で一致してることとかをcheckしておしまいです。
 
 ## <span class="lhead" id="intellij">IntelliJのinstall</span>
-JDKのバージョン指定でかなりはまったのでメモ。とりあえずビルドが通るように、最低限の設定のみ触れておきます。 
+IntelliJでMavenが使えるようになるまで、多少苦戦したのでメモです。
+Mavenはpom.xmlでプロジェクトの管理をします (JDKのバージョンとか、依存ライブラリなど)。JDKのバージョンを頻繁に変えることはないかと思うので、デフォルトのpom.xmlをいじっておきます。
 
-### DefaultのJDKのバージョンの指定
-特にMaven projectを作る場合、JDKのバージョンは1.5にされる模様です。なので、IntelliJにdefaultのJDKバージョンを教えてあげる必要があります。
-
-Settings > Build,Execution,Development > Compiler > Java Compiler
-
-を選択。Project bytecode versionを"8"にしてください。
-All modules will be compiled with project bytecode version, となってますが、実はこれだけでは不十分です...
 
 ### defaultのpom.xmlの編集
-Mavenプロジェクトの設定ファイルであるpom.xmlでもJDKのバージョン指定が必要です。毎回設定を変更するのは面倒なので、defaultのpom.xmlを編集しておきます。 
-再び、settingsから
+毎回設定を変更するのは面倒なので、defaultのpom.xmlを編集しておきます。 
 
-settings > Editor > File and code template
+IntelliJのトップ画面から、Configure > Preferencesを選択します。
 
-を選択。Otherタブを選ぶとMavenが見つかるはずです。その中にMaven project.xmlがあると思うので、ファイル末尾にちょい足しします。
+<img src="./figs/top.png" width="500">
+
+Editor > File and Code Templates > Otherを選びます。
+
+<img src="./figs/preference.png" width="500">
+
+その中にMaven project.xmlがあると思うので、ファイル末尾にちょい足しします。
 
 ```xml=
 ... 中略 ...
@@ -93,5 +82,3 @@ settings > Editor > File and code template
     ${END}
 </project>
 ```
-
-これで、新規プロジェクトを開く時に自動でJDKをうまいことしてくれると思います。

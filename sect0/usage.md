@@ -1,29 +1,16 @@
-<style type="text/css">
-  .head { 
-    border-left:5px solid #00f;
-    padding:3px 0 3px 10px;
-    font-weight: bold;
-  }
-  .lhead { 
-    border-left:5px solid #00f;
-    padding:3px 0 3px 10px;
-    font-size:14pt;
-    font-weight: bold;
-  }
-</style>
-[topへ](../index.html)
+[topへ](../index.md)
 
 # Mavenの使い方
-## Maven projectの作成
+## Beam用にMaven projectを作成する
 Mavenはリポジトリ管理機能つきのbuildツールです。Mavenリポジトリ上のパッケージを自分のプロジェクトで使ったり、自作のパッケージを公開したりできます（たぶん）。
+設定ファイルがxmlなのは面倒ですが設定ファイルは幸い一つなので、テンプレ的なやつを作ればとりあえずはokです。
 
-ですが、設定ファイルがxmlなのが嫌なところですかね...。設定ファイルは幸い一つなので、テンプレ的なやつを作ればとりあえずはokなはずです。
-Beamを使う上で簡単なのは、Dataflowの公式ドキュメントに載っているサンプルをdownloadする方法です。無駄はあるかと思いますが...。
+Beamを使う上で簡単なのは、[Dataflowのクイックスタート](https://cloud.google.com/dataflow/docs/quickstarts/quickstart-java-maven#wordcount-)に載っているサンプルコードを落とす方法です。これをMaven Projectを作ると、使わない依存関係も入ると思いますが...
 
 ```bash
-$ BEAM_VERSION=2.13.0
-$ GROUP_ID=[Javaのパッケージ名]
-$ ARTIFACT_ID=[出力フォルダ名]
+$ BEAM_VERSION=2.15.0
+$ GROUP_ID=[MavenプロジェクトのグループID]
+$ ARTIFACT_ID=[ビルドで作成される成果物の名前]
 $ VERSION=[プロジェクトのバージョン]
 $ mvn archetype:generate \
       -DarchetypeGroupId=org.apache.beam \
@@ -36,8 +23,18 @@ $ mvn archetype:generate \
       -DinteractiveMode=false
 ```
 
-コマンドを実行すると、カレントディレクトリにDversionで指定したディレクトリができるはずです。
-欲しいのはpom.xmlのみなので、その他もろもろは全て消します。
+Group ID, Artifact IDはMavenで使う概念っぽいです。Groupは組織とか (パッケージがGroup配下にまとめられる) 、Artifactがビルドされたパッケージ的な感じです。適当な値を入れて問題ないです。
+
+外部パッケージはたいてい[Mave Central Repository](https://mvnrepository.com)から持ってくることになると思いますが、https://mvnrepository.com/artifact/**GROUP\_ID**/**ARTIFACT\_ID** みたいな感じでパッケージがまとめられます。Beamだとこんな感じです。
+
+```
+org.apach.beam
+  ├── beam-sdks-java-core
+  ├── beam-runners-direct-java
+  └── ...
+```
+
+コマンドを実行すると、カレントディレクトリに`DartifactId`で指定したディレクトリができるはずです。欲しいのはpom.xmlのみなので、その他もろもろは全て消してOKです。
 
 ```bash
 $ rm -r ${ARTIFACT_ID}/src/main/java/*; \
@@ -50,24 +47,24 @@ $ rm -r ${ARTIFACT_ID}/src/main/java/*; \
   unset BEAM_VERSION GROUP_ID ARTIFACT_ID VERSION
 ```
 
-### build
-buildするだけならシンプル。Mavenプロジェクトのルートに移動し、次のコマンドを実行します。
+### Build
+Buildするだけならシンプル。Mavenプロジェクトのルートに移動し、次のコマンドを実行します。
 
 ```bash
 $ mvn compile
 ```
 
-初回はリポジトリからbeam SDKを落とすので、buildに時間が掛かるかもです。
+初回はリポジトリからBeam SDKを落とすので、Buildに時間が掛かるかもです。
 
 ### ローカルでの実行
-実行したいクラスをDexec.mainClassで、コマンドライン引数をDexec.argsに渡す。
+実行したいクラスをDexec.mainClassで、コマンドライン引数をDexec.argsに渡します。
 
 ```bash
 $ mvn exec:java -Dexec.mainClass=path.to.class \
   -Dexec.args="--arg1=hoge --arg2=fuga"
 ```
 
-みたいな。実行時にbeamのSDKの指定もいるので、`java -cp=...`みたいにやるのは面倒くさい。
+みたいな。依存パッケージのパス指定はMavenが上手いことしてくれます (プラグインの追加が必要ですが、落としたpomファイルには記載ありです)。
 
 ### Dataflowでの実行
 Mavenとbeamの両方でRunnerの指定が必要。
@@ -79,4 +76,8 @@ $ mvn -Pdataflow-runner exec:java -Dexec.mainClass=path.to.class \
     --arg1=hoge --arg2=fuga ..."
 ```
 
-tempLocationは一時ファイル置き場で、cloud storageのバケットを指定する。たぶん必要？
+tempLocationは一時ファイル置き場で、Cloud Storageのバケットを指定します。
+
+> #### メモ
+> Dataflowでの処理は、Compute Engineのデフォルトサービスアカウントが使われます。プロジェクト編集者の権限がついてるので、一つのプロジェクトで閉じているなら権限設定はたいていの場合必要ないです。  
+> クロスプロジェクトで走らせたりする場合には、Compute Engineのデフォルトサービスアカウントに適切な権限を付与する必要があります（実行時のサービスアカウントは変更可です）。
