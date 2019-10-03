@@ -96,15 +96,15 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <span id="cb1-7"><a href="#cb1-7"></a>    }</span>
 <span id="cb1-8"><a href="#cb1-8"></a>}</span></code></pre></div>
 <h2 id="実行時オプションの設定"><span class="head">実行時オプションの設定</span></h2>
-<p><code>pipeline</code>のソースを変更したり、GCPのプロジェクトIDを変更したりするたびに、いちいちbuildし直すのは面倒。なので、<code>pipeline</code>が実行時オプションを受け取れるようにしておくと便利です。</p>
-<p><code>pipeline</code>への実行時オプション渡し方は二通り。</p>
+<p>Pipelineの入力元や、Dataflowを実行するGCPのプロジェクトIDを変更したりするたびに、いちいちBuildし直すのは面倒です。Pipelineの実行時にオプションを受け取れるようにしておくと便利です。</p>
+<p>Pipelineの実行時オプションは、</p>
 <ol type="1">
-<li>前もってプログラム内で定義</li>
-<li>command lineで実行時に指定</li>
+<li>Beam SDKのオプションクラス</li>
+<li>カスタムオプションを作成</li>
 </ol>
-<p>１つめについてですが、Beam SDKには<code>GcpOptions</code>とかいうクラスがあります。プロジェクトIDとかを受け付けますが、一つのGCPプロジェクトでしか使うつもりがないならハードコードで指定しておいた方が楽かもです。</p>
+<p>を経由して指定できます。SDKのオプションで指定できるのはGCPのプロジェクトIDとか、Beamが作成する中間ファイルの保存場所とかです。</p>
 <h3 id="pipelineoptionsインスタンスの作成">PipelineOptionsインスタンスの作成</h3>
-<p>コマンドライン引数（mainの引数のargs）を<code>PipelineOptions</code>インスタンスに渡すには、こんな感じのコードになります。</p>
+<p>コマンドライン引数（main関数の引数）を<code>PipelineOptions</code>インスタンスに渡すには、こんな感じのコードになります。</p>
 <div class="sourceCode" id="cb2"><pre class="line-numbers"><code class="language-java"><span id="cb2-1"><a href="#cb2-1"></a><span class="kw">import</span><span class="im"> org.apache.beam.sdk.options.PipelineOptions;</span></span>
 <span id="cb2-2"><a href="#cb2-2"></a><span class="kw">import</span><span class="im"> org.apache.beam.sdk.options.PipelineOptions.PipelineOptionsFactory;</span></span>
 <span id="cb2-3"><a href="#cb2-3"></a></span>
@@ -117,13 +117,13 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <span id="cb2-10"><a href="#cb2-10"></a>        Pipeline p = Pipeline.<span class="fu">create</span>();</span>
 <span id="cb2-11"><a href="#cb2-11"></a>    }</span>
 <span id="cb2-12"><a href="#cb2-12"></a>}</span></code></pre></div>
-<p><code>create</code>の前にメソッドを少し足してる。<code>withValidation()</code>は、コマンドライン引数のチェックをしてくれる。型とか正規表現でのパターンマッチとか。 ただ、<code>create</code>メソッドで作られる<code>PipelineOptions</code>インスタンスが受け取れるオプションはかなり少ないうえ、あまり有り難みがないです…</p>
+<p><code>create</code>の前にメソッドを少し足してる。<code>withValidation()</code>は、コマンドライン引数のチェックをしてくれる。必須パラメータの指定があるか、とか整数にキャスト可能か、とかです。</p>
 <h3 id="カスタムオプションの設定">カスタムオプションの設定</h3>
 <p>PipelineOptionsを継承したインターフェースを定義します。Dataflowで使うならGcpOptionsの方が便利かもです。</p>
 <p>作り方の違いとしては、<code>PipelineOptions</code>のインスタンスを作るのに<code>create</code>でなく、<code>as</code>を使うことです。<br />
-インターフェースの中では、設定したいオプションごとにgetterとsetterの型宣言をすればよいです。オプションargAについてのメソッド名はそれぞれ、getArgA, setArgA、みたいにします。<br />
-コマンドラインオプションでアクセスするときはargA。</p>
-<p>アノテーションを使って、default値、およびhelpメッセージも定義できるが、各アノテーションのimportが必要。</p>
+やるべきは、設定したいオプションごとにgetterとsetterの型宣言をするのみです。オプションargAについてのメソッド名はそれぞれ、getArgA, setArgA、みたいにします。<br />
+コマンドラインオプションでアクセスするときはargAです。</p>
+<p>アノテーションを使って、default値、およびhelpメッセージも定義できます。</p>
 <div class="sourceCode" id="cb3"><pre class="line-numbers"><code class="language-java"><span id="cb3-1"><a href="#cb3-1"></a><span class="kw">import</span><span class="im"> org.apache.beam.sdk.options.Default;</span></span>
 <span id="cb3-2"><a href="#cb3-2"></a><span class="kw">import</span><span class="im"> org.apache.beam.sdk.options.Description;</span></span>
 <span id="cb3-3"><a href="#cb3-3"></a><span class="kw">import</span><span class="im"> org.apache.beam.sdk.options.PipelineOptions;</span></span>

@@ -18,17 +18,17 @@ public class Main {
 ```
 
 ## <span class="head">実行時オプションの設定</span>
-`pipeline`のソースを変更したり、GCPのプロジェクトIDを変更したりするたびに、いちいちbuildし直すのは面倒。なので、`pipeline`が実行時オプションを受け取れるようにしておくと便利です。
+Pipelineの入力元や、Dataflowを実行するGCPのプロジェクトIDを変更したりするたびに、いちいちBuildし直すのは面倒です。Pipelineの実行時にオプションを受け取れるようにしておくと便利です。
 
-`pipeline`への実行時オプション渡し方は二通り。
+Pipelineの実行時オプションは、
 
-1. 前もってプログラム内で定義
-2. command lineで実行時に指定
+1. Beam SDKのオプションクラス
+2. カスタムオプションを作成
 
-１つめについてですが、Beam SDKには`GcpOptions`とかいうクラスがあります。プロジェクトIDとかを受け付けますが、一つのGCPプロジェクトでしか使うつもりがないならハードコードで指定しておいた方が楽かもです。
+を経由して指定できます。SDKのオプションで指定できるのはGCPのプロジェクトIDとか、Beamが作成する中間ファイルの保存場所とかです。
 
 ### PipelineOptionsインスタンスの作成
-コマンドライン引数（mainの引数のargs）を`PipelineOptions`インスタンスに渡すには、こんな感じのコードになります。
+コマンドライン引数（main関数の引数）を`PipelineOptions`インスタンスに渡すには、こんな感じのコードになります。
 
 ```java
 import org.apache.beam.sdk.options.PipelineOptions;
@@ -45,17 +45,16 @@ public class Main {
 }
 ```
 
-`create`の前にメソッドを少し足してる。`withValidation()`は、コマンドライン引数のチェックをしてくれる。型とか正規表現でのパターンマッチとか。
-ただ、`create`メソッドで作られる`PipelineOptions`インスタンスが受け取れるオプションはかなり少ないうえ、あまり有り難みがないです...
+`create`の前にメソッドを少し足してる。`withValidation()`は、コマンドライン引数のチェックをしてくれる。必須パラメータの指定があるか、とか整数にキャスト可能か、とかです。
 
 ### カスタムオプションの設定
 PipelineOptionsを継承したインターフェースを定義します。Dataflowで使うならGcpOptionsの方が便利かもです。
 
 作り方の違いとしては、`PipelineOptions`のインスタンスを作るのに`create`でなく、`as`を使うことです。  
-インターフェースの中では、設定したいオプションごとにgetterとsetterの型宣言をすればよいです。オプションargAについてのメソッド名はそれぞれ、getArgA, setArgA、みたいにします。  
-コマンドラインオプションでアクセスするときはargA。
+やるべきは、設定したいオプションごとにgetterとsetterの型宣言をするのみです。オプションargAについてのメソッド名はそれぞれ、getArgA, setArgA、みたいにします。  
+コマンドラインオプションでアクセスするときはargAです。
 
-アノテーションを使って、default値、およびhelpメッセージも定義できるが、各アノテーションのimportが必要。
+アノテーションを使って、default値、およびhelpメッセージも定義できます。
 
 ```java
 import org.apache.beam.sdk.options.Default;
