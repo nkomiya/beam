@@ -37,11 +37,11 @@ cd ${rootdir}
 # index
 build .
 
-# sect 0 
+# sect 0
 build sect0
 
-# # sect 1
-# build sect1
+# sect 1
+build sect1
 
 # # sect 2
 # build sect2
