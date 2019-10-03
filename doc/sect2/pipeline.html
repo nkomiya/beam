@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>Beam Programming Guide</title>
+  <style>
+      code{white-space: pre-wrap;}
+      span.smallcaps{font-variant: small-caps;}
+      span.underline{text-decoration: underline;}
+      div.column{display: inline-block; vertical-align: top; width: 50%;}
+  </style>
+  <style>
+code.sourceCode > span { display: inline-block; line-height: 1.25; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode { white-space: pre; position: relative; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+code.sourceCode { white-space: pre-wrap; }
+code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+    color: #aaaaaa;
+  }
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+code span.at { color: #7d9029; } /* Attribute */
+code span.bn { color: #40a070; } /* BaseN */
+code span.bu { } /* BuiltIn */
+code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+code span.ch { color: #4070a0; } /* Char */
+code span.cn { color: #880000; } /* Constant */
+code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+code span.dt { color: #902000; } /* DataType */
+code span.dv { color: #40a070; } /* DecVal */
+code span.er { color: #ff0000; font-weight: bold; } /* Error */
+code span.ex { } /* Extension */
+code span.fl { color: #40a070; } /* Float */
+code span.fu { color: #06287e; } /* Function */
+code span.im { } /* Import */
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+code span.op { color: #666666; } /* Operator */
+code span.ot { color: #007020; } /* Other */
+code span.pp { color: #bc7a00; } /* Preprocessor */
+code span.sc { color: #4070a0; } /* SpecialChar */
+code span.ss { color: #bb6688; } /* SpecialString */
+code span.st { color: #4070a0; } /* String */
+code span.va { color: #19177c; } /* Variable */
+code span.vs { color: #4070a0; } /* VerbatimString */
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+  </style>
+  <link rel="stylesheet" href="../github.css" />
+  <!--[if lt IE 9]>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/html5shiv/3.7.3/html5shiv-printshiv.min.js"></script>
+  <![endif]-->
+</head>
+<body>
+<p><a href="../index.html">topへ</a></p>
+<h1 id="pipelineの作成">Pipelineの作成</h1>
+<p>まず<code>Pipeline</code>オブジェクトを作らなければ何も始まらないので、とりあえず作り方を…。</p>
+<h2 id="オプション無しのpipeline"><span class="head">オプション無しのPipeline</span></h2>
+<p>JavaのBeam SDKで新たにインスタンスを作るときは、***.create()の形が多いかもです。</p>
+<div class="sourceCode" id="cb1"><pre class="line-numbers"><code class="language-java"><span id="cb1-1"><a href="#cb1-1"></a><span class="kw">import</span><span class="im"> org.apache.beam.sdk.Pipeline;</span></span>
+<span id="cb1-2"><a href="#cb1-2"></a><span class="kw">import</span><span class="im"> org.apache.beam.sdk.options.PipelineOptions;</span></span>
+<span id="cb1-3"><a href="#cb1-3"></a></span>
+<span id="cb1-4"><a href="#cb1-4"></a><span class="kw">public</span> <span class="kw">class</span> Main {</span>
+<span id="cb1-5"><a href="#cb1-5"></a>    <span class="kw">public</span> <span class="dt">static</span> <span class="dt">void</span> <span class="fu">main</span>(<span class="bu">String</span>[] args){</span>
+<span id="cb1-6"><a href="#cb1-6"></a>    Pipeline p = Pipeline.<span class="fu">create</span>();</span>
+<span id="cb1-7"><a href="#cb1-7"></a>    }</span>
+<span id="cb1-8"><a href="#cb1-8"></a>}</span></code></pre></div>
+<h2 id="実行時オプションの設定"><span class="head">実行時オプションの設定</span></h2>
+<p><code>pipeline</code>のソースを変更したり、GCPのプロジェクトIDを変更したりするたびに、いちいちbuildし直すのは面倒。なので、<code>pipeline</code>が実行時オプションを受け取れるようにしておくと便利です。</p>
+<p><code>pipeline</code>への実行時オプション渡し方は二通り。</p>
+<ol type="1">
+<li>前もってプログラム内で定義</li>
+<li>command lineで実行時に指定</li>
+</ol>
+<p>１つめについてですが、Beam SDKには<code>GcpOptions</code>とかいうクラスがあります。プロジェクトIDとかを受け付けますが、一つのGCPプロジェクトでしか使うつもりがないならハードコードで指定しておいた方が楽かもです。</p>
+<h3 id="pipelineoptionsインスタンスの作成">PipelineOptionsインスタンスの作成</h3>
+<p>コマンドライン引数（mainの引数のargs）を<code>PipelineOptions</code>インスタンスに渡すには、こんな感じのコードになります。</p>
+<div class="sourceCode" id="cb2"><pre class="line-numbers"><code class="language-java"><span id="cb2-1"><a href="#cb2-1"></a><span class="kw">import</span><span class="im"> org.apache.beam.sdk.options.PipelineOptions;</span></span>
+<span id="cb2-2"><a href="#cb2-2"></a><span class="kw">import</span><span class="im"> org.apache.beam.sdk.options.PipelineOptions.PipelineOptionsFactory;</span></span>
+<span id="cb2-3"><a href="#cb2-3"></a></span>
+<span id="cb2-4"><a href="#cb2-4"></a><span class="kw">public</span> <span class="kw">class</span> Main {</span>
+<span id="cb2-5"><a href="#cb2-5"></a>    <span class="kw">public</span> <span class="dt">static</span> <span class="dt">void</span> <span class="fu">main</span>(<span class="bu">String</span>[] args ) {</span>
+<span id="cb2-6"><a href="#cb2-6"></a>        PipelineOptions opt = PipelineOptionsFactory</span>
+<span id="cb2-7"><a href="#cb2-7"></a>                .<span class="fu">fromArgs</span>(args)</span>
+<span id="cb2-8"><a href="#cb2-8"></a>                .<span class="fu">withValidation</span>()</span>
+<span id="cb2-9"><a href="#cb2-9"></a>                .<span class="fu">create</span>();</span>
+<span id="cb2-10"><a href="#cb2-10"></a>        Pipeline p = Pipeline.<span class="fu">create</span>();</span>
+<span id="cb2-11"><a href="#cb2-11"></a>    }</span>
+<span id="cb2-12"><a href="#cb2-12"></a>}</span></code></pre></div>
+<p><code>create</code>の前にメソッドを少し足してる。<code>withValidation()</code>は、コマンドライン引数のチェックをしてくれる。型とか正規表現でのパターンマッチとか。 ただ、<code>create</code>メソッドで作られる<code>PipelineOptions</code>インスタンスが受け取れるオプションはかなり少ないうえ、あまり有り難みがないです…</p>
+<h3 id="カスタムオプションの設定">カスタムオプションの設定</h3>
+<p>PipelineOptionsを継承したインターフェースを定義します。Dataflowで使うならGcpOptionsの方が便利かもです。</p>
+<p>作り方の違いとしては、<code>PipelineOptions</code>のインスタンスを作るのに<code>create</code>でなく、<code>as</code>を使うことです。<br />
+インターフェースの中では、設定したいオプションごとにgetterとsetterの型宣言をすればよいです。オプションargAについてのメソッド名はそれぞれ、getArgA, setArgA、みたいにします。<br />
+コマンドラインオプションでアクセスするときはargA。</p>
+<p>アノテーションを使って、default値、およびhelpメッセージも定義できるが、各アノテーションのimportが必要。</p>
+<div class="sourceCode" id="cb3"><pre class="line-numbers"><code class="language-java"><span id="cb3-1"><a href="#cb3-1"></a><span class="kw">import</span><span class="im"> org.apache.beam.sdk.options.Default;</span></span>
+<span id="cb3-2"><a href="#cb3-2"></a><span class="kw">import</span><span class="im"> org.apache.beam.sdk.options.Description;</span></span>
+<span id="cb3-3"><a href="#cb3-3"></a><span class="kw">import</span><span class="im"> org.apache.beam.sdk.options.PipelineOptions;</span></span>
+<span id="cb3-4"><a href="#cb3-4"></a><span class="kw">import</span><span class="im"> org.apache.beam.sdk.options.PipelineOptionsFactory;</span></span>
+<span id="cb3-5"><a href="#cb3-5"></a></span>
+<span id="cb3-6"><a href="#cb3-6"></a><span class="kw">public</span> <span class="kw">class</span> Main {</span>
+<span id="cb3-7"><a href="#cb3-7"></a>    <span class="kw">public</span> <span class="kw">interface</span> MyOptions <span class="kw">extends</span> PipelineOptions {</span>
+<span id="cb3-8"><a href="#cb3-8"></a>        <span class="at">@Description</span>(<span class="st">&quot;Help message&quot;</span>)</span>
+<span id="cb3-9"><a href="#cb3-9"></a>        <span class="at">@Default</span>.<span class="fu">String</span>(<span class="st">&quot;Some default value&quot;</span>)</span>
+<span id="cb3-10"><a href="#cb3-10"></a>        <span class="bu">String</span> <span class="fu">getArgA</span>();        <span class="co">// getter for option `argA`</span></span>
+<span id="cb3-11"><a href="#cb3-11"></a>        <span class="dt">void</span> <span class="fu">setArgA</span>(<span class="bu">String</span> s);  <span class="co">// setter for option `argA`</span></span>
+<span id="cb3-12"><a href="#cb3-12"></a>    }</span>
+<span id="cb3-13"><a href="#cb3-13"></a>    </span>
+<span id="cb3-14"><a href="#cb3-14"></a>    <span class="kw">public</span> <span class="dt">static</span> <span class="dt">void</span> <span class="fu">main</span>(<span class="bu">String</span>[] args){</span>
+<span id="cb3-15"><a href="#cb3-15"></a>        <span class="co">// as()にはClass objectを渡す</span></span>
+<span id="cb3-16"><a href="#cb3-16"></a>        MyOptions opt = PipelineOptionsFactory</span>
+<span id="cb3-17"><a href="#cb3-17"></a>            .<span class="fu">fromArgs</span>(args)</span>
+<span id="cb3-18"><a href="#cb3-18"></a>            .<span class="fu">withValidation</span>()</span>
+<span id="cb3-19"><a href="#cb3-19"></a>            .<span class="fu">as</span>(MyOptions.<span class="fu">class</span>);</span>
+<span id="cb3-20"><a href="#cb3-20"></a>        <span class="co">// 実行時にargAを指定すればprintできます</span></span>
+<span id="cb3-21"><a href="#cb3-21"></a>        <span class="bu">System</span>.<span class="fu">out</span>.<span class="fu">println</span>( opt.<span class="fu">getArgA</span>() );</span>
+<span id="cb3-22"><a href="#cb3-22"></a>    }</span>
+<span id="cb3-23"><a href="#cb3-23"></a>}</span></code></pre></div>
+<script src="../code.js"></script></body>
+</html>

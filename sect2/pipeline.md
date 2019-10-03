@@ -1,23 +1,10 @@
-<style type="text/css">
-  .head { 
-    border-left:5px solid #00f;
-    padding:3px 0 3px 10px;
-    font-weight: bold;
-  }
-  .lhead { 
-    border-left:5px solid #00f;
-    padding:3px 0 3px 10px;
-    font-size:14pt;
-    font-weight: bold;
-  }
-</style>
-[topへ](../index.html)
+[topへ](../index.md)
 
 # Pipelineの作成
-まず`Pipeline`objectを作らなければ何も始まらないので、とりあえず作り方を...。
+まず`Pipeline`オブジェクトを作らなければ何も始まらないので、とりあえず作り方を...。
 
 ## <span class="head">オプション無しのPipeline</span>
-Javaは型付けが静的だからBeamを使う上ではわりと安心できるが、各Objectの定義のためにimportが必要になるから、import文がごつくなるかもです。
+JavaのBeam SDKで新たにインスタンスを作るときは、\*\*\*.create()の形が多いかもです。
 
 ```java
 import org.apache.beam.sdk.Pipeline;
@@ -25,12 +12,10 @@ import org.apache.beam.sdk.options.PipelineOptions;
 
 public class Main {
     public static void main(String[] args){
-	Pipeline p = Pipeline.create( opt );
+	Pipeline p = Pipeline.create();
     }
 }
 ```
-
-JavaのBeam SDKで新たにインスタンスを作るときは、\*\*\*.create()の形が多いかもです。
 
 ## <span class="head">実行時オプションの設定</span>
 `pipeline`のソースを変更したり、GCPのプロジェクトIDを変更したりするたびに、いちいちbuildし直すのは面倒。なので、`pipeline`が実行時オプションを受け取れるようにしておくと便利です。
@@ -55,6 +40,7 @@ public class Main {
                 .fromArgs(args)
                 .withValidation()
                 .create();
+        Pipeline p = Pipeline.create();
     }
 }
 ```
@@ -87,7 +73,6 @@ public class Main {
     
     public static void main(String[] args){
         // as()にはClass objectを渡す
-        // .classはJava本来の機能です
         MyOptions opt = PipelineOptionsFactory
             .fromArgs(args)
             .withValidation()
@@ -97,5 +82,3 @@ public class Main {
     }
 }
 ```
-
-補足として、上のcodeでは`pipeline`を実行しないし、作ってすらいないです。

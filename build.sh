@@ -16,9 +16,14 @@ build() {
     cd $1
     #
     for f in $(ls -1 ${mdPath} | grep "\.md$" | sed -e "s/\.md$//"); do
-	sed "s/index\.md/index.html/" ${mdPath}/${f}.md |
+	sed -e "s/index\.md/index.html/" ${mdPath}/${f}.md  | \
 	    pandoc -s -t html5 -c ${cssRelat} -o ${f}.html \
 		   --metadata pagetitle="Beam Programming Guide"
+	sed -i "" \
+	    -e "s/pre class=\"sourceCode java\"/pre class=\"line-numbers\"/g" \
+	    -e "s/code class=\"sourceCode java\"/code class=\"language-java\"/g" \
+	    -e "s/<\/body>/<script src=\"..\/code.js\"><\/script><\/body>/" \
+	    ${f}.html
     done
     #
     # images
@@ -43,8 +48,8 @@ build sect0
 # sect 1
 build sect1
 
-# # sect 2
-# build sect2
+# sect 2
+build sect2
 
 # # sect 3
 # build sect3
