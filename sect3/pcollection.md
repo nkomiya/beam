@@ -1,132 +1,126 @@
-<style type="text/css">
-  .head { 
-    border-left:5px solid #00f;
-    padding:3px 0 3px 10px;
-    font-weight: bold;
-  }
-  .lhead { 
-    border-left:5px solid #00f;
-    padding:3px 0 3px 10px;
-    font-size:14pt;
-    font-weight: bold;
-  }
-</style>
-[topへ](../index.html)
+[topへ](../index.md)
 
 # PCollectionの作成
 ## PCollectionとは？？
-すでに触れてる通り、`pipeline`に流すdatasetのことを`PCollection`といいます。`PCollection`は決まったデータ構造を持つ配列みたいなものです。  
-たとえば社員の給料を扱いたいとき、`PCollection`は社員の名前と給料を要素とした、データの寄せ集めになります。
+すでに触れてる通り、Pipelineに流すデータの塊が`PCollection`です。`PCollection`は決まったデータ構造を持ちます。  
+たとえば社員の給料を扱うときだと、`PCollection`は各社員の名前と給料を要素としてもち、`PCollection`の中には全社員分のデータが入ることになります。
 
 ## <span class="head">外部リソースの読み込み</span>
 しばらく使うつもりがないので、詳しくは5章で説明します。
 
-`PCollection`を作るにも、読み込み用の`PTransform`を`pipeline`に適用することになる。なので一番初めは、`pipeline` objectに対して`PTransform`を適用する、って意味でやや特殊。code上では特殊感はありませんが...
+Pipelineのはじめに`PCollection`を作るのも`PTransform`です。Beam SDKではIOコネクタが用意されていますが、まずファイルを読み込む方法について触れます。
+
+次のコード例では、ローカルファイルを読み込みます。ファイルの一行が一つの文字列として扱われ、改行は取り除かれます。
 
 ```java
 import org.apache.beam.sdk.Pipeline;
-import org.apache.beam.sdk.options.PipelineOptions;
 import org.apache.beam.sdk.values.PCollection;
 import org.apache.beam.sdk.io.TextIO;
 
-public class Main {
-  public static void main(String[] args){
-    Pipeline pipeline = Pipeline.create( opt );
+public class ReadLocalFile {
+  public static void main(String[] args) {
+    Pipeline pipeline = Pipeline.create();
     //
-    // file読み込み
+    // ローカルファイルの読み込み
     PCollection<String> col = pipeline
-      .apply("ReadFromFile",TextIO.read().from("input.txt"));
-    }
+        .apply("ReadLocalFile", TextIO.read().from("input.txt"));
+  }
 }
 ```
 
-同じメソッドでGCS上のファイルも読み込める。`read`の引数をGCSのパス、たとえば"gs://komiya-no-test/input.txt"みたいのに変更するだけ。
-`apply`の第一引数の"ReadFromLoacalFile"は処理につけるラベル。Dataflowで見れるgraphとかにラベルがつけられる。省略可。
+同じメソッドでGCS上のファイルも読み込めます。コード上では`from`の引数をGCSのパス、たとえば "gs://someBucket/input.txt" みたいのに変更するのみです。`apply`の第一引数は`PTransform`につけるラベルです。DataflowのWeb UIで見れるgraphにラベルが表示されます (重複があるとビルド時に警告がでます)。ラベルは省略可能ですが、省略すると警告がでます。
 
-GCSの場合、ローカルで実行すると認証エラー。回避するには、
+GCSから読み込む場合、当然ながら認証情報を教えてあげる必要があります。ただ、ローカルでの実行とDataflowでの実行では、やや振る舞いが異なります。Dataflowでの実行では、(1) Dataflowジョブの作成、(2) 処理におけるリソースへのアクセス、の２箇所で認証が必要になるためです。  
 
-1. プロジェクトのオーナー権限を持ったサービスアカウントの作成
-2. キーファイルの作成
-3. キーファイルのパスを環境変数`GOOGLE_APPLICATION_CREDENTIAL`にexport
+とりあえずはローカルPCで実行する際に認証を通す方法を二つ紹介します。
+
+**デフォルトの認証機構の利用**  
+ターミナルで次のコマンドを打つとブラウザが起動し、アカウントの選択画面が開きます。ログインを終えると、ローカルPCにCreadential fileが作成されます。この他に何も認証設定をしていない場合に、このCredentialが使われます。
 
 ```bash
-$ export GOOGLE_APPLICATION_CREDENTIAL=/path/to/credential/file
+$ gcloud auth application-default login
 ```
 
-IntelliJで環境変数の設定も可能です。気が向けば書きます。
+コンテナ環境で実行していて直接ブラウザを起動できない場合は、--no-launch-browserのオプションをつけてください。
+
+**環境変数の利用**  
+こちらはサービスアカウントを利用する方法です。鍵ファイルを落とし、次の環境変数で鍵ファイルへのパスを指定します。作成したサービスアカウントには、必要なリソースへのアクセス権限をつけてください。
+
+```bash
+$ export GOOGLE_APPLICATION_CREDENTIALS=/path/to/credential/file
+```
+
+IntelliJで環境変数の設定もできます。気が向けば書きます。
 
 ## <span class="head">in-memoryデータの読み込み</span>
-dataをソースにベタ打ちしてもok。リストを`Create.of`に渡してあげればよい。リストの各要素が、テキストファイルの一行として扱われます。
+コード内に書いたデータをインプットに`PCollection`を作成することもできます。読み込ませるデータは、単一でも複数でもOKです。  
+複数のデータをインプットにする場合は、配列ではなくリストにする必要があります。リストの各要素が`PCollection`の一つの要素になります。
 
 ```java
 import java.util.*;
-// pipeline
+// Apache Beam
 import org.apache.beam.sdk.Pipeline;
-import org.apache.beam.sdk.options.PipelineOptions;
-import org.apache.beam.sdk.options.PipelineOptionsFactory;
-// for passing the in-memory data to pipeline
 import org.apache.beam.sdk.transforms.Create;
 import org.apache.beam.sdk.coders.StringUtf8Coder;
+import org.apache.beam.sdk.coders.BigEndianIntegerCoder;
 
-public class Main {
-    public static void main( String[] args ){
-        // input source
-        final List<String> input = Arrays.asList(
-            "To be, or not to be: that is the question: ",
-            "Whether 'tis nobler in the mind to suffer ",
-            "The slings and arrows of outrageous fortune, ",
-            "Or to take arms against a sea of troubles, " );
-        // create pipeline
-        Pipeline pipeline = Pipeline.create();
-        // read
-        pipeline.apply("ReadFromInMemoryData",Create.of(input));
-    }
+public class ReadInMemoryData {
+  public void main(String[] args) {
+    // create pipeline
+    Pipeline pipeline = Pipeline.create();
+
+    // .............................. 単一のデータを読み込む
+    pipeline.apply("ReadSingleValue",
+        Create.of(1).withCoder(BigEndianIntegerCoder.of()));
+
+    // .............................. 複数のデータを読み込む
+    // 読み込むデータ。複数の場合、リストにする必要がある
+    final List<String> input = Arrays.asList(
+        "To be, or not to be: that is the question: ",
+        "Whether 'tis nobler in the mind to suffer ",
+        "The slings and arrows of outrageous fortune, ",
+        "Or to take arms against a sea of troubles, ");
+
+    pipeline.apply("ReadMultipleValues",
+        Create.of(input).withCoder(StringUtf8Coder.of()));
+  }
 }
 ```
 
+`withCoder`については、7章で詳しく説明します。
+
 ## PCollectionについて少し詳しく
-二つ目は言ってることが良くわからん...
+大雑把には、`PCollection`は次の二つの性質を持ちます。
 
-- `PCollection`は一つの`Pipeline`に帰属。複数の`Pipeline`での共有は不可。
-- `PCollection`の関数は、ある意味クラスっぽく振る舞う。
-
-まあ、以下の`PCollection`の性質は押さえておけば良さげ。
++ `PCollection`は一つの`Pipeline`に帰属  
+複数の`Pipeline`を立てることもできるのですが、`PCollection`を`Pipeline`間で共有することはできないです。
++ `PCollection`は、Collectionsクラスっぽく振る舞う
 
 ### <span class="head">要素の型</span>
-`Pcollection`の型はなんでもよいですが、統一しなきゃだめです。  
-Beamでは分散処理を行う上で、各worker（処理を行うもの）にdataを渡すために、dataをbyte列に変換する必要があります。
-幸いBeam SDKでは、よく使われる型についてはencodingを自動でやってくれますが、自分でencodingの方法を指定することもできます。
+`Pcollection`の型は、自作のクラスも含めて何でもOKです。ただ、`PCollection`の要素は全て同じ型に制限されます。
+Beamは平行分散で処理を行いますが、各worker（処理を行うもの）でデータをやりとりする際に、データをバイト列に変換する必要があります（encode / decode)。  
+IntegerやStringなど、よく使われる型はこの処理は自動でやってくれます。
 
 ### <span class="head">イミュータブル</span>
-`PCollection`は一旦作ったら、追加とか、削除とか、変更とか、できないです。
-`PTransform`では、inputの`PCollection`は参照するけど変更はされない。
+`PCollection`インスタンスは一旦作ったら変更不可能です。`PTransform`では、インプットの`PCollection`の要素を参照しますが、元の`PCollection`は変更されないままです。
 
 ### <span class="head">ランダムアクセス</span>
-`PCollection`の各要素への[ランダムアクセス](https://kb-jp.sandisk.com/app/answers/detail/a_id/8980/~/%E3%82%B7%E3%83%BC%E3%82%B1%E3%83%B3%E3%82%B7%E3%83%A3%E3%83%AB%E3%82%A2%E3%82%AF%E3%82%BB%E3%82%B9%E3%81%A8%E3%83%A9%E3%83%B3%E3%83%80%E3%83%A0%E3%82%A2%E3%82%AF%E3%82%BB%E3%82%B9%E3%81%AE%E6%93%8D%E4%BD%9C%E3%81%AE%E9%81%95%E3%81%84)はサポートしてない。
-各要素へのアクセスは、`PTransform`を経由で行う。
+`PCollection`の各要素への[ランダムアクセス](https://kb-jp.sandisk.com/app/answers/detail/a_id/8980/~/%E3%82%B7%E3%83%BC%E3%82%B1%E3%83%B3%E3%82%B7%E3%83%A3%E3%83%AB%E3%82%A2%E3%82%AF%E3%82%BB%E3%82%B9%E3%81%A8%E3%83%A9%E3%83%B3%E3%83%80%E3%83%A0%E3%82%A2%E3%82%AF%E3%82%BB%E3%82%B9%E3%81%AE%E6%93%8D%E4%BD%9C%E3%81%AE%E9%81%95%E3%81%84)はサポートしていません。つまり、`PCollection`に対し、`get("keyname")`のようにして要素を引っ張ることはできないです。  
 
-### <span class="head">datasetのサイズ</span>
-`PCollection`はイミュータブルな（大きい）data。分散処理ができるため？、こいつにサイズ上限はないと謳っている。
+### <span class="head">サイズと有限性</span>
+`PCollection`はイミュータブルなデータの集まりですが、格納できるデータ数に上限はないそうです（ローカルで走らせるとメモリ不足になることもあります）。
 
-`PCollection`として扱うdataは、あらかじめサイズが分かっていても（bounded）、サイズが分からないくてもよい（unbounded）。
+すでに触れている通り、`PCollection`として扱えるデータはBoundedでもUnboundedでも大丈夫です。
 
-<dl>
-<dt>Bounded</dt>
-<dd>
-<a href="https://www.idcf.jp/words/batch-processing.html">バッチ処理</a>。
-<br>
-データサイズが分かっているから、全部読み込んで変換処理すればよい。
-</dd>
-<dt>unbounded</dt>
-<dd>
-<a href="https://www.imkk.jp/blog/what-is-stream-data-processing.html">ストリーミング処理</a>向け。Pub/Subとか、Apache Kafkaがあたる。
-<br>
-データが流れ込み続けるので、`pipeline`は起動しっぱなしになる。
-</dd>
-</dl>
+* **Bounded**  
+ファイルやDBからの読み込みのような、入力データに終わりがあるもの。日次のバッチ処理とかです。
+* **Unbounded**  
+ストリーミング処理のような、入力データに終わりがあるもの (e.g. Pub/Sub, Apache Kafka)。  
+データが流れ込み続けるのでPipelineは起動し続けることになります。Dataflowなら、VMが立ち上がりっぱなしです。
 
 ### <span class="head">要素のタイムスタンプ</span>
-Beamでは`PCollection`の要素にtimestampを割り当てることができる。
-ファイルのtimestampとか、Twitterみたいな`unbounded`なソースだったら、tweetしたときの時間、にできる...？要確認です...。
+Beamでは入力ソースがBoundedでもUnboundedでも、同じロジックで処理を行うことができます。ですが、Unboundedなソースでは全てのデータが集まることはないので、データ集計のような処理は難しいように思えるかもしれません。
 
-また、inputのソースにtimestampがついてなければ、`PTransform`でくっつけることもできる。嬉しい？ことに、inputのdatasetには変更を加えず、timestampだけをつけたPCollectionを返せす`PTransform`もある(後述)。
+データ集計のような処理において、Beamでは`Window`という概念が重要になります。これは、`PCollection`の**各要素**に割り当てられたtimestampに基づき、要素をグループ化したものです。`Window`ごとに処理を行うことで、Unboundedなソースでも有限サイズのデータとして扱うことができます。
+
+Beamが自動で割り当てるtimestampは入力ソースに依存します。ファイル読み込みだったら`Long.MIN_VALUE`（Boundedなソースでは、通常`Window`は必要にならないためです）、Pub/Subみたいのであればpublishしたときの時間です。ユーザ定義のtimestampをくっつける`PTransform`も用意されているため、CSVファイルの一列目をtimestampにする、みたいなことも可能です。

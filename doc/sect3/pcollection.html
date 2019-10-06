@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>Beam Programming Guide</title>
+  <style>
+      code{white-space: pre-wrap;}
+      span.smallcaps{font-variant: small-caps;}
+      span.underline{text-decoration: underline;}
+      div.column{display: inline-block; vertical-align: top; width: 50%;}
+  </style>
+  <style>
+code.sourceCode > span { display: inline-block; line-height: 1.25; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode { white-space: pre; position: relative; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+code.sourceCode { white-space: pre-wrap; }
+code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+    color: #aaaaaa;
+  }
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+code span.at { color: #7d9029; } /* Attribute */
+code span.bn { color: #40a070; } /* BaseN */
+code span.bu { } /* BuiltIn */
+code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+code span.ch { color: #4070a0; } /* Char */
+code span.cn { color: #880000; } /* Constant */
+code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+code span.dt { color: #902000; } /* DataType */
+code span.dv { color: #40a070; } /* DecVal */
+code span.er { color: #ff0000; font-weight: bold; } /* Error */
+code span.ex { } /* Extension */
+code span.fl { color: #40a070; } /* Float */
+code span.fu { color: #06287e; } /* Function */
+code span.im { } /* Import */
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+code span.op { color: #666666; } /* Operator */
+code span.ot { color: #007020; } /* Other */
+code span.pp { color: #bc7a00; } /* Preprocessor */
+code span.sc { color: #4070a0; } /* SpecialChar */
+code span.ss { color: #bb6688; } /* SpecialString */
+code span.st { color: #4070a0; } /* String */
+code span.va { color: #19177c; } /* Variable */
+code span.vs { color: #4070a0; } /* VerbatimString */
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+  </style>
+  <link rel="stylesheet" href="../github.css" />
+  <!--[if lt IE 9]>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/html5shiv/3.7.3/html5shiv-printshiv.min.js"></script>
+  <![endif]-->
+</head>
+<body>
+<p><a href="../index.html">topへ</a></p>
+<h1 id="pcollectionの作成">PCollectionの作成</h1>
+<h2 id="pcollectionとは">PCollectionとは？？</h2>
+<p>すでに触れてる通り、Pipelineに流すデータの塊が<code>PCollection</code>です。<code>PCollection</code>は決まったデータ構造を持ちます。<br />
+たとえば社員の給料を扱うときだと、<code>PCollection</code>は各社員の名前と給料を要素としてもち、<code>PCollection</code>の中には全社員分のデータが入ることになります。</p>
+<h2 id="外部リソースの読み込み"><span class="head">外部リソースの読み込み</span></h2>
+<p>しばらく使うつもりがないので、詳しくは5章で説明します。</p>
+<p>Pipelineのはじめに<code>PCollection</code>を作るのも<code>PTransform</code>です。Beam SDKではIOコネクタが用意されていますが、まずファイルを読み込む方法について触れます。</p>
+<p>次のコード例では、ローカルファイルを読み込みます。ファイルの一行が一つの文字列として扱われ、改行は取り除かれます。</p>
+<div class="sourceCode" id="cb1"><pre class="line-numbers"><code class="language-java"><span id="cb1-1"><a href="#cb1-1"></a><span class="kw">import</span><span class="im"> org.apache.beam.sdk.Pipeline;</span></span>
+<span id="cb1-2"><a href="#cb1-2"></a><span class="kw">import</span><span class="im"> org.apache.beam.sdk.values.PCollection;</span></span>
+<span id="cb1-3"><a href="#cb1-3"></a><span class="kw">import</span><span class="im"> org.apache.beam.sdk.io.TextIO;</span></span>
+<span id="cb1-4"><a href="#cb1-4"></a></span>
+<span id="cb1-5"><a href="#cb1-5"></a><span class="kw">public</span> <span class="kw">class</span> ReadLocalFile {</span>
+<span id="cb1-6"><a href="#cb1-6"></a>  <span class="kw">public</span> <span class="dt">static</span> <span class="dt">void</span> <span class="fu">main</span>(<span class="bu">String</span>[] args) {</span>
+<span id="cb1-7"><a href="#cb1-7"></a>    Pipeline pipeline = Pipeline.<span class="fu">create</span>();</span>
+<span id="cb1-8"><a href="#cb1-8"></a>    <span class="co">//</span></span>
+<span id="cb1-9"><a href="#cb1-9"></a>    <span class="co">// ローカルファイルの読み込み</span></span>
+<span id="cb1-10"><a href="#cb1-10"></a>    PCollection&lt;<span class="bu">String</span>&gt; col = pipeline</span>
+<span id="cb1-11"><a href="#cb1-11"></a>        .<span class="fu">apply</span>(<span class="st">&quot;ReadLocalFile&quot;</span>, TextIO.<span class="fu">read</span>().<span class="fu">from</span>(<span class="st">&quot;input.txt&quot;</span>));</span>
+<span id="cb1-12"><a href="#cb1-12"></a>  }</span>
+<span id="cb1-13"><a href="#cb1-13"></a>}</span></code></pre></div>
+<p>同じメソッドでGCS上のファイルも読み込めます。コード上では<code>from</code>の引数をGCSのパス、たとえば “gs://someBucket/input.txt” みたいのに変更するのみです。<code>apply</code>の第一引数は<code>PTransform</code>につけるラベルです。DataflowのWeb UIで見れるgraphにラベルが表示されます (重複があるとビルド時に警告がでます)。ラベルは省略可能ですが、省略すると警告がでます。</p>
+<p>GCSから読み込む場合、当然ながら認証情報を教えてあげる必要があります。ただ、ローカルでの実行とDataflowでの実行では、やや振る舞いが異なります。Dataflowでの実行では、(1) Dataflowジョブの作成、(2) 処理におけるリソースへのアクセス、の２箇所で認証が必要になるためです。</p>
+<p>とりあえずはローカルPCで実行する際に認証を通す方法を二つ紹介します。</p>
+<p><strong>デフォルトの認証機構の利用</strong><br />
+ターミナルで次のコマンドを打つとブラウザが起動し、アカウントの選択画面が開きます。ログインを終えると、ローカルPCにCreadential fileが作成されます。この他に何も認証設定をしていない場合に、このCredentialが使われます。</p>
+<div class="sourceCode" id="cb2"><pre class="line-numbers"><code class="language-bash"><span id="cb2-1"><a href="#cb2-1"></a>$ <span class="ex">gcloud</span> auth application-default login</span></code></pre></div>
+<p>コンテナ環境で実行していて直接ブラウザを起動できない場合は、–no-launch-browserのオプションをつけてください。</p>
+<p><strong>環境変数の利用</strong><br />
+こちらはサービスアカウントを利用する方法です。鍵ファイルを落とし、次の環境変数で鍵ファイルへのパスを指定します。作成したサービスアカウントには、必要なリソースへのアクセス権限をつけてください。</p>
+<div class="sourceCode" id="cb3"><pre class="line-numbers"><code class="language-bash"><span id="cb3-1"><a href="#cb3-1"></a>$ <span class="bu">export</span> <span class="va">GOOGLE_APPLICATION_CREDENTIALS=</span>/path/to/credential/file</span></code></pre></div>
+<p>IntelliJで環境変数の設定もできます。気が向けば書きます。</p>
+<h2 id="in-memoryデータの読み込み"><span class="head">in-memoryデータの読み込み</span></h2>
+<p>コード内に書いたデータをインプットに<code>PCollection</code>を作成することもできます。読み込ませるデータは、単一でも複数でもOKです。<br />
+複数のデータをインプットにする場合は、配列ではなくリストにする必要があります。リストの各要素が<code>PCollection</code>の一つの要素になります。</p>
+<div class="sourceCode" id="cb4"><pre class="line-numbers"><code class="language-java"><span id="cb4-1"><a href="#cb4-1"></a><span class="kw">import</span><span class="im"> java.util.*;</span></span>
+<span id="cb4-2"><a href="#cb4-2"></a><span class="co">// Apache Beam</span></span>
+<span id="cb4-3"><a href="#cb4-3"></a><span class="kw">import</span><span class="im"> org.apache.beam.sdk.Pipeline;</span></span>
+<span id="cb4-4"><a href="#cb4-4"></a><span class="kw">import</span><span class="im"> org.apache.beam.sdk.transforms.Create;</span></span>
+<span id="cb4-5"><a href="#cb4-5"></a><span class="kw">import</span><span class="im"> org.apache.beam.sdk.coders.StringUtf8Coder;</span></span>
+<span id="cb4-6"><a href="#cb4-6"></a><span class="kw">import</span><span class="im"> org.apache.beam.sdk.coders.BigEndianIntegerCoder;</span></span>
+<span id="cb4-7"><a href="#cb4-7"></a></span>
+<span id="cb4-8"><a href="#cb4-8"></a><span class="kw">public</span> <span class="kw">class</span> ReadInMemoryData {</span>
+<span id="cb4-9"><a href="#cb4-9"></a>  <span class="kw">public</span> <span class="dt">void</span> <span class="fu">main</span>(<span class="bu">String</span>[] args) {</span>
+<span id="cb4-10"><a href="#cb4-10"></a>    <span class="co">// create pipeline</span></span>
+<span id="cb4-11"><a href="#cb4-11"></a>    Pipeline pipeline = Pipeline.<span class="fu">create</span>();</span>
+<span id="cb4-12"><a href="#cb4-12"></a></span>
+<span id="cb4-13"><a href="#cb4-13"></a>    <span class="co">// .............................. 単一のデータを読み込む</span></span>
+<span id="cb4-14"><a href="#cb4-14"></a>    pipeline.<span class="fu">apply</span>(<span class="st">&quot;ReadSingleValue&quot;</span>,</span>
+<span id="cb4-15"><a href="#cb4-15"></a>        Create.<span class="fu">of</span>(<span class="dv">1</span>).<span class="fu">withCoder</span>(BigEndianIntegerCoder.<span class="fu">of</span>()));</span>
+<span id="cb4-16"><a href="#cb4-16"></a></span>
+<span id="cb4-17"><a href="#cb4-17"></a>    <span class="co">// .............................. 複数のデータを読み込む</span></span>
+<span id="cb4-18"><a href="#cb4-18"></a>    <span class="co">// 読み込むデータ。複数の場合、リストにする必要がある</span></span>
+<span id="cb4-19"><a href="#cb4-19"></a>    <span class="dt">final</span> <span class="bu">List</span>&lt;<span class="bu">String</span>&gt; input = <span class="bu">Arrays</span>.<span class="fu">asList</span>(</span>
+<span id="cb4-20"><a href="#cb4-20"></a>        <span class="st">&quot;To be, or not to be: that is the question: &quot;</span>,</span>
+<span id="cb4-21"><a href="#cb4-21"></a>        <span class="st">&quot;Whether &#39;tis nobler in the mind to suffer &quot;</span>,</span>
+<span id="cb4-22"><a href="#cb4-22"></a>        <span class="st">&quot;The slings and arrows of outrageous fortune, &quot;</span>,</span>
+<span id="cb4-23"><a href="#cb4-23"></a>        <span class="st">&quot;Or to take arms against a sea of troubles, &quot;</span>);</span>
+<span id="cb4-24"><a href="#cb4-24"></a></span>
+<span id="cb4-25"><a href="#cb4-25"></a>    pipeline.<span class="fu">apply</span>(<span class="st">&quot;ReadMultipleValues&quot;</span>,</span>
+<span id="cb4-26"><a href="#cb4-26"></a>        Create.<span class="fu">of</span>(input).<span class="fu">withCoder</span>(StringUtf8Coder.<span class="fu">of</span>()));</span>
+<span id="cb4-27"><a href="#cb4-27"></a>  }</span>
+<span id="cb4-28"><a href="#cb4-28"></a>}</span></code></pre></div>
+<p><code>withCoder</code>については、7章で詳しく説明します。</p>
+<h2 id="pcollectionについて少し詳しく">PCollectionについて少し詳しく</h2>
+<p>大雑把には、<code>PCollection</code>は次の二つの性質を持ちます。</p>
+<ul>
+<li><code>PCollection</code>は一つの<code>Pipeline</code>に帰属<br />
+複数の<code>Pipeline</code>を立てることもできるのですが、<code>PCollection</code>を<code>Pipeline</code>間で共有することはできないです。</li>
+<li><code>PCollection</code>は、Collectionsクラスっぽく振る舞う</li>
+</ul>
+<h3 id="要素の型"><span class="head">要素の型</span></h3>
+<p><code>Pcollection</code>の型は、自作のクラスも含めて何でもOKです。ただ、<code>PCollection</code>の要素は全て同じ型に制限されます。 Beamは平行分散で処理を行いますが、各worker（処理を行うもの）でデータをやりとりする際に、データをバイト列に変換する必要があります（encode / decode)。<br />
+IntegerやStringなど、よく使われる型はこの処理は自動でやってくれます。</p>
+<h3 id="イミュータブル"><span class="head">イミュータブル</span></h3>
+<p><code>PCollection</code>インスタンスは一旦作ったら変更不可能です。<code>PTransform</code>では、インプットの<code>PCollection</code>の要素を参照しますが、元の<code>PCollection</code>は変更されないままです。</p>
+<h3 id="ランダムアクセス"><span class="head">ランダムアクセス</span></h3>
+<p><code>PCollection</code>の各要素への<a href="https://kb-jp.sandisk.com/app/answers/detail/a_id/8980/~/%E3%82%B7%E3%83%BC%E3%82%B1%E3%83%B3%E3%82%B7%E3%83%A3%E3%83%AB%E3%82%A2%E3%82%AF%E3%82%BB%E3%82%B9%E3%81%A8%E3%83%A9%E3%83%B3%E3%83%80%E3%83%A0%E3%82%A2%E3%82%AF%E3%82%BB%E3%82%B9%E3%81%AE%E6%93%8D%E4%BD%9C%E3%81%AE%E9%81%95%E3%81%84">ランダムアクセス</a>はサポートしていません。つまり、<code>PCollection</code>に対し、<code>get("keyname")</code>のようにして要素を引っ張ることはできないです。</p>
+<h3 id="サイズと有限性"><span class="head">サイズと有限性</span></h3>
+<p><code>PCollection</code>はイミュータブルなデータの集まりですが、格納できるデータ数に上限はないそうです（ローカルで走らせるとメモリ不足になることもあります）。</p>
+<p>すでに触れている通り、<code>PCollection</code>として扱えるデータはBoundedでもUnboundedでも大丈夫です。</p>
+<ul>
+<li><strong>Bounded</strong><br />
+ファイルやDBからの読み込みのような、入力データに終わりがあるもの。日次のバッチ処理とかです。</li>
+<li><strong>Unbounded</strong><br />
+ストリーミング処理のような、入力データに終わりがあるもの (e.g. Pub/Sub, Apache Kafka)。<br />
+データが流れ込み続けるのでPipelineは起動し続けることになります。Dataflowなら、VMが立ち上がりっぱなしです。</li>
+</ul>
+<h3 id="要素のタイムスタンプ"><span class="head">要素のタイムスタンプ</span></h3>
+<p>Beamでは入力ソースがBoundedでもUnboundedでも、同じロジックで処理を行うことができます。ですが、Unboundedなソースでは全てのデータが集まることはないので、データ集計のような処理は難しいように思えるかもしれません。</p>
+<p>データ集計のような処理において、Beamでは<code>Window</code>という概念が重要になります。これは、<code>PCollection</code>の<strong>各要素</strong>に割り当てられたtimestampに基づき、要素をグループ化したものです。<code>Window</code>ごとに処理を行うことで、Unboundedなソースでも有限サイズのデータとして扱うことができます。</p>
+<p>Beamが自動で割り当てるtimestampは入力ソースに依存します。ファイル読み込みだったら<code>Long.MIN_VALUE</code>（Boundedなソースでは、通常<code>Window</code>は必要にならないためです）、Pub/Subみたいのであればpublishしたときの時間です。ユーザ定義のtimestampをくっつける<code>PTransform</code>も用意されているため、CSVファイルの一列目をtimestampにする、みたいなことも可能です。</p>
+<script src="../code.js"></script></body>
+</html>

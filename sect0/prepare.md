@@ -19,13 +19,13 @@ Homebrewでinstallするか、もしくは[公式サイト](https://maven.apache
 ## <span class="lhead" id="jenv">jEnvのinstall</span>
 pyenvとかのJava版です。Git、Homebrewでインストール可能ですが、Gitを使ってinstallする方法をまとめます。
 
-```bash=
+```bash
 $ git clone https://github.com/gcuisinier/jenv.git ~/.jenv
 ```
 
 .bash_profileにjenvの設定を追加。
 
-```bash=
+```bash
 $ export JENV_ROOT="${HOME}/.jenv"
 $ echo 'export PATH="${JENV_ROOT}/bin:$PATH"' >> ~/.bash_profile
 $ echo 'eval "$(jenv init -)"' >> ~/.bash_profile
@@ -33,14 +33,14 @@ $ echo 'eval "$(jenv init -)"' >> ~/.bash_profile
 
 Jenvは割と優秀で、環境変数の自動設定、Mavenの設定とかができます。
 
-```bash=
+```bash
 $ jenv enable-plugin export
 $ jenv enable-plugin maven
 ```
 
 インストールが終わったら、
 
-```bash=
+```bash
 $ java -version
 $ mvn -version
 ```
@@ -65,7 +65,7 @@ Editor > File and Code Templates > Otherを選びます。
 
 その中にMaven project.xmlがあると思うので、ファイル末尾にちょい足しします。
 
-```xml=
+```xml
 ... 中略 ...
 
     <groupId>${GROUP_ID}</groupId>

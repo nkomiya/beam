@@ -22,6 +22,10 @@ build() {
 	sed -i "" \
 	    -e "s/pre class=\"sourceCode java\"/pre class=\"line-numbers\"/g" \
 	    -e "s/code class=\"sourceCode java\"/code class=\"language-java\"/g" \
+	    -e "s/pre class=\"sourceCode bash\"/pre class=\"line-numbers\"/g" \
+	    -e "s/code class=\"sourceCode bash\"/code class=\"language-bash\"/g" \
+	    -e "s/pre class=\"sourceCode xml\"/pre class=\"line-numbers\"/g" \
+	    -e "s/code class=\"sourceCode xml\"/code class=\"language-xml\"/g" \
 	    -e "s/<\/body>/<script src=\"..\/code.js\"><\/script><\/body>/" \
 	    ${f}.html
     done
@@ -51,8 +55,8 @@ build sect1
 # sect 2
 build sect2
 
-# # sect 3
-# build sect3
+# sect 3
+build sect3
 
 # # sect 4
 # build sect4

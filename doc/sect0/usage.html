@@ -87,7 +87,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <h2 id="beam用にmaven-projectを作成する">Beam用にMaven projectを作成する</h2>
 <p>Mavenはリポジトリ管理機能つきのbuildツールです。Mavenリポジトリ上のパッケージを自分のプロジェクトで使ったり、自作のパッケージを公開したりできます（たぶん）。 設定ファイルがxmlなのは面倒ですが設定ファイルは幸い一つなので、テンプレ的なやつを作ればとりあえずはokです。</p>
 <p>Beamを使う上で簡単なのは、<a href="https://cloud.google.com/dataflow/docs/quickstarts/quickstart-java-maven#wordcount-">Dataflowのクイックスタート</a>に載っているサンプルコードを落とす方法です。これをMaven Projectを作ると、使わない依存関係も入ると思いますが…</p>
-<div class="sourceCode" id="cb1"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1"></a>$ <span class="va">BEAM_VERSION=</span>2.15.0</span>
+<div class="sourceCode" id="cb1"><pre class="line-numbers"><code class="language-bash"><span id="cb1-1"><a href="#cb1-1"></a>$ <span class="va">BEAM_VERSION=</span>2.15.0</span>
 <span id="cb1-2"><a href="#cb1-2"></a>$ <span class="va">GROUP_ID=</span>[<span class="ex">Maven</span>プロジェクトのグループID]</span>
 <span id="cb1-3"><a href="#cb1-3"></a>$ <span class="va">ARTIFACT_ID=</span>[ビルドで作成される成果物の名前]</span>
 <span id="cb1-4"><a href="#cb1-4"></a>$ <span class="va">VERSION=</span>[プロジェクトのバージョン]</span>
@@ -107,7 +107,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
   ├── beam-runners-direct-java
   └── ...</code></pre>
 <p>コマンドを実行すると、カレントディレクトリに<code>DartifactId</code>で指定したディレクトリができるはずです。欲しいのはpom.xmlのみなので、その他もろもろは全て消してOKです。</p>
-<div class="sourceCode" id="cb3"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb3-1"><a href="#cb3-1"></a>$ <span class="fu">rm</span> -r <span class="va">${ARTIFACT_ID}</span>/src/main/java/*<span class="kw">;</span> <span class="kw">\</span></span>
+<div class="sourceCode" id="cb3"><pre class="line-numbers"><code class="language-bash"><span id="cb3-1"><a href="#cb3-1"></a>$ <span class="fu">rm</span> -r <span class="va">${ARTIFACT_ID}</span>/src/main/java/*<span class="kw">;</span> <span class="kw">\</span></span>
 <span id="cb3-2"><a href="#cb3-2"></a>  <span class="fu">rm</span> -r <span class="va">${ARTIFACT_ID}</span>/src/test/java/*<span class="kw">;</span> <span class="kw">\</span></span>
 <span id="cb3-3"><a href="#cb3-3"></a>  <span class="bu">cd</span> <span class="va">${ARTIFACT_ID}</span>/src<span class="kw">;</span> <span class="kw">\</span></span>
 <span id="cb3-4"><a href="#cb3-4"></a>  <span class="fu">mkdir</span> -p main/java/<span class="va">$(</span><span class="bu">echo</span> <span class="va">$GROUP_ID</span> <span class="kw">|</span> <span class="fu">sed</span> <span class="st">&quot;s/\./\//g&quot;</span><span class="va">)</span> <span class="kw">&amp;&amp;</span> <span class="kw">\</span></span>
@@ -117,16 +117,16 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <span id="cb3-8"><a href="#cb3-8"></a>  <span class="bu">unset</span> <span class="va">BEAM_VERSION</span> <span class="va">GROUP_ID</span> <span class="va">ARTIFACT_ID</span> <span class="va">VERSION</span></span></code></pre></div>
 <h3 id="build">Build</h3>
 <p>Buildするだけならシンプル。Mavenプロジェクトのルートに移動し、次のコマンドを実行します。</p>
-<div class="sourceCode" id="cb4"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb4-1"><a href="#cb4-1"></a>$ <span class="ex">mvn</span> compile</span></code></pre></div>
+<div class="sourceCode" id="cb4"><pre class="line-numbers"><code class="language-bash"><span id="cb4-1"><a href="#cb4-1"></a>$ <span class="ex">mvn</span> compile</span></code></pre></div>
 <p>初回はリポジトリからBeam SDKを落とすので、Buildに時間が掛かるかもです。</p>
 <h3 id="ローカルでの実行">ローカルでの実行</h3>
 <p>実行したいクラスをDexec.mainClassで、コマンドライン引数をDexec.argsに渡します。</p>
-<div class="sourceCode" id="cb5"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb5-1"><a href="#cb5-1"></a>$ <span class="ex">mvn</span> exec:java -Dexec.mainClass=path.to.class \</span>
+<div class="sourceCode" id="cb5"><pre class="line-numbers"><code class="language-bash"><span id="cb5-1"><a href="#cb5-1"></a>$ <span class="ex">mvn</span> exec:java -Dexec.mainClass=path.to.class \</span>
 <span id="cb5-2"><a href="#cb5-2"></a>  -Dexec.args=<span class="st">&quot;--arg1=hoge --arg2=fuga&quot;</span></span></code></pre></div>
 <p>みたいな。依存パッケージのパス指定はMavenが上手いことしてくれます (プラグインの追加が必要ですが、落としたpomファイルには記載ありです)。</p>
 <h3 id="dataflowでの実行">Dataflowでの実行</h3>
 <p>Mavenとbeamの両方でRunnerの指定が必要。</p>
-<div class="sourceCode" id="cb6"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb6-1"><a href="#cb6-1"></a>$ <span class="ex">mvn</span> -Pdataflow-runner exec:java -Dexec.mainClass=path.to.class \</span>
+<div class="sourceCode" id="cb6"><pre class="line-numbers"><code class="language-bash"><span id="cb6-1"><a href="#cb6-1"></a>$ <span class="ex">mvn</span> -Pdataflow-runner exec:java -Dexec.mainClass=path.to.class \</span>
 <span id="cb6-2"><a href="#cb6-2"></a>  -Dexec.args=<span class="st">&quot;--runner=DataflowRunner \</span></span>
 <span id="cb6-3"><a href="#cb6-3"></a><span class="st">    --tempLocation=gs://bucket名 \</span></span>
 <span id="cb6-4"><a href="#cb6-4"></a><span class="st">    --arg1=hoge --arg2=fuga ...&quot;</span></span></code></pre></div>
