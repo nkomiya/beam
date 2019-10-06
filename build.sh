@@ -10,7 +10,7 @@
 outputDir=doc
 
 build() {
-    local mdPath cssRelat ifile ofile dname depth pathes
+    local opt mdPath cssRelat ifile ofile dname depth pathes
     #
     mdPath=$(realpath --relative-to=$(pwd)/$1 ../$1)
     [ $# -eq 2 ] && opt="-maxdepth $2"
