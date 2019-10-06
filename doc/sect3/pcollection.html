@@ -80,6 +80,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
   <!--[if lt IE 9]>
     <script src="//cdnjs.cloudflare.com/ajax/libs/html5shiv/3.7.3/html5shiv-printshiv.min.js"></script>
   <![endif]-->
+  <script src="../prism.js"></script>
 </head>
 <body>
 <p><a href="../index.html">topへ</a></p>
@@ -160,7 +161,8 @@ IntegerやStringなど、よく使われる型はこの処理は自動でやっ�
 <h3 id="イミュータブル"><span class="head">イミュータブル</span></h3>
 <p><code>PCollection</code>インスタンスは一旦作ったら変更不可能です。<code>PTransform</code>では、インプットの<code>PCollection</code>の要素を参照しますが、元の<code>PCollection</code>は変更されないままです。</p>
 <h3 id="ランダムアクセス"><span class="head">ランダムアクセス</span></h3>
-<p><code>PCollection</code>の各要素への<a href="https://kb-jp.sandisk.com/app/answers/detail/a_id/8980/~/%E3%82%B7%E3%83%BC%E3%82%B1%E3%83%B3%E3%82%B7%E3%83%A3%E3%83%AB%E3%82%A2%E3%82%AF%E3%82%BB%E3%82%B9%E3%81%A8%E3%83%A9%E3%83%B3%E3%83%80%E3%83%A0%E3%82%A2%E3%82%AF%E3%82%BB%E3%82%B9%E3%81%AE%E6%93%8D%E4%BD%9C%E3%81%AE%E9%81%95%E3%81%84">ランダムアクセス</a>はサポートしていません。つまり、<code>PCollection</code>に対し、<code>get("keyname")</code>のようにして要素を引っ張ることはできないです。</p>
+<p><code>PCollection</code>の各要素への<a href="https://kb-jp.sandisk.com/app/answers/detail/a_id/8980/~/%E3%82%B7%E3%83%BC%E3%82%B1%E3%83%B3%E3%82%B7%E3%83%A3%E3%83%AB%E3%82%A2%E3%82%AF%E3%82%BB%E3%82%B9%E3%81%A8%E3%83%A9%E3%83%B3%E3%83%80%E3%83%A0%E3%82%A2%E3%82%AF%E3%82%BB%E3%82%B9%E3%81%AE%E6%93%8D%E4%BD%9C%E3%81%AE%E9%81%95%E3%81%84">ランダムアクセス</a>はサポートしていません。つまり、<code>PCollection</code>に対し、<code>get("keyname")</code>のようにして要素を引っ張ることはできないです。<br />
+Beamでは、<code>PCollection(s)</code>に<code>PTransform</code>を作用させ、<code>PCollection(s)</code>を得るという流れになります。</p>
 <h3 id="サイズと有限性"><span class="head">サイズと有限性</span></h3>
 <p><code>PCollection</code>はイミュータブルなデータの集まりですが、格納できるデータ数に上限はないそうです（ローカルで走らせるとメモリ不足になることもあります）。</p>
 <p>すでに触れている通り、<code>PCollection</code>として扱えるデータはBoundedでもUnboundedでも大丈夫です。</p>
@@ -175,5 +177,5 @@ IntegerやStringなど、よく使われる型はこの処理は自動でやっ�
 <p>Beamでは入力ソースがBoundedでもUnboundedでも、同じロジックで処理を行うことができます。ですが、Unboundedなソースでは全てのデータが集まることはないので、データ集計のような処理は難しいように思えるかもしれません。</p>
 <p>データ集計のような処理において、Beamでは<code>Window</code>という概念が重要になります。これは、<code>PCollection</code>の<strong>各要素</strong>に割り当てられたtimestampに基づき、要素をグループ化したものです。<code>Window</code>ごとに処理を行うことで、Unboundedなソースでも有限サイズのデータとして扱うことができます。</p>
 <p>Beamが自動で割り当てるtimestampは入力ソースに依存します。ファイル読み込みだったら<code>Long.MIN_VALUE</code>（Boundedなソースでは、通常<code>Window</code>は必要にならないためです）、Pub/Subみたいのであればpublishしたときの時間です。ユーザ定義のtimestampをくっつける<code>PTransform</code>も用意されているため、CSVファイルの一列目をtimestampにする、みたいなことも可能です。</p>
-<script src="../code.js"></script></body>
+</body>
 </html>

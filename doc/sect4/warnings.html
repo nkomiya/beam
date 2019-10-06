@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>Beam Programming Guide</title>
+  <style>
+      code{white-space: pre-wrap;}
+      span.smallcaps{font-variant: small-caps;}
+      span.underline{text-decoration: underline;}
+      div.column{display: inline-block; vertical-align: top; width: 50%;}
+  </style>
+  <link rel="stylesheet" href="../github.css" />
+  <!--[if lt IE 9]>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/html5shiv/3.7.3/html5shiv-printshiv.min.js"></script>
+  <![endif]-->
+  <script src="../prism.js"></script>
+</head>
+<body>
+<style type="text/css">
+  .head { 
+    border-left:5px solid #00f;
+    padding:3px 0 3px 10px;
+    font-weight: bold;
+  }
+  .lhead { 
+    border-left:5px solid #00f;
+    padding:3px 0 3px 10px;
+    font-size:14pt;
+    font-weight: bold;
+  }
+</style>
+<p><a href="../index.html">topへ</a></p>
+<h1 id="ユーザ定義関数を作るときに気をつけること">ユーザ定義関数を作るときに気をつけること</h1>
+<p>分散処理の特性に気をつけよう、とのこと。ワーカーは複数できるかもだし、各transformは独立に、かつデータの受け渡しなく実行される。関数オブジェクト（<code>DoFn</code>のサブクラスとか）に関して、具体的に気をつけるべきなのは、</p>
+<ul>
+<li><a href="https://www.ne.jp/asahi/hishidama/home/tech/java/serial.html">シリアル化</a>可能であること</li>
+<li>スレッド互換であること<br />
+マルチスレッドでも問題なく動く、の意味。用語を詳しく知りたければ<a href="https://www.ibm.com/developerworks/jp/java/library/j-jtp09263/index.html">こちら</a>が参考になるかもです。</li>
+<li>必須ではないが、メソッドが冪等であること</li>
+</ul>
+<p>それぞれ、詳しく見ていきます。</p>
+<h2 id="シリアル化可能"><span class="head">シリアル化可能</span></h2>
+<p>Dataflow上で実行みたいな場合、関数オブジェクトもシリアル化したのちにワーカーへ転送される。<code>DoFn</code>とかBeam SDKで提供されてるやつらはシリアル化可能なようにしてくれてるみたいだけど、こいつらを継承したサブクラスを作るときはユーザ自身がシリアル化可能であることを保証しなければいけない。シリアル化できないメンバを追加してはいけない、と言ってます。</p>
+<p>追記</p>
+<ul>
+<li><a href="http://java-code.jp/126">Transient修飾子</a>について<br />
+Transient修飾子がついたメンバはシリアル化されず、またワーカーにも渡されない。たくさんのデータをシリアル化しなきゃ…、って状況を回避できるそうです。</li>
+<li>関数オブジェクトについて<br />
+関数オブジェクトの間でdataを共有できない。<br />
+applyしたあとだったら、関数オブジェクトはいじってもok。</li>
+<li>匿名クラスについて<br />
+public属性の付いていないクラスのインスタンスは、そのクラスへのポインタを持っているっぽい。なので、匿名クラスを用いる場合は、実装するクラス自体がシリアル化できるように、とのこと。(普通のインスタンスに対する制約との違いが分からない…)</li>
+</ul>
+<h2 id="スレッド互換性"><span class="head">スレッド互換性</span></h2>
+<p>一つのワーカーからの関数オブジェクトのインスタンスへのアクセスは、一つのスレッドからになるそう。ただ、マルチスレッドで処理するようコーディングしたら、話は別ですが。。。<br />
+Beamはスレッドセーフではないので、ユーザが独自につくったマルチスレッド処理は、自分できちんと同期処理をしてくれとのこと。<br />
+少し話は変わりますが、staticメンバは各ワーカーに渡されないっぽいので、扱いには気をつけた方がいいかもです。ワーカー間で共有されるイメージなのでしょうか…？関数オブジェクト間でdata共有不可、ってのに反する気もしますが…</p>
+<h2 id="冪等性"><span class="head">冪等性</span></h2>
+<p>必須ではないのですが関数オブジェクトが冪等であること、つまり何度呼び出されても同じ結果を返すようにしておくことが推奨されています。 失敗時のリトライだとかで、Beam SDKは関数オブジェクトの（コーディング通りの？）呼び出し回数は保証してくれないみたいです。 冪等でない関数オブジェクトもサポートされてますが、冪等にしておいた方が間違いは少ないだろうし、デバックもしやすいでしょう、とのことです。</p>
+</body>
+</html>

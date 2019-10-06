@@ -106,6 +106,7 @@ IntegerやStringなど、よく使われる型はこの処理は自動でやっ�
 
 ### <span class="head">ランダムアクセス</span>
 `PCollection`の各要素への[ランダムアクセス](https://kb-jp.sandisk.com/app/answers/detail/a_id/8980/~/%E3%82%B7%E3%83%BC%E3%82%B1%E3%83%B3%E3%82%B7%E3%83%A3%E3%83%AB%E3%82%A2%E3%82%AF%E3%82%BB%E3%82%B9%E3%81%A8%E3%83%A9%E3%83%B3%E3%83%80%E3%83%A0%E3%82%A2%E3%82%AF%E3%82%BB%E3%82%B9%E3%81%AE%E6%93%8D%E4%BD%9C%E3%81%AE%E9%81%95%E3%81%84)はサポートしていません。つまり、`PCollection`に対し、`get("keyname")`のようにして要素を引っ張ることはできないです。  
+Beamでは、`PCollection(s)`に`PTransform`を作用させ、`PCollection(s)`を得るという流れになります。
 
 ### <span class="head">サイズと有限性</span>
 `PCollection`はイミュータブルなデータの集まりですが、格納できるデータ数に上限はないそうです（ローカルで走らせるとメモリ不足になることもあります）。

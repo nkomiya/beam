@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>Beam Programming Guide</title>
+  <style>
+      code{white-space: pre-wrap;}
+      span.smallcaps{font-variant: small-caps;}
+      span.underline{text-decoration: underline;}
+      div.column{display: inline-block; vertical-align: top; width: 50%;}
+  </style>
+  <style>
+code.sourceCode > span { display: inline-block; line-height: 1.25; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode { white-space: pre; position: relative; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+code.sourceCode { white-space: pre-wrap; }
+code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+    color: #aaaaaa;
+  }
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+code span.at { color: #7d9029; } /* Attribute */
+code span.bn { color: #40a070; } /* BaseN */
+code span.bu { } /* BuiltIn */
+code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+code span.ch { color: #4070a0; } /* Char */
+code span.cn { color: #880000; } /* Constant */
+code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+code span.dt { color: #902000; } /* DataType */
+code span.dv { color: #40a070; } /* DecVal */
+code span.er { color: #ff0000; font-weight: bold; } /* Error */
+code span.ex { } /* Extension */
+code span.fl { color: #40a070; } /* Float */
+code span.fu { color: #06287e; } /* Function */
+code span.im { } /* Import */
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+code span.op { color: #666666; } /* Operator */
+code span.ot { color: #007020; } /* Other */
+code span.pp { color: #bc7a00; } /* Preprocessor */
+code span.sc { color: #4070a0; } /* SpecialChar */
+code span.ss { color: #bb6688; } /* SpecialString */
+code span.st { color: #4070a0; } /* String */
+code span.va { color: #19177c; } /* Variable */
+code span.vs { color: #4070a0; } /* VerbatimString */
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+  </style>
+  <link rel="stylesheet" href="../../github.css" />
+  <!--[if lt IE 9]>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/html5shiv/3.7.3/html5shiv-printshiv.min.js"></script>
+  <![endif]-->
+  <script src="../../prism.js"></script>
+</head>
+<body>
+<p><a href="../core.html">戻る</a></p>
+<h1 id="pardo">ParDo</h1>
+<p>並行処理（<strong>Par</strong>allel <strong>Do</strong>）の意味で<code>ParDo</code>です。要素ごとの個別の処理になるため、<code>PCollection</code>の全要素数を参照する、みたいなことはできません。</p>
+<p><code>ParDo</code>は、<a href="https://enterprisezine.jp/dbonline/detail/4440"><em>Map/Shuffle/Reduce</em></a>モデルにおける“Map”処理に似ているとのこと。<br />
+下の画像だと、Map処理は各要素に“1”をマップする処理になります。</p>
+<blockquote>
+<p><img src="./figs/what-is-mapreduce.jpg" width="700"><br />
+<a href="https://jp.talend.com/resources/what-is-mapreduce">https://jp.talend.com/resources/what-is-mapreduce/</a></p>
+</blockquote>
+<p><code>ParDo</code>を行うケースは以下のようになります。</p>
+<ol type="1">
+<li>フィルタリング<br />
+<code>PCollection</code>の要素を取捨選択します。欠損値を捨てる、みたいな処理です。</li>
+<li>データ整形や型変換<br />
+HashMapからJSON文字列への変換や、文字列をパースして整数に型変換する、とかです。</li>
+<li>要素の一部を引っ張りたい<br />
+データ整形みたいなものですがCSVフィールドの一部を落とす、みたいな処理です。</li>
+<li>datasetに演算を加えたい<br />
+UNIXタイムスタンプから時間文字列に変換、とかです。</li>
+</ol>
+<p><code>ParDo</code>変換で行う処理のロジックは、Beam SDKの<code>DoFn</code>クラスを継承させたサブクラス内で定義する必要があります。</p>
+<h2 id="dofn編---サブクラスの作成"><span class="head">DoFn編 - サブクラスの作成</span></h2>
+<p>先で触れたとおり、<code>ParDo</code>に限らず<code>PCollection</code>に変換を加える場合は<code>apply</code>メソッドを使う。<code>ParDo</code>だと、new演算子で作った<code>DoFn</code>サブクラスのインスタンスを渡します。</p>
+<div class="sourceCode" id="cb1"><pre class="line-numbers"><code class="language-java"><span id="cb1-1"><a href="#cb1-1"></a>[ PCollection ].<span class="fu">apply</span>(ParDo.<span class="fu">of</span>( [DoFnサブクラスのインスタンス] ));</span></code></pre></div>
+<p><code>DoFn</code>サブクラスで書くべきなのはInput / Outputの型と、InputのPCollectionの各要素に対して行われる処理だけでokで、要素抽出などはSDKがやってくれます。<br />
+<code>DoFn</code>のサブクラスの宣言の例はこんな感じになります。</p>
+<div class="sourceCode" id="cb2"><pre class="line-numbers"><code class="language-java"><span id="cb2-1"><a href="#cb2-1"></a><span class="kw">import</span><span class="im"> org.apache.beam.sdk.transforms.DoFn;</span></span>
+<span id="cb2-2"><a href="#cb2-2"></a></span>
+<span id="cb2-3"><a href="#cb2-3"></a><span class="kw">... </span>中略 ...</span>
+<span id="cb2-4"><a href="#cb2-4"></a></span>
+<span id="cb2-5"><a href="#cb2-5"></a><span class="kw">class</span> MyFn <span class="kw">extends</span> DoFn&lt;<span class="bu">String</span>, <span class="bu">Integer</span>&gt; {</span>
+<span id="cb2-6"><a href="#cb2-6"></a>  <span class="at">@ProcessElement</span></span>
+<span id="cb2-7"><a href="#cb2-7"></a>  <span class="kw">public</span> <span class="dt">void</span> <span class="fu">method</span>(<span class="at">@Element</span> <span class="bu">String</span> input, OutputReceiver&lt;<span class="bu">Integer</span>&gt; o) {</span>
+<span id="cb2-8"><a href="#cb2-8"></a>    o.<span class="fu">output</span>(input.<span class="fu">length</span>());</span>
+<span id="cb2-9"><a href="#cb2-9"></a>  }</span>
+<span id="cb2-10"><a href="#cb2-10"></a>}</span></code></pre></div>
+<p>input, outputの型は<code>DoFn</code>の型引数で指定する。上の例だとinputはString型、outputはInteger型。 処理で行われるのは、<code>ProcessElement</code>アノテーションを付けたメソッドに書きます。メソッド名は何でも良いです。<br />
+Inputの要素は<code>Element</code>アノテーションをつけた仮引数に入り、出力は<code>OutputReceiver&lt;T&gt;</code>型の変数のoutputメソッドに渡します。</p>
+<p>inputの<code>PCollection</code>は適当に分割されるので、<code>DoFn</code>インスタンスは複数回呼び出されることになる。ただ失敗時に備えるとかで複数回呼ばれることもあるため、分割した分だけ<code>DoFn</code>インスタンスが呼ばれる訳ではない。呼び出し回数はキャッシュできるけど、呼び出し回数に依存した処理は実装すべきでないとのこと。</p>
+<p>また、<code>PCollection</code>がimmutableであることを保証するため、メソッドの実装の際には以下の変数の値を いじくるな、とのこと。</p>
+<ul>
+<li><code>Element</code>アノテーションをつけた変数</li>
+<li><code>OutputReceiver</code>で出力をした後では、任意の変数</li>
+</ul>
+<h2 id="dofn---匿名クラスの利用"><span class="head">DoFn - 匿名クラスの利用</span></h2>
+<p>もし同じ変換処理を繰り返すつもりがなく、サブクラスを定義するのが面倒という場合は、匿名クラスを使って処理を書いても大丈夫です。</p>
+<div class="sourceCode" id="cb3"><pre class="line-numbers"><code class="language-java"><span id="cb3-1"><a href="#cb3-1"></a><span class="co">// input</span></span>
+<span id="cb3-2"><a href="#cb3-2"></a><span class="bu">List</span>&lt;<span class="bu">String</span>&gt; input = ...;</span>
+<span id="cb3-3"><a href="#cb3-3"></a></span>
+<span id="cb3-4"><a href="#cb3-4"></a><span class="co">// graph作成</span></span>
+<span id="cb3-5"><a href="#cb3-5"></a>pipeline</span>
+<span id="cb3-6"><a href="#cb3-6"></a>    .<span class="fu">apply</span>(Create.<span class="fu">of</span>(input))</span>
+<span id="cb3-7"><a href="#cb3-7"></a>    .<span class="fu">apply</span>(ParDo.<span class="fu">of</span>(</span>
+<span id="cb3-8"><a href="#cb3-8"></a>        <span class="kw">new</span> DoFn&lt;<span class="bu">String</span>, <span class="bu">Integer</span>&gt;() {</span>
+<span id="cb3-9"><a href="#cb3-9"></a>          <span class="at">@ProcessElement</span></span>
+<span id="cb3-10"><a href="#cb3-10"></a>          <span class="kw">public</span> <span class="dt">void</span> <span class="fu">method</span>(<span class="at">@Element</span> <span class="bu">String</span> e, OutputReceiver&lt;<span class="bu">Integer</span>&gt; o) {</span>
+<span id="cb3-11"><a href="#cb3-11"></a>            o.<span class="fu">output</span>(e.<span class="fu">length</span>());</span>
+<span id="cb3-12"><a href="#cb3-12"></a>          }</span>
+<span id="cb3-13"><a href="#cb3-13"></a>        }));</span></code></pre></div>
+</body>
+</html>

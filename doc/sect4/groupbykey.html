@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>Beam Programming Guide</title>
+  <style>
+      code{white-space: pre-wrap;}
+      span.smallcaps{font-variant: small-caps;}
+      span.underline{text-decoration: underline;}
+      div.column{display: inline-block; vertical-align: top; width: 50%;}
+  </style>
+  <style>
+code.sourceCode > span { display: inline-block; line-height: 1.25; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode { white-space: pre; position: relative; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+code.sourceCode { white-space: pre-wrap; }
+code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+    color: #aaaaaa;
+  }
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+code span.at { color: #7d9029; } /* Attribute */
+code span.bn { color: #40a070; } /* BaseN */
+code span.bu { } /* BuiltIn */
+code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+code span.ch { color: #4070a0; } /* Char */
+code span.cn { color: #880000; } /* Constant */
+code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+code span.dt { color: #902000; } /* DataType */
+code span.dv { color: #40a070; } /* DecVal */
+code span.er { color: #ff0000; font-weight: bold; } /* Error */
+code span.ex { } /* Extension */
+code span.fl { color: #40a070; } /* Float */
+code span.fu { color: #06287e; } /* Function */
+code span.im { } /* Import */
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+code span.op { color: #666666; } /* Operator */
+code span.ot { color: #007020; } /* Other */
+code span.pp { color: #bc7a00; } /* Preprocessor */
+code span.sc { color: #4070a0; } /* SpecialChar */
+code span.ss { color: #bb6688; } /* SpecialString */
+code span.st { color: #4070a0; } /* String */
+code span.va { color: #19177c; } /* Variable */
+code span.vs { color: #4070a0; } /* VerbatimString */
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+  </style>
+  <link rel="stylesheet" href="../github.css" />
+  <!--[if lt IE 9]>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/html5shiv/3.7.3/html5shiv-printshiv.min.js"></script>
+  <![endif]-->
+  <script src="../prism.js"></script>
+</head>
+<body>
+<style type="text/css">
+  .head { 
+    border-left:5px solid #00f;
+    padding:3px 0 3px 10px;
+    font-weight: bold;
+  }
+  .lhead { 
+    border-left:5px solid #00f;
+    padding:3px 0 3px 10px;
+    font-size:14pt;
+    font-weight: bold;
+  }
+</style>
+<p><a href="../index.html">topへ</a></p>
+<h1 id="groupbykey">GroupByKey</h1>
+<p><code>GroupByKey</code>メソッドは、再び<a href="https://enterprisezine.jp/dbonline/detail/4440">Map/Shuffle/Reduce</a>モデルでいうところのShuffleにあたるそう。Inputの<code>PCollection</code>としてmultimap（key/valueペアだけど、同じkeyが登場し得るやつ）をとり、同じkeyをひとまとめにしたkey/valueペアの<code>PCollection</code>を出力する。</p>
+<p>Guideが例としてあげてるのは顧客の注文リスト。氏名・住所・商品名… etcがあったとき、注文者の住所をkey、その他の値をvalueとしてひとまとめにする処理。</p>
+<p>簡単なinput/outputの例を見て期待する動作を説明します。</p>
+<p>input : key/valueペアだけど、keyに重複あり。</p>
+<pre><code>cat, 1
+dog, 5
+and, 1
+jump, 3
+tree, 2
+cat, 5
+dog, 2
+and, 2
+cat, 9
+and, 6</code></pre>
+<p>output: key/valueペアで、keyに重複無し。valueはリストに突っ込まれます。</p>
+<pre><code>cat, [1,5,9]
+dog, [5,2]
+and, [1,2,6]
+jump, [3]
+tree, [2]</code></pre>
+<p>こういう例だと足し合わせたくもなりますが、<code>GroupByKey</code>はあくまでグループ化をするためのメソッドで、keyをuniqueにすることが目的です。とりあえず、codeを貼ります。</p>
+<div class="sourceCode" id="cb3"><pre class="line-numbers"><code class="language-java"><span id="cb3-1"><a href="#cb3-1"></a><span class="kw">import</span><span class="im"> java.util.Arrays;</span></span>
+<span id="cb3-2"><a href="#cb3-2"></a><span class="kw">import</span><span class="im"> java.util.List;</span></span>
+<span id="cb3-3"><a href="#cb3-3"></a><span class="co">// pipeline &amp; options</span></span>
+<span id="cb3-4"><a href="#cb3-4"></a><span class="kw">import</span><span class="im"> org.apache.beam.sdk.Pipeline;</span></span>
+<span id="cb3-5"><a href="#cb3-5"></a><span class="kw">import</span><span class="im"> org.apache.beam.sdk.options.PipelineOptions;</span></span>
+<span id="cb3-6"><a href="#cb3-6"></a><span class="co">// transform</span></span>
+<span id="cb3-7"><a href="#cb3-7"></a><span class="kw">import</span><span class="im"> org.apache.beam.sdk.transforms.Create;</span></span>
+<span id="cb3-8"><a href="#cb3-8"></a><span class="kw">import</span><span class="im"> org.apache.beam.sdk.transforms.ParDo;</span></span>
+<span id="cb3-9"><a href="#cb3-9"></a><span class="kw">import</span><span class="im"> org.apache.beam.sdk.transforms.DoFn;</span></span>
+<span id="cb3-10"><a href="#cb3-10"></a><span class="kw">import</span><span class="im"> org.apache.beam.sdk.io.TextIO;</span></span>
+<span id="cb3-11"><a href="#cb3-11"></a><span class="co">// for GroupByKey</span></span>
+<span id="cb3-12"><a href="#cb3-12"></a><span class="kw">import</span><span class="im"> org.apache.beam.sdk.values.KV;</span></span>
+<span id="cb3-13"><a href="#cb3-13"></a><span class="kw">import</span><span class="im"> org.apache.beam.sdk.transforms.GroupByKey;</span></span>
+<span id="cb3-14"><a href="#cb3-14"></a></span>
+<span id="cb3-15"><a href="#cb3-15"></a><span class="kw">public</span> <span class="kw">class</span> Main {</span>
+<span id="cb3-16"><a href="#cb3-16"></a>    <span class="kw">public</span> <span class="dt">static</span> <span class="dt">void</span> <span class="fu">main</span>(<span class="bu">String</span>[] args) {</span>
+<span id="cb3-17"><a href="#cb3-17"></a>        <span class="co">// ややこいですが今までと同じ要領で、ListからPCollectionを作ります</span></span>
+<span id="cb3-18"><a href="#cb3-18"></a>        <span class="co">// つけなくても動きますが、final修飾子をつけて変更不可にしてます</span></span>
+<span id="cb3-19"><a href="#cb3-19"></a>        <span class="dt">final</span> <span class="bu">List</span>&lt;KV&lt;<span class="bu">String</span>, <span class="bu">Integer</span>&gt;&gt; input =</span>
+<span id="cb3-20"><a href="#cb3-20"></a>                <span class="bu">Arrays</span>.<span class="fu">asList</span>(</span>
+<span id="cb3-21"><a href="#cb3-21"></a>                        KV.<span class="fu">of</span>(<span class="st">&quot;cat&quot;</span>, <span class="dv">1</span>),</span>
+<span id="cb3-22"><a href="#cb3-22"></a>                        KV.<span class="fu">of</span>(<span class="st">&quot;dog&quot;</span>, <span class="dv">5</span>),</span>
+<span id="cb3-23"><a href="#cb3-23"></a>                        KV.<span class="fu">of</span>(<span class="st">&quot;and&quot;</span>, <span class="dv">1</span>),</span>
+<span id="cb3-24"><a href="#cb3-24"></a>                        KV.<span class="fu">of</span>(<span class="st">&quot;jump&quot;</span>, <span class="dv">3</span>),</span>
+<span id="cb3-25"><a href="#cb3-25"></a>                        KV.<span class="fu">of</span>(<span class="st">&quot;tree&quot;</span>, <span class="dv">2</span>),</span>
+<span id="cb3-26"><a href="#cb3-26"></a>                        KV.<span class="fu">of</span>(<span class="st">&quot;cat&quot;</span>, <span class="dv">5</span>),</span>
+<span id="cb3-27"><a href="#cb3-27"></a>                        KV.<span class="fu">of</span>(<span class="st">&quot;dog&quot;</span>, <span class="dv">2</span>),</span>
+<span id="cb3-28"><a href="#cb3-28"></a>                        KV.<span class="fu">of</span>(<span class="st">&quot;and&quot;</span>, <span class="dv">2</span>),</span>
+<span id="cb3-29"><a href="#cb3-29"></a>                        KV.<span class="fu">of</span>(<span class="st">&quot;cat&quot;</span>, <span class="dv">9</span>),</span>
+<span id="cb3-30"><a href="#cb3-30"></a>                        KV.<span class="fu">of</span>(<span class="st">&quot;and&quot;</span>, <span class="dv">6</span>)</span>
+<span id="cb3-31"><a href="#cb3-31"></a>                );</span>
+<span id="cb3-32"><a href="#cb3-32"></a>        Pipeline pipeline = Pipeline.<span class="fu">create</span>();</span>
+<span id="cb3-33"><a href="#cb3-33"></a>        <span class="co">//</span></span>
+<span id="cb3-34"><a href="#cb3-34"></a>        pipeline</span>
+<span id="cb3-35"><a href="#cb3-35"></a>                .<span class="fu">apply</span>(Create.<span class="fu">of</span>(input))</span>
+<span id="cb3-36"><a href="#cb3-36"></a>                .<span class="fu">apply</span>(GroupByKey.<span class="fu">create</span>())</span>
+<span id="cb3-37"><a href="#cb3-37"></a>                .<span class="fu">apply</span>(ParDo.<span class="fu">of</span>(</span>
+<span id="cb3-38"><a href="#cb3-38"></a>                        <span class="kw">new</span> DoFn&lt;KV&lt;<span class="bu">String</span>, <span class="bu">Iterable</span>&lt;<span class="bu">Integer</span>&gt;&gt;, <span class="bu">String</span>&gt;() {</span>
+<span id="cb3-39"><a href="#cb3-39"></a>                            <span class="at">@ProcessElement</span></span>
+<span id="cb3-40"><a href="#cb3-40"></a>                            <span class="kw">public</span> <span class="dt">void</span> <span class="fu">mymethod</span>(<span class="at">@Element</span> KV&lt;<span class="bu">String</span>, <span class="bu">Iterable</span>&lt;<span class="bu">Integer</span>&gt;&gt; e, OutputReceiver&lt;<span class="bu">String</span>&gt; o) {</span>
+<span id="cb3-41"><a href="#cb3-41"></a>                                <span class="bu">String</span> result = e.<span class="fu">getKey</span>() + <span class="st">&quot;, [&quot;</span>;</span>
+<span id="cb3-42"><a href="#cb3-42"></a>                                <span class="kw">for</span> (<span class="bu">Integer</span> i : e.<span class="fu">getValue</span>()) {</span>
+<span id="cb3-43"><a href="#cb3-43"></a>                                    result += <span class="bu">String</span><span class="fu">.format</span>(<span class="st">&quot;</span><span class="sc">%s</span><span class="st">, &quot;</span>, i.<span class="fu">toString</span>());</span>
+<span id="cb3-44"><a href="#cb3-44"></a>                                }</span>
+<span id="cb3-45"><a href="#cb3-45"></a>                                result = result.<span class="fu">substring</span>(<span class="dv">0</span>, result.<span class="fu">length</span>() - <span class="dv">2</span>) + <span class="st">&quot;]&quot;</span>;</span>
+<span id="cb3-46"><a href="#cb3-46"></a>                                o.<span class="fu">output</span>(result);</span>
+<span id="cb3-47"><a href="#cb3-47"></a>                            }</span>
+<span id="cb3-48"><a href="#cb3-48"></a>                        }</span>
+<span id="cb3-49"><a href="#cb3-49"></a>                ))</span>
+<span id="cb3-50"><a href="#cb3-50"></a>                .<span class="fu">apply</span>(TextIO.<span class="fu">write</span>().<span class="fu">to</span>(<span class="st">&quot;result&quot;</span>));</span>
+<span id="cb3-51"><a href="#cb3-51"></a>        <span class="co">//</span></span>
+<span id="cb3-52"><a href="#cb3-52"></a>        pipeline.<span class="fu">run</span>();</span>
+<span id="cb3-53"><a href="#cb3-53"></a>    }</span>
+<span id="cb3-54"><a href="#cb3-54"></a>}</span></code></pre></div>
+<p>19行目のInputのList作成とか38行目以降の出力処理とかがうるさいですけど、<code>GroupByKey</code>のポイントのみ説明します。</p>
+<ul>
+<li>Beamではkey/valueペア用に、<code>KV&lt;K,V&gt;</code>型があります<br />
+Kがkeyの型、Vがvalueの型です。<code>KV.of</code>で一つのkey/valueペアが作れる</li>
+<li><code>GroupByKey</code>には<code>KV</code>型を要素に持つ<code>PCollection</code>を渡すだけ</li>
+</ul>
+</body>
+</html>

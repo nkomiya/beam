@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>Beam Programming Guide</title>
+  <style>
+      code{white-space: pre-wrap;}
+      span.smallcaps{font-variant: small-caps;}
+      span.underline{text-decoration: underline;}
+      div.column{display: inline-block; vertical-align: top; width: 50%;}
+  </style>
+  <style>
+code.sourceCode > span { display: inline-block; line-height: 1.25; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode { white-space: pre; position: relative; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+code.sourceCode { white-space: pre-wrap; }
+code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+    color: #aaaaaa;
+  }
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+code span.at { color: #7d9029; } /* Attribute */
+code span.bn { color: #40a070; } /* BaseN */
+code span.bu { } /* BuiltIn */
+code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+code span.ch { color: #4070a0; } /* Char */
+code span.cn { color: #880000; } /* Constant */
+code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+code span.dt { color: #902000; } /* DataType */
+code span.dv { color: #40a070; } /* DecVal */
+code span.er { color: #ff0000; font-weight: bold; } /* Error */
+code span.ex { } /* Extension */
+code span.fl { color: #40a070; } /* Float */
+code span.fu { color: #06287e; } /* Function */
+code span.im { } /* Import */
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+code span.op { color: #666666; } /* Operator */
+code span.ot { color: #007020; } /* Other */
+code span.pp { color: #bc7a00; } /* Preprocessor */
+code span.sc { color: #4070a0; } /* SpecialChar */
+code span.ss { color: #bb6688; } /* SpecialString */
+code span.st { color: #4070a0; } /* String */
+code span.va { color: #19177c; } /* Variable */
+code span.vs { color: #4070a0; } /* VerbatimString */
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+  </style>
+  <link rel="stylesheet" href="../github.css" />
+  <!--[if lt IE 9]>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/html5shiv/3.7.3/html5shiv-printshiv.min.js"></script>
+  <![endif]-->
+  <script src="../prism.js"></script>
+</head>
+<body>
+<style type="text/css">
+  .head { 
+    border-left:5px solid #00f;
+    padding:3px 0 3px 10px;
+    font-weight: bold;
+  }
+  .lhead { 
+    border-left:5px solid #00f;
+    padding:3px 0 3px 10px;
+    font-size:14pt;
+    font-weight: bold;
+  }
+</style>
+<p><a href="../index.html">topへ</a></p>
+<h1 id="composite-transform">Composite transform</h1>
+<p>コードの可読性を上げる、とかPipeline graphを美しくする（わたしの主観）、とか使いまわしをする、って意味でComposite transform（合成変換って呼びますね）が便利です。 これは、複数の<code>PTransform</code>からなるユーザ定義の<code>PTransform</code>です。要素の合計を求めて出力みたいなときに、(1)合計の計算、(2)出力用に文字列に整える、の二つをまとめた<code>PTransform</code>を作る、みたいなノリです。 Beam SDKが作ってくれてる合成変換は<a href="https://beam.apache.org/releases/javadoc/2.13.0/index.html?org/apache/beam/sdk/transforms/package-summary.html">org.apache.beam.sdk.transform</a>の中を見てくれ、ってなってます。</p>
+<h2 id="合成変換を作ってみる"><span class="head">合成変換を作ってみる</span></h2>
+<p>特に難しいことはない。<code>PCollection</code>を受け取って、<code>PCollection</code>を返す<code>PTransform</code>のサブクラスを作れば良い。<br />
+<code>PTransform</code>のサブクラスの<code>expand</code>メソッドをオーバーライドする。<code>expand</code>の中の処理が順に実行される感じです。</p>
+<div class="sourceCode" id="cb1"><pre class="line-numbers"><code class="language-java"><span id="cb1-1"><a href="#cb1-1"></a><span class="dt">static</span> <span class="kw">class</span> MyTransform <span class="kw">extends</span> PTransform&lt;PCollection&lt;InputT&gt;,PCollection&lt;OutputT&gt;&gt; {</span>
+<span id="cb1-2"><a href="#cb1-2"></a>    <span class="at">@Override</span></span>
+<span id="cb1-3"><a href="#cb1-3"></a>    <span class="kw">public</span> PCollection&lt;OutputT&gt; <span class="fu">expand</span>(InputT input) {</span>
+<span id="cb1-4"><a href="#cb1-4"></a>       <span class="kw">... </span>処理 ...</span>
+<span id="cb1-5"><a href="#cb1-5"></a>       <span class="kw">return</span> [OutputT型のPCollection];</span>
+<span id="cb1-6"><a href="#cb1-6"></a>    }</span>
+<span id="cb1-7"><a href="#cb1-7"></a>}</span></code></pre></div>
+<p>作った合成変換をapplyするには、サブクラスのインスタンスをapplyに渡せば良い。</p>
+<div class="sourceCode" id="cb2"><pre class="line-numbers"><code class="language-java"><span id="cb2-1"><a href="#cb2-1"></a><span class="fu">apply</span>( <span class="kw">new</span> <span class="fu">MyTransform</span>() )</span></code></pre></div>
+<p>code例として、公式ガイドに載ってる単語数登場回数をカウントするcodeの劣化版。</p>
+<div class="sourceCode" id="cb3"><pre class="line-numbers"><code class="language-java"><span id="cb3-1"><a href="#cb3-1"></a><span class="kw">import</span><span class="im"> java.util.List;</span></span>
+<span id="cb3-2"><a href="#cb3-2"></a><span class="kw">import</span><span class="im"> java.util.Arrays;</span></span>
+<span id="cb3-3"><a href="#cb3-3"></a><span class="co">// beam sdk</span></span>
+<span id="cb3-4"><a href="#cb3-4"></a><span class="kw">import</span><span class="im"> org.apache.beam.sdk.Pipeline;</span></span>
+<span id="cb3-5"><a href="#cb3-5"></a><span class="kw">import</span><span class="im"> org.apache.beam.sdk.io.TextIO;</span></span>
+<span id="cb3-6"><a href="#cb3-6"></a><span class="kw">import</span><span class="im"> org.apache.beam.sdk.transforms.Create;</span></span>
+<span id="cb3-7"><a href="#cb3-7"></a><span class="kw">import</span><span class="im"> org.apache.beam.sdk.transforms.ParDo;</span></span>
+<span id="cb3-8"><a href="#cb3-8"></a><span class="kw">import</span><span class="im"> org.apache.beam.sdk.transforms.DoFn;</span></span>
+<span id="cb3-9"><a href="#cb3-9"></a><span class="kw">import</span><span class="im"> org.apache.beam.sdk.transforms.Count;</span></span>
+<span id="cb3-10"><a href="#cb3-10"></a><span class="kw">import</span><span class="im"> org.apache.beam.sdk.transforms.FlatMapElements;</span></span>
+<span id="cb3-11"><a href="#cb3-11"></a><span class="kw">import</span><span class="im"> org.apache.beam.sdk.transforms.PTransform;</span></span>
+<span id="cb3-12"><a href="#cb3-12"></a><span class="kw">import</span><span class="im"> org.apache.beam.sdk.transforms.SerializableFunction;</span></span>
+<span id="cb3-13"><a href="#cb3-13"></a><span class="kw">import</span><span class="im"> org.apache.beam.sdk.values.KV;</span></span>
+<span id="cb3-14"><a href="#cb3-14"></a><span class="kw">import</span><span class="im"> org.apache.beam.sdk.values.PCollection;</span></span>
+<span id="cb3-15"><a href="#cb3-15"></a><span class="kw">import</span><span class="im"> org.apache.beam.sdk.values.TypeDescriptors;</span></span>
+<span id="cb3-16"><a href="#cb3-16"></a></span>
+<span id="cb3-17"><a href="#cb3-17"></a><span class="kw">public</span> <span class="kw">class</span> Main {</span>
+<span id="cb3-18"><a href="#cb3-18"></a>    <span class="kw">public</span> <span class="dt">static</span> <span class="dt">void</span> <span class="fu">main</span>(<span class="bu">String</span>[] args) {</span>
+<span id="cb3-19"><a href="#cb3-19"></a>        <span class="bu">List</span>&lt;<span class="bu">String</span>&gt; input = <span class="bu">Arrays</span>.<span class="fu">asList</span>(</span>
+<span id="cb3-20"><a href="#cb3-20"></a>                <span class="st">&quot;To be, or not to be: that is the question: &quot;</span>,</span>
+<span id="cb3-21"><a href="#cb3-21"></a>                <span class="st">&quot;Whether &#39;tis nobler in the mind to suffer &quot;</span>,</span>
+<span id="cb3-22"><a href="#cb3-22"></a>                <span class="st">&quot;The slings and arrows of outrageous fortune, &quot;</span>,</span>
+<span id="cb3-23"><a href="#cb3-23"></a>                <span class="st">&quot;Or to take arms against a sea of troubles, &quot;</span>);</span>
+<span id="cb3-24"><a href="#cb3-24"></a>        Pipeline pipeline = Pipeline.<span class="fu">create</span>();</span>
+<span id="cb3-25"><a href="#cb3-25"></a>        <span class="co">//</span></span>
+<span id="cb3-26"><a href="#cb3-26"></a>        pipeline</span>
+<span id="cb3-27"><a href="#cb3-27"></a>                .<span class="fu">apply</span>(Create.<span class="fu">of</span>(input))</span>
+<span id="cb3-28"><a href="#cb3-28"></a>                .<span class="fu">apply</span>(<span class="kw">new</span> <span class="fu">CountWords</span>())</span>
+<span id="cb3-29"><a href="#cb3-29"></a>                .<span class="fu">apply</span>(ParDo.<span class="fu">of</span>(</span>
+<span id="cb3-30"><a href="#cb3-30"></a>                        <span class="kw">new</span> DoFn&lt;KV&lt;<span class="bu">String</span>, <span class="bu">Long</span>&gt;, <span class="bu">String</span>&gt;() {</span>
+<span id="cb3-31"><a href="#cb3-31"></a>                            <span class="at">@ProcessElement</span></span>
+<span id="cb3-32"><a href="#cb3-32"></a>                            <span class="kw">public</span> <span class="dt">void</span> <span class="fu">method</span>(ProcessContext ctx) {</span>
+<span id="cb3-33"><a href="#cb3-33"></a>                                <span class="bu">String</span> key = ctx.<span class="fu">element</span>().<span class="fu">getKey</span>();</span>
+<span id="cb3-34"><a href="#cb3-34"></a>                                <span class="bu">Integer</span> value = ctx.<span class="fu">element</span>().<span class="fu">getValue</span>().<span class="fu">intValue</span>();</span>
+<span id="cb3-35"><a href="#cb3-35"></a>                                ctx.<span class="fu">output</span>(key + <span class="st">&quot; : &quot;</span> + value.<span class="fu">toString</span>());</span>
+<span id="cb3-36"><a href="#cb3-36"></a>                            }</span>
+<span id="cb3-37"><a href="#cb3-37"></a>                        }))</span>
+<span id="cb3-38"><a href="#cb3-38"></a>                .<span class="fu">apply</span>(TextIO.<span class="fu">write</span>().<span class="fu">to</span>(<span class="st">&quot;result&quot;</span>).<span class="fu">withoutSharding</span>())</span>
+<span id="cb3-39"><a href="#cb3-39"></a>        ;</span>
+<span id="cb3-40"><a href="#cb3-40"></a>        pipeline.<span class="fu">run</span>();</span>
+<span id="cb3-41"><a href="#cb3-41"></a>    }</span>
+<span id="cb3-42"><a href="#cb3-42"></a></span>
+<span id="cb3-43"><a href="#cb3-43"></a>    <span class="dt">static</span> <span class="kw">class</span> CountWords <span class="kw">extends</span> PTransform&lt;PCollection&lt;<span class="bu">String</span>&gt;, PCollection&lt;KV&lt;<span class="bu">String</span>, <span class="bu">Long</span>&gt;&gt;&gt; {</span>
+<span id="cb3-44"><a href="#cb3-44"></a>        <span class="at">@Override</span></span>
+<span id="cb3-45"><a href="#cb3-45"></a>        <span class="kw">public</span> PCollection&lt;KV&lt;<span class="bu">String</span>, <span class="bu">Long</span>&gt;&gt; <span class="fu">expand</span>(PCollection&lt;<span class="bu">String</span>&gt; lines) {</span>
+<span id="cb3-46"><a href="#cb3-46"></a>            <span class="co">/**</span> FlatMapElements<span class="co">:</span></span>
+<span id="cb3-47"><a href="#cb3-47"></a>             <span class="co">*</span> Iterableを返すSerializableFunctionを渡すと</span>
+<span id="cb3-48"><a href="#cb3-48"></a>             <span class="co">*</span> Iterableの中身をばらしてくれる。</span>
+<span id="cb3-49"><a href="#cb3-49"></a>             <span class="co">*/</span> </span>
+<span id="cb3-50"><a href="#cb3-50"></a>            <span class="co">/**</span> Count<span class="co">.</span>perElement<span class="co">:</span></span>
+<span id="cb3-51"><a href="#cb3-51"></a>             <span class="co">*</span> PCollection<span class="kw">&lt;T&gt;</span>を受け取り、</span>
+<span id="cb3-52"><a href="#cb3-52"></a>             <span class="co">*</span> 要素の登場回数を数えてkey<span class="co">/</span>valueペアを返す</span>
+<span id="cb3-53"><a href="#cb3-53"></a>             <span class="co">*/</span></span>
+<span id="cb3-54"><a href="#cb3-54"></a>            <span class="kw">return</span> lines</span>
+<span id="cb3-55"><a href="#cb3-55"></a>                    .<span class="fu">apply</span>(FlatMapElements</span>
+<span id="cb3-56"><a href="#cb3-56"></a>                            .<span class="fu">into</span>(TypeDescriptors.<span class="fu">strings</span>())</span>
+<span id="cb3-57"><a href="#cb3-57"></a>                            .<span class="fu">via</span>(<span class="kw">new</span> SerializableFunction&lt;<span class="bu">String</span>, <span class="bu">Iterable</span>&lt;<span class="bu">String</span>&gt;&gt;() {</span>
+<span id="cb3-58"><a href="#cb3-58"></a>                                <span class="kw">public</span> <span class="bu">Iterable</span>&lt;<span class="bu">String</span>&gt; <span class="fu">apply</span>(<span class="bu">String</span> input) {</span>
+<span id="cb3-59"><a href="#cb3-59"></a>                                    <span class="kw">return</span> <span class="bu">Arrays</span>.<span class="fu">asList</span>(input.<span class="fu">split</span>(<span class="st">&quot; &quot;</span>));</span>
+<span id="cb3-60"><a href="#cb3-60"></a>                                }</span>
+<span id="cb3-61"><a href="#cb3-61"></a>                            })</span>
+<span id="cb3-62"><a href="#cb3-62"></a>                    )</span>
+<span id="cb3-63"><a href="#cb3-63"></a>                    .<span class="fu">apply</span>(Count.&lt;<span class="bu">String</span>&gt;<span class="fu">perElement</span>());</span>
+<span id="cb3-64"><a href="#cb3-64"></a>        }</span>
+<span id="cb3-65"><a href="#cb3-65"></a>    }</span>
+<span id="cb3-66"><a href="#cb3-66"></a>}</span></code></pre></div>
+<p>合成変換のinput/outputは複数の<code>PCollection</code>でもよろしい。きちんと型宣言さえ出来てさえいれば、ですが。</p>
+<p>例を考えるのが面倒だったので、複数の<code>PCollection</code>を“変換が一つの合成変換”を使って結合する例。</p>
+<div class="sourceCode" id="cb4"><pre class="line-numbers"><code class="language-java"><span id="cb4-1"><a href="#cb4-1"></a><span class="kw">import</span><span class="im"> java.util.Arrays;</span></span>
+<span id="cb4-2"><a href="#cb4-2"></a><span class="kw">import</span><span class="im"> java.util.List;</span></span>
+<span id="cb4-3"><a href="#cb4-3"></a><span class="co">// beam</span></span>
+<span id="cb4-4"><a href="#cb4-4"></a><span class="kw">import</span><span class="im"> org.apache.beam.sdk.Pipeline;</span></span>
+<span id="cb4-5"><a href="#cb4-5"></a><span class="kw">import</span><span class="im"> org.apache.beam.sdk.io.TextIO;</span></span>
+<span id="cb4-6"><a href="#cb4-6"></a><span class="kw">import</span><span class="im"> org.apache.beam.sdk.transforms.Create;</span></span>
+<span id="cb4-7"><a href="#cb4-7"></a><span class="kw">import</span><span class="im"> org.apache.beam.sdk.transforms.Flatten;</span></span>
+<span id="cb4-8"><a href="#cb4-8"></a><span class="kw">import</span><span class="im"> org.apache.beam.sdk.transforms.PTransform;</span></span>
+<span id="cb4-9"><a href="#cb4-9"></a><span class="kw">import</span><span class="im"> org.apache.beam.sdk.values.PCollection;</span></span>
+<span id="cb4-10"><a href="#cb4-10"></a><span class="kw">import</span><span class="im"> org.apache.beam.sdk.values.PCollectionList;</span></span>
+<span id="cb4-11"><a href="#cb4-11"></a></span>
+<span id="cb4-12"><a href="#cb4-12"></a><span class="kw">public</span> <span class="kw">class</span> Main {</span>
+<span id="cb4-13"><a href="#cb4-13"></a>    <span class="kw">public</span> <span class="dt">static</span> <span class="dt">void</span> <span class="fu">main</span>(<span class="bu">String</span>[] args) {</span>
+<span id="cb4-14"><a href="#cb4-14"></a>        <span class="bu">List</span>&lt;<span class="bu">String</span>&gt; inputA = <span class="bu">Arrays</span>.<span class="fu">asList</span>(</span>
+<span id="cb4-15"><a href="#cb4-15"></a>                <span class="st">&quot;To be, or not to be: that is the question: &quot;</span>,</span>
+<span id="cb4-16"><a href="#cb4-16"></a>                <span class="st">&quot;Whether &#39;tis nobler in the mind to suffer &quot;</span>);</span>
+<span id="cb4-17"><a href="#cb4-17"></a>        <span class="bu">List</span>&lt;<span class="bu">String</span>&gt; inputB = <span class="bu">Arrays</span>.<span class="fu">asList</span>(</span>
+<span id="cb4-18"><a href="#cb4-18"></a>                <span class="st">&quot;The slings and arrows of outrageous fortune, &quot;</span>,</span>
+<span id="cb4-19"><a href="#cb4-19"></a>                <span class="st">&quot;Or to take arms against a sea of troubles, &quot;</span>);</span>
+<span id="cb4-20"><a href="#cb4-20"></a>        Pipeline pipeline = Pipeline.<span class="fu">create</span>();</span>
+<span id="cb4-21"><a href="#cb4-21"></a>        <span class="co">//</span></span>
+<span id="cb4-22"><a href="#cb4-22"></a>        PCollection&lt;<span class="bu">String</span>&gt; colA = pipeline.<span class="fu">apply</span>(<span class="st">&quot;A&quot;</span>, Create.<span class="fu">of</span>(inputA));</span>
+<span id="cb4-23"><a href="#cb4-23"></a>        PCollection&lt;<span class="bu">String</span>&gt; colB = pipeline.<span class="fu">apply</span>(<span class="st">&quot;B&quot;</span>, Create.<span class="fu">of</span>(inputB));</span>
+<span id="cb4-24"><a href="#cb4-24"></a>        PCollectionList.<span class="fu">of</span>(colA).<span class="fu">and</span>(colB)</span>
+<span id="cb4-25"><a href="#cb4-25"></a>                .<span class="fu">apply</span>(<span class="kw">new</span> <span class="fu">Join</span>())</span>
+<span id="cb4-26"><a href="#cb4-26"></a>                .<span class="fu">apply</span>(TextIO.<span class="fu">write</span>().<span class="fu">to</span>(<span class="st">&quot;result&quot;</span>).<span class="fu">withoutSharding</span>())</span>
+<span id="cb4-27"><a href="#cb4-27"></a>        ;</span>
+<span id="cb4-28"><a href="#cb4-28"></a>        pipeline.<span class="fu">run</span>();</span>
+<span id="cb4-29"><a href="#cb4-29"></a>    }</span>
+<span id="cb4-30"><a href="#cb4-30"></a></span>
+<span id="cb4-31"><a href="#cb4-31"></a>    <span class="dt">static</span> <span class="kw">class</span> Join <span class="kw">extends</span> PTransform&lt;PCollectionList&lt;<span class="bu">String</span>&gt;, PCollection&lt;<span class="bu">String</span>&gt;&gt; {</span>
+<span id="cb4-32"><a href="#cb4-32"></a>        <span class="at">@Override</span></span>
+<span id="cb4-33"><a href="#cb4-33"></a>        <span class="kw">public</span> PCollection&lt;<span class="bu">String</span>&gt; <span class="fu">expand</span>(PCollectionList&lt;<span class="bu">String</span>&gt; input) {</span>
+<span id="cb4-34"><a href="#cb4-34"></a>            <span class="kw">return</span> input.<span class="fu">apply</span>(Flatten.<span class="fu">pCollections</span>());</span>
+<span id="cb4-35"><a href="#cb4-35"></a>        }</span>
+<span id="cb4-36"><a href="#cb4-36"></a>    }</span>
+<span id="cb4-37"><a href="#cb4-37"></a>}</span></code></pre></div>
+</body>
+</html>

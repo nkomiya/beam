@@ -6,19 +6,31 @@
 #  2. GNU core utilities
 #     https://www.gnu.org/software/coreutils
 
+#--------------------------------------------------
+outputDir=doc
+
 build() {
-    local mdPath cssRelat
+    local mdPath cssRelat ifile ofile dname depth pathes
     #
     mdPath=$(realpath --relative-to=$(pwd)/$1 ../$1)
-    cssRelat=$(realpath --relative-to=$(pwd)/$1 ${cssfile})
+    [ $# -eq 2 ] && opt="-maxdepth $2"
     #
-    [ ! -d "$1" ] && mkdir "$1"
+    [ ! -d "$1" ] && mkdir -p "$1"
     cd $1
-    #
-    for f in $(ls -1 ${mdPath} | grep "\.md$" | sed -e "s/\.md$//"); do
-	sed -e "s/index\.md/index.html/" ${mdPath}/${f}.md  | \
-	    pandoc -s -t html5 -c ${cssRelat} -o ${f}.html \
+
+    pathes=()
+    for ifile in $(find ${mdPath} -type f -name "*.md" ${opt}); do
+	ofile=$(realpath --relative-to=${mdPath} ${ifile} | sed "s/\.md/.html/")
+	dname=$(dirname $ofile)
+	cssRelat=$(realpath --relative-to=${dname} ${cssfile})
+
+	[ "${dname}" != "." ] && [ ! -d "${dname}" ] && mkdir -p ${dname}
+
+	echo "<script src=\"$(realpath --relative-to=${dname} ${jsfile})\"></script>" > tmp
+	sed -e "s/\.md/.html/" ${ifile}  | \
+	    pandoc -s -t html5 -c ${cssRelat} -o ${ofile} -H tmp \
 		   --metadata pagetitle="Beam Programming Guide"
+	rm tmp
 	sed -i "" \
 	    -e "s/pre class=\"sourceCode java\"/pre class=\"line-numbers\"/g" \
 	    -e "s/code class=\"sourceCode java\"/code class=\"language-java\"/g" \
@@ -26,25 +38,38 @@ build() {
 	    -e "s/code class=\"sourceCode bash\"/code class=\"language-bash\"/g" \
 	    -e "s/pre class=\"sourceCode xml\"/pre class=\"line-numbers\"/g" \
 	    -e "s/code class=\"sourceCode xml\"/code class=\"language-xml\"/g" \
-	    -e "s/<\/body>/<script src=\"..\/code.js\"><\/script><\/body>/" \
-	    ${f}.html
+	    ${ofile}
+	#
+	pathes+=("${dname}")
     done
-    #
-    # images
-    if [ -d  "${mdPath}/figs" ]; then
-	[ ! -d figs ] && mkdir figs
-	cp -r ${mdPath}/figs/* ./figs
-    fi
 
-    cd ${rootdir}
+    # images
+    local from to
+    for dname in ${pathes[@]}; do
+	from=$(cd ${mdPath} && cd ${dname} && pwd)/figs
+	if [ -d  "${from}" ]; then
+	    [ ! -d ${dname}/figs ] && mkdir -p ${dname}/figs
+	    cp ${from}/* ${dname}/figs/
+	fi
+    done
+
+    cd ${docdir}
 }
 
-rootdir=$(cd $(dirname $0)/doc && pwd)
-cssfile=${rootdir}/github.css
-cd ${rootdir}
+#--------------------------------------------------
+rootdir=$(cd $(dirname $0) && pwd)
+docdir="${rootdir}/${outputDir}"
+[ ! -d "${docdir}" ] && mkdir -p ${docdir}
+cd ${docdir}
+#
+cp ../.tool/github.css .
+cp ../.tool/prism.js .
+
+cssfile=${docdir}/github.css
+jsfile=${docdir}/prism.js
 
 # index
-build .
+build . 1
 
 # sect 0
 build sect0
@@ -58,8 +83,8 @@ build sect2
 # sect 3
 build sect3
 
-# # sect 4
-# build sect4
+# sect 4
+build sect4
 
 # # sect 5
 # build sect5
