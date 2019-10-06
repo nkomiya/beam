@@ -85,7 +85,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <body>
 <p><a href="../core.html">戻る</a></p>
 <h1 id="pardo">ParDo</h1>
-<p>並行処理（<strong>Par</strong>allel <strong>Do</strong>）の意味で<code>ParDo</code>です。要素ごとの個別の処理になるため、<code>PCollection</code>の全要素数を参照する、みたいなことはできません。</p>
+<p>並行処理（<strong>Par</strong>allel <strong>Do</strong>）の意味で<code>ParDo</code>です。<code>PCollection</code>の要素に任意の変換処理を行うことができます。ですが、要素ごとに個別の処理を行うため<code>PCollection</code>の全要素数を参照する、みたいなことはできません。</p>
 <p><code>ParDo</code>は、<a href="https://enterprisezine.jp/dbonline/detail/4440"><em>Map/Shuffle/Reduce</em></a>モデルにおける“Map”処理に似ているとのこと。<br />
 下の画像だと、Map処理は各要素に“1”をマップする処理になります。</p>
 <blockquote>

@@ -38,6 +38,8 @@ build() {
 	    -e "s/code class=\"sourceCode bash\"/code class=\"language-bash\"/g" \
 	    -e "s/pre class=\"sourceCode xml\"/pre class=\"line-numbers\"/g" \
 	    -e "s/code class=\"sourceCode xml\"/code class=\"language-xml\"/g" \
+	    -e "s/pre class=\"sourceCode json\"/pre class=\"line-numbers\"/g" \
+	    -e "s/code class=\"sourceCode json\"/code class=\"language-json\"/g" \
 	    ${ofile}
 	#
 	pathes+=("${dname}")

@@ -1,7 +1,7 @@
 [戻る](../core.md)
 
 # ParDo
-並行処理（**Par**allel **Do**）の意味で`ParDo`です。要素ごとの個別の処理になるため、`PCollection`の全要素数を参照する、みたいなことはできません。
+並行処理（**Par**allel **Do**）の意味で`ParDo`です。`PCollection`の要素に任意の変換処理を行うことができます。ですが、要素ごとに個別の処理を行うため`PCollection`の全要素数を参照する、みたいなことはできません。
 
 
 `ParDo`は、[_Map/Shuffle/Reduce_](https://enterprisezine.jp/dbonline/detail/4440)モデルにおける"Map"処理に似ているとのこと。  

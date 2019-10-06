@@ -6,7 +6,8 @@
 
 + [ParDo](./core/pardo.md)  
 `PCollection`の要素ごとに、変換処理を加えます
-+ [GroupByKey](./core/groupbykey.md)
++ [GroupByKey](./core/groupbykey.md)  
+`PCollection`の要素をグループ化します
 + [CoGroupByKey](./core/cogbk.md)
 + [Combine](./core/combine.md)
 + [Flatten](./core/flatten.md)
