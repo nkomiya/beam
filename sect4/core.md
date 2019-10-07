@@ -10,6 +10,7 @@
 `PCollection`の要素をグループ化
 + [CoGroupByKey](./core/cogroupbykey.md)  
 複数の`PCollection`に関するグループ化
-+ [Combine](./core/combine.md)
++ [Combine](./core/combine.md)  
+`PCollection`に対して集計処理を行う
 + [Flatten](./core/flatten.md)
 + [Partition](./core/partition.md)
