@@ -41,7 +41,9 @@ user codeを作る手順は、
 ```
 
 イメージとしては、`PTransform`を直線状につながれている感じです。
-![これ](https://beam.apache.org/images/design-your-pipeline-linear.png)
+
+> <img src="./figs/design-your-pipeline-linear.png" width=600>  
+> [https://beam.apache.org/documentation/programming-guide/#applying-transforms](https://beam.apache.org/documentation/programming-guide/#applying-transforms)
 
 
 Inputの`PCollection`がImmutableであるので、もとの`PCollection`は**変更されないまま**です。  
@@ -57,7 +59,8 @@ Inputの`PCollection`がImmutableであるので、もとの`PCollection`は**�
 
 イメージはこんな感じです。
 
-![これ](https://beam.apache.org/images/design-your-pipeline-multiple-pcollections.png)
+> <img src="./figs/design-your-pipeline-multiple-pcollections.png" width=500>  
+> [https://beam.apache.org/documentation/programming-guide/#applying-transforms](https://beam.apache.org/documentation/programming-guide/#applying-transforms)
 
 循環しないPipeline graphを作ることが推奨されています。Pipeline graphは、`PCollection`を頂点、`PTransform`を向きを持った辺とした[有向グラフ](https://jp.mathworks.com/help/matlab/math/directed-and-undirected-graphs.html)です。
 

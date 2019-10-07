@@ -107,7 +107,10 @@ I/O Transform
 <p>ローカルファイルとか、BigQueryのtableにデータを出力します。</p>
 <h3 id="pipelineの実行">5. Pipelineの実行</h3>
 <p>一連の処理の流れを作り終えたら、Pipelineを実行するためのメソッドの呼び出します。処理の一連の流れはgraphっていう。こんな感じでgraphに分岐があってもokです。</p>
-<p><img src="https://cloud.google.com/dataflow/images/monitoring-side-input-write.png" width="800"></p>
+<blockquote>
+<p><img src="./figs/monitoring-side-input-write.png" width="800"><br />
+<a href="https://cloud.google.com/dataflow/docs/guides/using-monitoring-intf#side_input_metrics">https://cloud.google.com/dataflow/docs/guides/using-monitoring-intf#side_input_metrics</a></p>
+</blockquote>
 <p>また、Pipeline処理の完了後に何か処理を行うこともできます。</p>
 <p>Beamの動作詳細としては、</p>
 <ol type="1">

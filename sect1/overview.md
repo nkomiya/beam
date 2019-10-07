@@ -93,7 +93,8 @@ I/O Transformを使って外部から読むか、コード内で適当に初期�
 ### 5. Pipelineの実行
 一連の処理の流れを作り終えたら、Pipelineを実行するためのメソッドの呼び出します。処理の一連の流れはgraphっていう。こんな感じでgraphに分岐があってもokです。  
 
-<img src="https://cloud.google.com/dataflow/images/monitoring-side-input-write.png" width="800">
+> <img src="./figs/monitoring-side-input-write.png" width="800">  
+> [https://cloud.google.com/dataflow/docs/guides/using-monitoring-intf#side_input_metrics](https://cloud.google.com/dataflow/docs/guides/using-monitoring-intf#side_input_metrics)
 
 また、Pipeline処理の完了後に何か処理を行うこともできます。
 
