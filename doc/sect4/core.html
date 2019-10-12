@@ -22,6 +22,7 @@
 <a href="./ptransform.html">PTransformの概要へ</a></p>
 <h1 id="基本的なptransform">基本的なPTransform</h1>
 <p>公式guideではCore Beam transformと呼ばれてる、Built-inの簡単な<code>PTransform</code>たちです。</p>
+<p>全て覚えるというよりは、コーディングの流れの理解ができれば十分なはずです。ただ、分散処理のややこしさが出てくる、<code>Combine</code>は目を通しても損はないと思います。</p>
 <ul>
 <li><a href="./core/pardo.html">ParDo</a><br />
 <code>PCollection</code>の要素ごとの変換処理</li>
@@ -31,7 +32,8 @@
 複数の<code>PCollection</code>に関するグループ化</li>
 <li><a href="./core/combine.html">Combine</a><br />
 <code>PCollection</code>に対して集計処理を行う</li>
-<li><a href="./core/flatten.html">Flatten</a></li>
+<li><a href="./core/flatten.html">Flatten</a><br />
+複数の<code>PCollection</code>の単純な結合</li>
 <li><a href="./core/partition.html">Partition</a></li>
 </ul>
 </body>
