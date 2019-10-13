@@ -167,5 +167,10 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 </ul>
 <p>であるような場合に、keyでの関連づけを行うためのtransformになります。</p>
 <p>動作するコードの全体は、<a href="./codes/cogbk.html">こちら</a>を参照してください。</p>
+<blockquote>
+<h4 id="cogroupbykeyとunbounded-pcollection">CoGroupByKeyとunbounded PCollection</h4>
+<p><code>CoGroupByKey</code>も、<code>GroupByKey</code>で説明した問題があてはまります。詳しくは<a href="../groupbykey.html#comment">そちら</a>を確認してください。<br />
+Windowはタイムスタンプに基づいて要素をグループ化するものです。<code>CoGroupByKey</code>は複数の<code>PCollection</code>をinputに取りますが、どの<code>PCollection</code>も同じようにwindow化されなければいけません。</p>
+</blockquote>
 </body>
 </html>

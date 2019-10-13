@@ -145,5 +145,10 @@ Beamではkey/valueペア用に、<code>KV&lt;K,V&gt;</code>型が用意され�
 <span id="cb4-4"><a href="#cb4-4"></a></span>
 <span id="cb4-5"><a href="#cb4-5"></a>col.<span class="fu">apply</span>(<span class="st">&quot;ApplyGroupByKey&quot;</span>, GroupByKey.<span class="fu">create</span>());</span></code></pre></div>
 <p>動作するコードの全体は、<a href="./codes/gbk.html">こちら</a>を参照してください。</p>
+<blockquote>
+<h4 id="groupbykeyとunbounded-pcollection"><span id="comment">GroupByKeyとunbounded PCollection</span></h4>
+<p><code>GroupByKey</code>は<code>ParDo</code>と違って、<u>全データが到着するのを待たなければ</u>処理を行うことができません。ですが、unboundedな<code>PCollection</code>では全データは決して揃いません。<br />
+unboundedな<code>PCollection</code>においてこのような処理を行う場合は、<a href="../../sect3/pcollection.html#detail">PCollectionの章</a>で軽く触れたwindowや、後々出てくるtriggerを使って、処理を発火させるタイミングを明示的に指定する必要があります。</p>
+</blockquote>
 </body>
 </html>

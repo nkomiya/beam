@@ -89,7 +89,7 @@ public class ReadInMemoryData {
 
 `withCoder`については、7章で詳しく説明します。
 
-## PCollectionについて少し詳しく
+## <span id="detail">PCollectionについて少し詳しく</span>
 大雑把には、`PCollection`は次の二つの性質を持ちます。
 
 + `PCollection`は一つの`Pipeline`に帰属  

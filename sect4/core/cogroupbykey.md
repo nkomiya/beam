@@ -108,5 +108,6 @@ Keyでひとまとめにする、という意味では`GroupByKey`と同じで�
 
 動作するコードの全体は、[こちら](./codes/cogbk.md)を参照してください。
 
-
-
+> #### CoGroupByKeyとunbounded PCollection
+> `CoGroupByKey`も、`GroupByKey`で説明した問題があてはまります。詳しくは[そちら](../groupbykey.md#comment)を確認してください。  
+> Windowはタイムスタンプに基づいて要素をグループ化するものです。`CoGroupByKey`は複数の`PCollection`をinputに取りますが、どの`PCollection`も同じようにwindow化されなければいけません。

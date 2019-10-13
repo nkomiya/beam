@@ -81,3 +81,7 @@ col.apply("ApplyGroupByKey", GroupByKey.create());
 ```
 
 動作するコードの全体は、[こちら](./codes/gbk.md)を参照してください。
+
+> #### <span id="comment">GroupByKeyとunbounded PCollection</span>
+> `GroupByKey`は`ParDo`と違って、<u>全データが到着するのを待たなければ</u>処理を行うことができません。ですが、unboundedな`PCollection`では全データは決して揃いません。  
+> unboundedな`PCollection`においてこのような処理を行う場合は、[PCollectionの章](../../sect3/pcollection.md#detail)で軽く触れたwindowや、後々出てくるtriggerを使って、処理を発火させるタイミングを明示的に指定する必要があります。

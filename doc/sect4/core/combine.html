@@ -250,5 +250,28 @@ transformの最後で呼ばれる、集計結果を返すためのメソッド�
 <li><a href="./codes/sum_integers_perkey.html">Sum.integersPerkey</a></li>
 <li><a href="./codes/combineFn_perkey.html">CombinFn</a></li>
 </ul>
+<h2 id="諸注意"><span class="head">諸注意</span></h2>
+<p><code>Combine</code>は要素全体に作用するため、<a href="./groupbykey.html#comment">GroupByKey</a>などで出てきた、処理を発火するタイミングの問題を考えなければいけません。</p>
+<p>それに加えて、<code>Combine</code>は集計結果を<strong>単一の値</strong>として返すため、<code>PCollection</code>が空の場合の挙動 (デフォルト値) を決めてあげる必要があります。Boundedな入力ソースでwindowを何も指定しない場合、デフォルト値は<code>Combine</code>に使う関数に依存します。例えば<code>Sum</code>であれば、入力が空の場合0を返します。<br />
+入力が空の場合に<code>Combine</code>の出力も空にしたければ、以下のように<code>withoutDefaults</code>をつけます。</p>
+<div class="sourceCode" id="cb10"><pre class="line-numbers"><code class="language-java"><span id="cb10-1"><a href="#cb10-1"></a><span class="co">// Beam SDKの関数を使う場合</span></span>
+<span id="cb10-2"><a href="#cb10-2"></a>input.<span class="fu">apply</span>(Max.<span class="fu">integersGlobally</span>().<span class="fu">withoutDefaults</span>());</span>
+<span id="cb10-3"><a href="#cb10-3"></a></span>
+<span id="cb10-4"><a href="#cb10-4"></a><span class="co">// Combineを使う場合</span></span>
+<span id="cb10-5"><a href="#cb10-5"></a>input.<span class="fu">apply</span>(Combine.<span class="fu">globally</span>( <span class="kw">... </span>).<span class="fu">withoutDefaults</span>());</span></code></pre></div>
+<p><code>CombineFn</code>では、デフォルト値をカスタマイズできます。追加で<code>defaultValue</code>をOverrideするだけです。詳しくは、<a href="./codes/combineFn_withDefault.html">こちら</a>のサンプルを確認してください。</p>
+<div class="sourceCode" id="cb11"><pre class="line-numbers"><code class="language-java"><span id="cb11-1"><a href="#cb11-1"></a><span class="at">@Override</span></span>
+<span id="cb11-2"><a href="#cb11-2"></a><span class="kw">public</span> OutputT <span class="fu">defaultValue</span>() { <span class="kw">... </span>}</span></code></pre></div>
+<blockquote>
+<h4 id="unbounded-pcollectionとデフォルト値">unbounded PCollectionとデフォルト値</h4>
+<p>unbounded <code>PCollection</code>で<code>Combine</code>を使う場合、以下のいずれかが必要です。<br />
+(正確には、windowをデフォルトから変更している場合です。)</p>
+<ol type="1">
+<li>withoutDefaultsを付ける<br />
+Beamがデフォルト値を返してくれないため明示的にデフォルト値を使わない、と宣言する必要があります。</li>
+<li>asSingletonViewを付ける<br />
+詳しくは後述しますが、<code>ParDo</code>において追加の副入力を用いる際に使います。これを使うことで、空のInputに対してデフォルト値を返すようになるようです。</li>
+</ol>
+</blockquote>
 </body>
 </html>

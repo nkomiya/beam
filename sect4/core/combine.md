@@ -216,3 +216,34 @@ input.apply(Sum.integersPerkey());
 + [SerializableFunction](./codes/combine_perkey.md)
 + [Sum.integersPerkey](./codes/sum_integers_perkey.md)
 + [CombinFn](./codes/combineFn_perkey.md)
+
+
+## <span class="head">諸注意</span>
+`Combine`は要素全体に作用するため、[GroupByKey](./groupbykey.md#comment)などで出てきた、処理を発火するタイミングの問題を考えなければいけません。
+
+それに加えて、`Combine`は集計結果を**単一の値**として返すため、`PCollection`が空の場合の挙動 (デフォルト値) を決めてあげる必要があります。Boundedな入力ソースでwindowを何も指定しない場合、デフォルト値は`Combine`に使う関数に依存します。例えば`Sum`であれば、入力が空の場合0を返します。  
+入力が空の場合に`Combine`の出力も空にしたければ、以下のように`withoutDefaults`をつけます。
+
+```java
+// Beam SDKの関数を使う場合
+input.apply(Max.integersGlobally().withoutDefaults());
+
+// Combineを使う場合
+input.apply(Combine.globally( ... ).withoutDefaults());
+```
+
+`CombineFn`では、デフォルト値をカスタマイズできます。追加で`defaultValue`をOverrideするだけです。詳しくは、[こちら](./codes/combineFn_withDefault.md)のサンプルを確認してください。
+
+```java
+@Override
+public OutputT defaultValue() { ... }
+```
+
+> #### unbounded PCollectionとデフォルト値
+> unbounded `PCollection`で`Combine`を使う場合、以下のいずれかが必要です。  
+> (正確には、windowをデフォルトから変更している場合です。)
+> 
+> 1. withoutDefaultsを付ける  
+> Beamがデフォルト値を返してくれないため明示的にデフォルト値を使わない、と宣言する必要があります。
+> 2. asSingletonViewを付ける  
+> 詳しくは後述しますが、`ParDo`において追加の副入力を用いる際に使います。これを使うことで、空のInputに対してデフォルト値を返すようになるようです。
