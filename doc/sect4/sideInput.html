@@ -83,72 +83,51 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
   <script src="../prism.js"></script>
 </head>
 <body>
-<style type="text/css">
-  .head { 
-    border-left:5px solid #00f;
-    padding:3px 0 3px 10px;
-    font-weight: bold;
-  }
-  .lhead { 
-    border-left:5px solid #00f;
-    padding:3px 0 3px 10px;
-    font-size:14pt;
-    font-weight: bold;
-  }
-</style>
-<p><a href="../index.html">topへ</a></p>
-<h1 id="sideインプット">Sideインプット</h1>
-<p>Side inputを使うと、<code>ParDo</code>変換においてinputの<code>PColletion</code>とは別に、追加でデータが渡されます。<code>DoFn</code>での各要素の処理において、共通の値を参照させることが可です。 Side inputの形で<code>DoFn</code>にデータを渡すには、viewとやらを作ってやる必要があります。String型の<code>PCollection</code>があって、総文字数のviewを作りたければ、以下のようになります。</p>
-<div class="sourceCode" id="cb1"><pre class="line-numbers"><code class="language-java"><span id="cb1-1"><a href="#cb1-1"></a>PCollection&lt;<span class="bu">String</span>&gt; txt = ...;</span>
-<span id="cb1-2"><a href="#cb1-2"></a>PCollectionView&lt;<span class="bu">Integer</span>&gt; tot = txt</span>
-<span id="cb1-3"><a href="#cb1-3"></a>                .<span class="fu">apply</span>(MapElements.<span class="fu">into</span>(TypeDescriptors.<span class="fu">integers</span>()).<span class="fu">via</span>(x -&gt; x.<span class="fu">length</span>()))</span>
-<span id="cb1-4"><a href="#cb1-4"></a>                .<span class="fu">apply</span>(Sum.<span class="fu">integersGlobally</span>().<span class="fu">asSingletonView</span>());</span></code></pre></div>
-<p>シングルトンについては<a href="https://www.atmarkit.co.jp/ait/articles/0408/10/news088.html">こちら</a>あたりを。各スレッドやワーカーで、同じ値を参照させたいのかと思ってます（ワーカーについては自信なしです）。</p>
-<p>Side inputで渡すデータは実行時に決定されるべきであって、ハードコードするんじゃない、って公式ガイドは言ってます（ハードコードするなら、わざわざSide inputで渡す必要は無いと思います）。基本的には、Side inputはpipelineのソースに依存して決めるものなのかと思います。</p>
-<div class="sourceCode" id="cb2"><pre class="line-numbers"><code class="language-java"><span id="cb2-1"><a href="#cb2-1"></a><span class="kw">import</span><span class="im"> java.util.List;</span></span>
-<span id="cb2-2"><a href="#cb2-2"></a><span class="kw">import</span><span class="im"> java.util.Arrays;</span></span>
-<span id="cb2-3"><a href="#cb2-3"></a><span class="co">// beam sdk</span></span>
-<span id="cb2-4"><a href="#cb2-4"></a><span class="kw">import</span><span class="im"> org.apache.beam.sdk.Pipeline;</span></span>
-<span id="cb2-5"><a href="#cb2-5"></a><span class="kw">import</span><span class="im"> org.apache.beam.sdk.io.TextIO;</span></span>
-<span id="cb2-6"><a href="#cb2-6"></a><span class="kw">import</span><span class="im"> org.apache.beam.sdk.transforms.Create;</span></span>
-<span id="cb2-7"><a href="#cb2-7"></a><span class="kw">import</span><span class="im"> org.apache.beam.sdk.transforms.Sum;</span></span>
-<span id="cb2-8"><a href="#cb2-8"></a><span class="kw">import</span><span class="im"> org.apache.beam.sdk.transforms.MapElements;</span></span>
-<span id="cb2-9"><a href="#cb2-9"></a><span class="kw">import</span><span class="im"> org.apache.beam.sdk.transforms.ParDo;</span></span>
-<span id="cb2-10"><a href="#cb2-10"></a><span class="kw">import</span><span class="im"> org.apache.beam.sdk.transforms.DoFn;</span></span>
-<span id="cb2-11"><a href="#cb2-11"></a><span class="kw">import</span><span class="im"> org.apache.beam.sdk.values.PCollection;</span></span>
-<span id="cb2-12"><a href="#cb2-12"></a><span class="kw">import</span><span class="im"> org.apache.beam.sdk.values.PCollectionView;</span></span>
-<span id="cb2-13"><a href="#cb2-13"></a><span class="kw">import</span><span class="im"> org.apache.beam.sdk.values.TypeDescriptors;</span></span>
-<span id="cb2-14"><a href="#cb2-14"></a></span>
-<span id="cb2-15"><a href="#cb2-15"></a><span class="kw">public</span> <span class="kw">class</span> Main {</span>
-<span id="cb2-16"><a href="#cb2-16"></a>    <span class="kw">public</span> <span class="dt">static</span> <span class="dt">void</span> <span class="fu">main</span>(<span class="bu">String</span>[] args) {</span>
-<span id="cb2-17"><a href="#cb2-17"></a>        <span class="co">// input text</span></span>
-<span id="cb2-18"><a href="#cb2-18"></a>        <span class="bu">List</span>&lt;<span class="bu">String</span>&gt; input = <span class="bu">Arrays</span>.<span class="fu">asList</span>(</span>
-<span id="cb2-19"><a href="#cb2-19"></a>                <span class="st">&quot;To be, or not to be: that is the question: &quot;</span>,</span>
-<span id="cb2-20"><a href="#cb2-20"></a>                <span class="st">&quot;Whether &#39;tis nobler in the mind to suffer &quot;</span>,</span>
-<span id="cb2-21"><a href="#cb2-21"></a>                <span class="st">&quot;The slings and arrows of outrageous fortune, &quot;</span>,</span>
-<span id="cb2-22"><a href="#cb2-22"></a>                <span class="st">&quot;Or to take arms against a sea of troubles, &quot;</span>);</span>
-<span id="cb2-23"><a href="#cb2-23"></a>        <span class="co">//</span></span>
-<span id="cb2-24"><a href="#cb2-24"></a>        Pipeline pipeline = Pipeline.<span class="fu">create</span>();</span>
-<span id="cb2-25"><a href="#cb2-25"></a>        <span class="co">// input</span></span>
-<span id="cb2-26"><a href="#cb2-26"></a>        PCollection&lt;<span class="bu">String</span>&gt; txt = pipeline.<span class="fu">apply</span>(Create.<span class="fu">of</span>(input));</span>
-<span id="cb2-27"><a href="#cb2-27"></a>        <span class="co">// singleton</span></span>
-<span id="cb2-28"><a href="#cb2-28"></a>        PCollectionView&lt;<span class="bu">Integer</span>&gt; tot = txt</span>
-<span id="cb2-29"><a href="#cb2-29"></a>                .<span class="fu">apply</span>(MapElements.<span class="fu">into</span>(TypeDescriptors.<span class="fu">integers</span>()).<span class="fu">via</span>(x -&gt; x.<span class="fu">length</span>()))</span>
-<span id="cb2-30"><a href="#cb2-30"></a>                .<span class="fu">apply</span>(Sum.<span class="fu">integersGlobally</span>().<span class="fu">asSingletonView</span>());</span>
-<span id="cb2-31"><a href="#cb2-31"></a>        <span class="co">// with side input</span></span>
-<span id="cb2-32"><a href="#cb2-32"></a>        txt</span>
-<span id="cb2-33"><a href="#cb2-33"></a>                .<span class="fu">apply</span>(ParDo.<span class="fu">of</span>(</span>
-<span id="cb2-34"><a href="#cb2-34"></a>                        <span class="kw">new</span> DoFn&lt;<span class="bu">String</span>, <span class="bu">String</span>&gt;() {</span>
-<span id="cb2-35"><a href="#cb2-35"></a>                            <span class="at">@ProcessElement</span></span>
-<span id="cb2-36"><a href="#cb2-36"></a>                            <span class="kw">public</span> <span class="dt">void</span> <span class="fu">method</span>(<span class="at">@Element</span> <span class="bu">String</span> e, OutputReceiver&lt;<span class="bu">String</span>&gt; o, ProcessContext c) {</span>
-<span id="cb2-37"><a href="#cb2-37"></a>                                <span class="dt">int</span> percent = ( e.<span class="fu">length</span>() * <span class="dv">100</span> ) / c.<span class="fu">sideInput</span>(tot);</span>
-<span id="cb2-38"><a href="#cb2-38"></a>                                o.<span class="fu">output</span>( <span class="bu">String</span><span class="fu">.format</span>(<span class="st">&quot;</span><span class="sc">%3d%%</span><span class="st"> : </span><span class="sc">%s</span><span class="st">&quot;</span>,percent,e ));</span>
-<span id="cb2-39"><a href="#cb2-39"></a>                            }</span>
-<span id="cb2-40"><a href="#cb2-40"></a>                        }).<span class="fu">withSideInputs</span>(tot))</span>
-<span id="cb2-41"><a href="#cb2-41"></a>                .<span class="fu">apply</span>(TextIO.<span class="fu">write</span>().<span class="fu">to</span>(<span class="st">&quot;result&quot;</span>).<span class="fu">withoutSharding</span>())</span>
-<span id="cb2-42"><a href="#cb2-42"></a>        ;</span>
-<span id="cb2-43"><a href="#cb2-43"></a>        pipeline.<span class="fu">run</span>();</span>
-<span id="cb2-44"><a href="#cb2-44"></a>    }</span>
-<span id="cb2-45"><a href="#cb2-45"></a>}</span></code></pre></div>
+<p><a href="../index.html">topへ</a><br />
+<a href="./ptransform.html">PTransformの概要へ</a></p>
+<h1 id="side-input">Side Input</h1>
+<p><code>ParDo</code>では、Inputの<code>PCollection</code>の要素ごとに変換処理を行い、別の<code>PCollection</code>を作りました。Side Inputは<code>ParDo</code>における要素ごとの各変換処理で、共通の副入力のデータを参照させる方法です。</p>
+<p>事前準備として<code>ParDo</code>をapplyする前に、副入力として渡したい<code>PCollection</code>から<code>PCollectionView</code>を作ります。作り方は色々ありますが、<code>PCollection</code>の中には要素が一つだけである必要があります。</p>
+<div class="sourceCode" id="cb1"><pre class="line-numbers"><code class="language-java"><span id="cb1-1"><a href="#cb1-1"></a><span class="kw">import</span><span class="im"> org.apache.beam.sdk.transforms.View;</span></span>
+<span id="cb1-2"><a href="#cb1-2"></a><span class="kw">import</span><span class="im"> org.apache.beam.sdk.values.PCollection;</span></span>
+<span id="cb1-3"><a href="#cb1-3"></a><span class="kw">import</span><span class="im"> org.apache.beam.sdk.values.PCollectionView;</span></span>
+<span id="cb1-4"><a href="#cb1-4"></a></span>
+<span id="cb1-5"><a href="#cb1-5"></a>PCollection&lt;T&gt; pCollection = ...;</span>
+<span id="cb1-6"><a href="#cb1-6"></a>PCollectionView&lt;<span class="bu">String</span>&gt; pCollectionView = pCollection.<span class="fu">apply</span>(<span class="bu">View</span>.<span class="fu">asSingleton</span>());</span></code></pre></div>
+<p>要素が一つだけ、という点と相性が良いため、<code>Combine</code>周りのtransformからも作れます。</p>
+<div class="sourceCode" id="cb2"><pre class="line-numbers"><code class="language-java"><span id="cb2-1"><a href="#cb2-1"></a>PCollection&lt;<span class="bu">Integer</span>&gt; pCollection = ...;</span>
+<span id="cb2-2"><a href="#cb2-2"></a>PCollection&lt;<span class="bu">Integer</span>&gt; pCollectionView =</span>
+<span id="cb2-3"><a href="#cb2-3"></a>    pCollection.<span class="fu">apply</span>(Sum.<span class="fu">integersGlobally</span>().<span class="fu">asSingletonView</span>());</span></code></pre></div>
+<p>シングルトンについては<a href="https://www.atmarkit.co.jp/ait/articles/0408/10/news088.html">こちら</a>あたりを読んでみると勉強になるかもです。</p>
+<p><code>DoFn</code>にSide Inputを渡すには、<code>ParDo</code>インスタンスを作るときに<code>withSideInput</code>を使います。<code>DoFn</code>内部での参照は、ProcessContextを使います。<br />
+コードの見た目は、次のようになります。</p>
+<div class="sourceCode" id="cb3"><pre class="line-numbers"><code class="language-java"><span id="cb3-1"><a href="#cb3-1"></a>PCollection&lt;T1&gt; pCollection = ...;</span>
+<span id="cb3-2"><a href="#cb3-2"></a>PCollectionView&lt;T2&gt; pCollectionView = ...;</span>
+<span id="cb3-3"><a href="#cb3-3"></a></span>
+<span id="cb3-4"><a href="#cb3-4"></a>pCollection.<span class="fu">apply</span>(ParDo.<span class="fu">of</span>(</span>
+<span id="cb3-5"><a href="#cb3-5"></a>    <span class="kw">new</span> DoFn&lt;T1,T3&gt; () {</span>
+<span id="cb3-6"><a href="#cb3-6"></a>      <span class="at">@ProcessElement</span></span>
+<span id="cb3-7"><a href="#cb3-7"></a>      <span class="kw">public</span> <span class="dt">void</span> <span class="fu">method</span>(ProcessContext ctx) {</span>
+<span id="cb3-8"><a href="#cb3-8"></a>        T1 input = ctx.<span class="fu">element</span>();</span>
+<span id="cb3-9"><a href="#cb3-9"></a>        T2 sideInput = ctx.<span class="fu">sideInput</span>(pCollectionView);</span>
+<span id="cb3-10"><a href="#cb3-10"></a>        <span class="co">// ... 中略 ...</span></span>
+<span id="cb3-11"><a href="#cb3-11"></a>      }</span>
+<span id="cb3-12"><a href="#cb3-12"></a>    }).<span class="fu">withSideInput</span>(pCollectionView));</span></code></pre></div>
+<p><code>DoFn</code>サブクラス内で、pCollectionViewにアクセスできなければいけないので、匿名クラスを使ってインスタンスを作成しています。Side Inputを伴う<code>DoFn</code>を再利用するには、</p>
+<ul>
+<li><code>PTransform</code>サブクラスを作成し、<code>DoFn</code>をwrapする</li>
+<li><code>DoFn</code>サブクラスのコンストラクタで<code>PCollectionView</code>を渡す</li>
+</ul>
+<p>あたりでしょうか。<a href="./codes/sideInput.html">こちら</a>のサンプルでは、<code>DoFn</code>サブクラスのコンストラクタで<code>PCollectionView</code>を渡しています。サンプルでやっていることは、全文字数に対する一行あたりの文字数の計算をしています。</p>
+<p>Side Inputで渡すviewは、Pipelineのに流すデータから動的につくるべきです。ハードコードや実行時オプションでデータを渡すならば、コンストラクタ経由で渡す方が簡単です。</p>
+<!-- どこに埋め込もうか...
+#### memo
+`PCollectionView`を作るには、`PCollection`を単一の値に絞り込む必要があります。そのため、元となる`PCollection`が有限でないと、viewを作ることはできません。  
+また、globalでないwindowを使った`PCollection`からviewを作ると、windowにつき一つのviewができます。
+
+mainのinputとside inputでwindowの時間間隔は違ってもよく、Beamが適切なside inputを選んでくれます。動作としては、main inputの要素（が持つwindow?）を、side inputのwindowたちに投影して適切なside inputのwindow、つまりside inputの値を選びます。
+
+そのため、main inputを複数のwindowに分割させるなら、処理を発火させるタイミングに応じてside inputを変化させることも可能です。
+-->
 </body>
 </html>

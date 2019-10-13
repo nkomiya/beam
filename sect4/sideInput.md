@@ -1,77 +1,63 @@
-<style type="text/css">
-  .head { 
-    border-left:5px solid #00f;
-    padding:3px 0 3px 10px;
-    font-weight: bold;
-  }
-  .lhead { 
-    border-left:5px solid #00f;
-    padding:3px 0 3px 10px;
-    font-size:14pt;
-    font-weight: bold;
-  }
-</style>
-[topへ](../index.html)
+[topへ](../index.md)  
+[PTransformの概要へ](./ptransform.md)
 
-# Sideインプット
-Side inputを使うと、`ParDo`変換においてinputの`PColletion`とは別に、追加でデータが渡されます。`DoFn`での各要素の処理において、共通の値を参照させることが可です。
-Side inputの形で`DoFn`にデータを渡すには、viewとやらを作ってやる必要があります。String型の`PCollection`があって、総文字数のviewを作りたければ、以下のようになります。
+# Side Input
+`ParDo`では、Inputの`PCollection`の要素ごとに変換処理を行い、別の`PCollection`を作りました。Side Inputは`ParDo`における要素ごとの各変換処理で、共通の副入力のデータを参照させる方法です。
+
+事前準備として`ParDo`をapplyする前に、副入力として渡したい`PCollection`から`PCollectionView`を作ります。作り方は色々ありますが、`PCollection`の中には要素が一つだけである必要があります。
 
 ```java
-PCollection<String> txt = ...;
-PCollectionView<Integer> tot = txt
-                .apply(MapElements.into(TypeDescriptors.integers()).via(x -> x.length()))
-                .apply(Sum.integersGlobally().asSingletonView());
-```
-
-シングルトンについては[こちら](https://www.atmarkit.co.jp/ait/articles/0408/10/news088.html)あたりを。各スレッドやワーカーで、同じ値を参照させたいのかと思ってます（ワーカーについては自信なしです）。
-
-Side inputで渡すデータは実行時に決定されるべきであって、ハードコードするんじゃない、って公式ガイドは言ってます（ハードコードするなら、わざわざSide inputで渡す必要は無いと思います）。基本的には、Side inputはpipelineのソースに依存して決めるものなのかと思います。
-
-```java
-import java.util.List;
-import java.util.Arrays;
-// beam sdk
-import org.apache.beam.sdk.Pipeline;
-import org.apache.beam.sdk.io.TextIO;
-import org.apache.beam.sdk.transforms.Create;
-import org.apache.beam.sdk.transforms.Sum;
-import org.apache.beam.sdk.transforms.MapElements;
-import org.apache.beam.sdk.transforms.ParDo;
-import org.apache.beam.sdk.transforms.DoFn;
+import org.apache.beam.sdk.transforms.View;
 import org.apache.beam.sdk.values.PCollection;
 import org.apache.beam.sdk.values.PCollectionView;
-import org.apache.beam.sdk.values.TypeDescriptors;
 
-public class Main {
-    public static void main(String[] args) {
-        // input text
-        List<String> input = Arrays.asList(
-                "To be, or not to be: that is the question: ",
-                "Whether 'tis nobler in the mind to suffer ",
-                "The slings and arrows of outrageous fortune, ",
-                "Or to take arms against a sea of troubles, ");
-        //
-        Pipeline pipeline = Pipeline.create();
-        // input
-        PCollection<String> txt = pipeline.apply(Create.of(input));
-        // singleton
-        PCollectionView<Integer> tot = txt
-                .apply(MapElements.into(TypeDescriptors.integers()).via(x -> x.length()))
-                .apply(Sum.integersGlobally().asSingletonView());
-        // with side input
-        txt
-                .apply(ParDo.of(
-                        new DoFn<String, String>() {
-                            @ProcessElement
-                            public void method(@Element String e, OutputReceiver<String> o, ProcessContext c) {
-                                int percent = ( e.length() * 100 ) / c.sideInput(tot);
-                                o.output( String.format("%3d%% : %s",percent,e ));
-                            }
-                        }).withSideInputs(tot))
-                .apply(TextIO.write().to("result").withoutSharding())
-        ;
-        pipeline.run();
-    }
-}
+PCollection<T> pCollection = ...;
+PCollectionView<String> pCollectionView = pCollection.apply(View.asSingleton());
 ```
+
+要素が一つだけ、という点と相性が良いため、`Combine`周りのtransformからも作れます。
+
+```java
+PCollection<Integer> pCollection = ...;
+PCollection<Integer> pCollectionView =
+    pCollection.apply(Sum.integersGlobally().asSingletonView());
+```
+
+シングルトンについては[こちら](https://www.atmarkit.co.jp/ait/articles/0408/10/news088.html)あたりを読んでみると勉強になるかもです。
+
+`DoFn`にSide Inputを渡すには、`ParDo`インスタンスを作るときに`withSideInput`を使います。`DoFn`内部での参照は、ProcessContextを使います。  
+コードの見た目は、次のようになります。
+
+```java
+PCollection<T1> pCollection = ...;
+PCollectionView<T2> pCollectionView = ...;
+
+pCollection.apply(ParDo.of(
+    new DoFn<T1,T3> () {
+      @ProcessElement
+      public void method(ProcessContext ctx) {
+        T1 input = ctx.element();
+        T2 sideInput = ctx.sideInput(pCollectionView);
+        // ... 中略 ...
+      }
+    }).withSideInput(pCollectionView));
+```
+
+`DoFn`サブクラス内で、pCollectionViewにアクセスできなければいけないので、匿名クラスを使ってインスタンスを作成しています。Side Inputを伴う`DoFn`を再利用するには、
+
++ `PTransform`サブクラスを作成し、`DoFn`をwrapする
++ `DoFn`サブクラスのコンストラクタで`PCollectionView`を渡す
+
+あたりでしょうか。[こちら](./codes/sideInput.md)のサンプルでは、`DoFn`サブクラスのコンストラクタで`PCollectionView`を渡しています。サンプルでやっていることは、全文字数に対する一行あたりの文字数の計算をしています。
+
+Side Inputで渡すviewは、Pipelineのに流すデータから動的につくるべきです。ハードコードや実行時オプションでデータを渡すならば、コンストラクタ経由で渡す方が簡単です。
+
+<!-- どこに埋め込もうか...
+#### memo
+`PCollectionView`を作るには、`PCollection`を単一の値に絞り込む必要があります。そのため、元となる`PCollection`が有限でないと、viewを作ることはできません。  
+また、globalでないwindowを使った`PCollection`からviewを作ると、windowにつき一つのviewができます。
+
+mainのinputとside inputでwindowの時間間隔は違ってもよく、Beamが適切なside inputを選んでくれます。動作としては、main inputの要素（が持つwindow?）を、side inputのwindowたちに投影して適切なside inputのwindow、つまりside inputの値を選びます。
+
+そのため、main inputを複数のwindowに分割させるなら、処理を発火させるタイミングに応じてside inputを変化させることも可能です。
+-->
