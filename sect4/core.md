@@ -16,4 +16,5 @@
 `PCollection`に対して集計処理を行う
 + [Flatten](./core/flatten.md)  
 複数の`PCollection`の単純な結合
-+ [Partition](./core/partition.md)
++ [Partition](./core/partition.md)  
+`PCollection`を分割する
