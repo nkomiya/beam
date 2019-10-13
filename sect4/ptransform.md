@@ -5,7 +5,7 @@
 
 1. [概要](#overview)
 2. [基本的なPTransform](./core.md)
-3. [注意点](./warnings.md)
+3. [注意点](./requirements.md)
 4. [Side Input](./sideInput.md)
 5. [ParDo発展編](./pardo2.md)
 6. [Composite transform](./composite.md)

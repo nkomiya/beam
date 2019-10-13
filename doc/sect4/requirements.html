@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>Beam Programming Guide</title>
+  <style>
+      code{white-space: pre-wrap;}
+      span.smallcaps{font-variant: small-caps;}
+      span.underline{text-decoration: underline;}
+      div.column{display: inline-block; vertical-align: top; width: 50%;}
+  </style>
+  <link rel="stylesheet" href="../github.css" />
+  <!--[if lt IE 9]>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/html5shiv/3.7.3/html5shiv-printshiv.min.js"></script>
+  <![endif]-->
+  <script src="../prism.js"></script>
+</head>
+<body>
+<p><a href="../index.html">topへ</a><br />
+<a href="./ptransform.html">PTransformの概要へ</a></p>
+<h1 id="ユーザ定義関数における注意点">ユーザ定義関数における注意点</h1>
+<p>ユーザ定義関数を作る際は、分散処理の特性に気を使う必要があります。処理は複数のワーカーで独立に、かつお互いの状態に無関係に行われます。<br />
+この節で触れることは、<code>DoFn</code>, <code>CombineFn</code>, <code>WindowFn</code>において一般的にあてはまります (<code>WindowFn</code>については、後の章を参照)。具体的に注意することは、以下の３つです。</p>
+<ul>
+<li><a href="https://www.ne.jp/asahi/hishidama/home/tech/java/serial.html">シリアル化</a>可能であること</li>
+<li>スレッド互換であること<br />
+マルチスレッドでも問題なく動く、の意味です。<br />
+用語を詳しく知りたければ<a href="https://www.ibm.com/developerworks/jp/java/library/j-jtp09263/index.html">こちら</a>が参考になるかもです。</li>
+<li>必須ではないが、処理が冪等であること</li>
+</ul>
+<p>それぞれ、詳しく見ていきます。</p>
+<h2 id="シリアル化可能性"><span class="head">シリアル化可能性</span></h2>
+<p>基本的に処理はワーカー間で独立なのですが、ワーカー間で通信が必要になることもあります (<code>Combine</code>で各ワーカーの集計結果をまとめるときなど)。<br />
+動作の詳細としては、<code>DoFn</code>などのサブクラスのインスタンス (関数オブジェクト) が各ワーカーで生成され、必要に応じてシリアル化された関数オブジェクトが別のワーカーへ転送されます。<br />
+ユーザ定義関数はクラスの継承やインターフェースの実装で作りますが、その際にシリアル化できないメンバを追加するとビルドは通りません。</p>
+<p>以下、頭に入れておいた方が良さそうな点になります。</p>
+<ul>
+<li><a href="http://java-code.jp/126">Transient修飾子</a><br />
+transient修飾子を付けたメンバはシリアル化されないため、ワーカーへ渡されません。<br />
+詳細は<a href="./codes/transient.html">こちら</a>のコードを参照してください。</li>
+<li>シリアル化する前に大量のデータの読み込みは避ける</li>
+<li>関数オブジェクト<br />
+✔ 関数オブジェクトの間でデータ共有は不可。<br />
+✔ apply後の関数オブジェクトの変更は、影響無し</li>
+<li>匿名クラス<br />
+staticでないコンテキストで作成された匿名クラスのインスタンスは、暗黙的にそのクラスへのポインタを持っています。これもシリアル化の対象になることに注意するように、とのことです。</li>
+</ul>
+<h2 id="スレッド互換性"><span class="head">スレッド互換性</span></h2>
+<p>ここは自分でマルチスレッド処理を実装するつもりがないならば、読み飛ばしても問題ないです。</p>
+<p>マルチスレッド処理を自分で実装しない限り、各関数オブジェクトの処理はシングルスレッドで捌かれます。Beamはスレッドセーフではないので、独自で同期処理をしなければいけないようです。</p>
+<p>また、関数オブジェクト内のstaticメンバはワーカーに渡されないそうです。staticメンバは使用可能なので、staticメンバを参照するときは関数オブジェクト間でデータのやりとりがあるのかな、と思ってます。</p>
+<h2 id="冪等性"><span class="head">冪等性</span></h2>
+<p>必須ではないのですが関数オブジェクトが冪等であること、つまり何度呼び出されても同じ結果を返すようにしておくことが推奨されています。</p>
+<p>Beamでは関数オブジェクトの呼び出し回数の保証はしないそうです（一時的な通信エラーなどでリトライされることなどを指しているのかと思います）。</p>
+<p>そのため、基本的には処理が複数回行われても問題ないようなコードにしておく方が安全です。</p>
+</body>
+</html>
