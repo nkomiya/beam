@@ -1,3 +1,6 @@
+[戻る](../pardo.md)
+
+```java
 package com.examples.beam.sect4.pardo;
 
 import org.apache.beam.sdk.Pipeline;
@@ -44,3 +47,4 @@ public class DoFnAnonymous {
     pipeline.run();
   }
 }
+```

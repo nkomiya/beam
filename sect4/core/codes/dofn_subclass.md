@@ -1,5 +1,6 @@
-package com.examples.beam.sect4.pardo;
+[戻る](../pardo.md)
 
+```java
 import org.apache.beam.sdk.Pipeline;
 import org.apache.beam.sdk.coders.StringUtf8Coder;
 import org.apache.beam.sdk.transforms.Create;
@@ -43,7 +44,7 @@ public class DoFnSubclass {
      * 実処理を行うメソッド
      *
      * @param input 任意の文字列
-     * @param o     文字数
+     * @param o 文字数
      */
     @ProcessElement
     public void method(@Element String input, OutputReceiver<Integer> o) {
@@ -55,3 +56,4 @@ public class DoFnSubclass {
     }
   }
 }
+```

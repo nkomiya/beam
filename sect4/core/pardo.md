@@ -36,44 +36,62 @@ UNIXタイムスタンプから時間文字列に変換、とかです。
 ```java
 import org.apache.beam.sdk.transforms.DoFn;
 
-... 中略 ...
-
-class MyFn extends DoFn<String, Integer> {
+class MyFn extends DoFn<InputT, OutputT> {
   @ProcessElement
-  public void method(@Element String input, OutputReceiver<Integer> o) {
-    o.output(input.length());
+  public void method(@Element InputT input, OutputReceiver<OutputT> o) {
+    OutputT x = ...;
+    o.output(x);
   }
 }
 ```
 
-input, outputの型は`DoFn`の型引数で指定する。上の例だとinputはString型、outputはInteger型。
-処理で行われるのは、`ProcessElement`アノテーションを付けたメソッドに書きます。メソッド名は何でも良いです。  
-Inputの要素は`Element`アノテーションをつけた仮引数に入り、出力は`OutputReceiver<T>`型の変数のoutputメソッドに渡します。
+input, outputの型は`DoFn`の型引数で指定します。また、`ProcessElement`アノテーションを付けたメソッドの処理が実行されます。メソッド名は何でも良いです。  
+Inputの要素は`Element`アノテーションをつけた仮引数に入り、出力は`OutputReceiver<OutputT>`型の変数のoutputメソッドに渡します。
 
-inputの`PCollection`は適当に分割されるので、`DoFn`インスタンスは複数回呼び出されることになる。ただ失敗時に備えるとかで複数回呼ばれることもあるため、分割した分だけ`DoFn`インスタンスが呼ばれる訳ではない。呼び出し回数はキャッシュできるけど、呼び出し回数に依存した処理は実装すべきでないとのこと。
+[コード例](./codes/dofn_subclass.md)
 
-また、`PCollection`がimmutableであることを保証するため、メソッドの実装の際には以下の変数の値を
-いじくるな、とのこと。
 
-- `Element`アノテーションをつけた変数
-- `OutputReceiver`で出力をした後では、任意の変数
+> ### 注意書き
+>`DoFn`サブクラスのインスタンスは、Inputの`PCollection`を適当に分割したものを処理する際に呼び出され、一般に複数回呼び出されます。ワーカー単位で見ても、失敗時のリトライなどで複数回呼ばれることもあります。  
+>呼び出し回数のキャッシュは可能ですが、呼び出し回数に依存した処理は実装すべきではないです。
+>
+>また、`PCollection`がImmutableであることを保証するため、以下の変数の値を変更を避けた方が良いです。
+>
+> - `Element`アノテーションをつけた変数
+> - `OutputReceiver`で出力をした後では、任意の変数
 
 ## <span class="head">DoFn - 匿名クラスの利用</span>
 もし同じ変換処理を繰り返すつもりがなく、サブクラスを定義するのが面倒という場合は、匿名クラスを使って処理を書いても大丈夫です。
 
 ```java
 // input
-List<String> input = ...;
+PCollection<IntputT> pCollection = ...;
 
-// graph作成
-pipeline
-    .apply(Create.of(input))
+// ParDoのapply
+pCollection
     .apply(ParDo.of(
-        new DoFn<String, Integer>() {
+        new DoFn<InputT, OutputT>() {
           @ProcessElement
-          public void method(@Element String e, OutputReceiver<Integer> o) {
-            o.output(e.length());
+          public void method(@Element InputT e, OutputReceiver<Integer> o) {
+            OutputT x = ...;
+            o.output(x);
           }
         }));
 ```
 
+[コード例](./codes/dofn_anonymous.md)
+
+## <span class="head">MapElementsの利用</span>
+`ParDo`において、簡単な処理を行うだけならば、`MapElements`を使うとコードがシンプルにできる場合があります。
+
+よく使うやり方は、
+
+```java
+pCollection.apply(MapElements.into([出力の型]).via(ラムダ式));
+```
+
+のようになります。ラムダ式については[こちら](https://qiita.com/dev_npon/items/4edd925f0fafe969bd06)。
+
+出力の型指定は、`org.apache.beam.sdk.values.TypeDescriptors`を使います。Stringで出力したければ、intoで`TypeDescriptors.strings()`を指定します。
+
+[コード例](./codes/mapElements.md)

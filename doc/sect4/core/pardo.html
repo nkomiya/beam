@@ -111,36 +111,48 @@ UNIXタイムスタンプから時間文字列に変換、とかです。</li>
 <code>DoFn</code>のサブクラスの宣言の例はこんな感じになります。</p>
 <div class="sourceCode" id="cb2"><pre class="line-numbers"><code class="language-java"><span id="cb2-1"><a href="#cb2-1"></a><span class="kw">import</span><span class="im"> org.apache.beam.sdk.transforms.DoFn;</span></span>
 <span id="cb2-2"><a href="#cb2-2"></a></span>
-<span id="cb2-3"><a href="#cb2-3"></a><span class="kw">... </span>中略 ...</span>
-<span id="cb2-4"><a href="#cb2-4"></a></span>
-<span id="cb2-5"><a href="#cb2-5"></a><span class="kw">class</span> MyFn <span class="kw">extends</span> DoFn&lt;<span class="bu">String</span>, <span class="bu">Integer</span>&gt; {</span>
-<span id="cb2-6"><a href="#cb2-6"></a>  <span class="at">@ProcessElement</span></span>
-<span id="cb2-7"><a href="#cb2-7"></a>  <span class="kw">public</span> <span class="dt">void</span> <span class="fu">method</span>(<span class="at">@Element</span> <span class="bu">String</span> input, OutputReceiver&lt;<span class="bu">Integer</span>&gt; o) {</span>
-<span id="cb2-8"><a href="#cb2-8"></a>    o.<span class="fu">output</span>(input.<span class="fu">length</span>());</span>
-<span id="cb2-9"><a href="#cb2-9"></a>  }</span>
-<span id="cb2-10"><a href="#cb2-10"></a>}</span></code></pre></div>
-<p>input, outputの型は<code>DoFn</code>の型引数で指定する。上の例だとinputはString型、outputはInteger型。 処理で行われるのは、<code>ProcessElement</code>アノテーションを付けたメソッドに書きます。メソッド名は何でも良いです。<br />
-Inputの要素は<code>Element</code>アノテーションをつけた仮引数に入り、出力は<code>OutputReceiver&lt;T&gt;</code>型の変数のoutputメソッドに渡します。</p>
-<p>inputの<code>PCollection</code>は適当に分割されるので、<code>DoFn</code>インスタンスは複数回呼び出されることになる。ただ失敗時に備えるとかで複数回呼ばれることもあるため、分割した分だけ<code>DoFn</code>インスタンスが呼ばれる訳ではない。呼び出し回数はキャッシュできるけど、呼び出し回数に依存した処理は実装すべきでないとのこと。</p>
-<p>また、<code>PCollection</code>がimmutableであることを保証するため、メソッドの実装の際には以下の変数の値を いじくるな、とのこと。</p>
+<span id="cb2-3"><a href="#cb2-3"></a><span class="kw">class</span> MyFn <span class="kw">extends</span> DoFn&lt;InputT, OutputT&gt; {</span>
+<span id="cb2-4"><a href="#cb2-4"></a>  <span class="at">@ProcessElement</span></span>
+<span id="cb2-5"><a href="#cb2-5"></a>  <span class="kw">public</span> <span class="dt">void</span> <span class="fu">method</span>(<span class="at">@Element</span> InputT input, OutputReceiver&lt;OutputT&gt; o) {</span>
+<span id="cb2-6"><a href="#cb2-6"></a>    OutputT x = ...;</span>
+<span id="cb2-7"><a href="#cb2-7"></a>    o.<span class="fu">output</span>(x);</span>
+<span id="cb2-8"><a href="#cb2-8"></a>  }</span>
+<span id="cb2-9"><a href="#cb2-9"></a>}</span></code></pre></div>
+<p>input, outputの型は<code>DoFn</code>の型引数で指定します。また、<code>ProcessElement</code>アノテーションを付けたメソッドの処理が実行されます。メソッド名は何でも良いです。<br />
+Inputの要素は<code>Element</code>アノテーションをつけた仮引数に入り、出力は<code>OutputReceiver&lt;OutputT&gt;</code>型の変数のoutputメソッドに渡します。</p>
+<p><a href="./codes/dofn_subclass.html">コード例</a></p>
+<blockquote>
+<h3 id="注意書き">注意書き</h3>
+<p><code>DoFn</code>サブクラスのインスタンスは、Inputの<code>PCollection</code>を適当に分割したものを処理する際に呼び出され、一般に複数回呼び出されます。ワーカー単位で見ても、失敗時のリトライなどで複数回呼ばれることもあります。<br />
+呼び出し回数のキャッシュは可能ですが、呼び出し回数に依存した処理は実装すべきではないです。</p>
+<p>また、<code>PCollection</code>がImmutableであることを保証するため、以下の変数の値を変更を避けた方が良いです。</p>
 <ul>
 <li><code>Element</code>アノテーションをつけた変数</li>
 <li><code>OutputReceiver</code>で出力をした後では、任意の変数</li>
 </ul>
+</blockquote>
 <h2 id="dofn---匿名クラスの利用"><span class="head">DoFn - 匿名クラスの利用</span></h2>
 <p>もし同じ変換処理を繰り返すつもりがなく、サブクラスを定義するのが面倒という場合は、匿名クラスを使って処理を書いても大丈夫です。</p>
 <div class="sourceCode" id="cb3"><pre class="line-numbers"><code class="language-java"><span id="cb3-1"><a href="#cb3-1"></a><span class="co">// input</span></span>
-<span id="cb3-2"><a href="#cb3-2"></a><span class="bu">List</span>&lt;<span class="bu">String</span>&gt; input = ...;</span>
+<span id="cb3-2"><a href="#cb3-2"></a>PCollection&lt;IntputT&gt; pCollection = ...;</span>
 <span id="cb3-3"><a href="#cb3-3"></a></span>
-<span id="cb3-4"><a href="#cb3-4"></a><span class="co">// graph作成</span></span>
-<span id="cb3-5"><a href="#cb3-5"></a>pipeline</span>
-<span id="cb3-6"><a href="#cb3-6"></a>    .<span class="fu">apply</span>(Create.<span class="fu">of</span>(input))</span>
-<span id="cb3-7"><a href="#cb3-7"></a>    .<span class="fu">apply</span>(ParDo.<span class="fu">of</span>(</span>
-<span id="cb3-8"><a href="#cb3-8"></a>        <span class="kw">new</span> DoFn&lt;<span class="bu">String</span>, <span class="bu">Integer</span>&gt;() {</span>
-<span id="cb3-9"><a href="#cb3-9"></a>          <span class="at">@ProcessElement</span></span>
-<span id="cb3-10"><a href="#cb3-10"></a>          <span class="kw">public</span> <span class="dt">void</span> <span class="fu">method</span>(<span class="at">@Element</span> <span class="bu">String</span> e, OutputReceiver&lt;<span class="bu">Integer</span>&gt; o) {</span>
-<span id="cb3-11"><a href="#cb3-11"></a>            o.<span class="fu">output</span>(e.<span class="fu">length</span>());</span>
+<span id="cb3-4"><a href="#cb3-4"></a><span class="co">// ParDoのapply</span></span>
+<span id="cb3-5"><a href="#cb3-5"></a>pCollection</span>
+<span id="cb3-6"><a href="#cb3-6"></a>    .<span class="fu">apply</span>(ParDo.<span class="fu">of</span>(</span>
+<span id="cb3-7"><a href="#cb3-7"></a>        <span class="kw">new</span> DoFn&lt;InputT, OutputT&gt;() {</span>
+<span id="cb3-8"><a href="#cb3-8"></a>          <span class="at">@ProcessElement</span></span>
+<span id="cb3-9"><a href="#cb3-9"></a>          <span class="kw">public</span> <span class="dt">void</span> <span class="fu">method</span>(<span class="at">@Element</span> InputT e, OutputReceiver&lt;<span class="bu">Integer</span>&gt; o) {</span>
+<span id="cb3-10"><a href="#cb3-10"></a>            OutputT x = ...;</span>
+<span id="cb3-11"><a href="#cb3-11"></a>            o.<span class="fu">output</span>(x);</span>
 <span id="cb3-12"><a href="#cb3-12"></a>          }</span>
 <span id="cb3-13"><a href="#cb3-13"></a>        }));</span></code></pre></div>
+<p><a href="./codes/dofn_anonymous.html">コード例</a></p>
+<h2 id="mapelementsの利用"><span class="head">MapElementsの利用</span></h2>
+<p><code>ParDo</code>において、簡単な処理を行うだけならば、<code>MapElements</code>を使うとコードがシンプルにできる場合があります。</p>
+<p>よく使うやり方は、</p>
+<div class="sourceCode" id="cb4"><pre class="line-numbers"><code class="language-java"><span id="cb4-1"><a href="#cb4-1"></a>pCollection.<span class="fu">apply</span>(MapElements.<span class="fu">into</span>([出力の型]).<span class="fu">via</span>(ラムダ式));</span></code></pre></div>
+<p>のようになります。ラムダ式については<a href="https://qiita.com/dev_npon/items/4edd925f0fafe969bd06">こちら</a>。</p>
+<p>出力の型指定は、<code>org.apache.beam.sdk.values.TypeDescriptors</code>を使います。Stringで出力したければ、intoで<code>TypeDescriptors.strings()</code>を指定します。</p>
+<p><a href="./codes/mapElements.html">コード例</a></p>
 </body>
 </html>
