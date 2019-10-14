@@ -91,5 +91,5 @@ build sect4
 # sect 5
 build sect5
 
-# # sect 6
-# build sect6
+# sect 6
+build sect6

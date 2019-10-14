@@ -1,106 +1,199 @@
-<style type="text/css">
-  .head { 
-    border-left:5px solid #00f;
-    padding:3px 0 3px 10px;
-    font-weight: bold;
-  }
-  .lhead { 
-    border-left:5px solid #00f;
-    padding:3px 0 3px 10px;
-    font-size:14pt;
-    font-weight: bold;
-  }
-</style>
-[topへ](../index.html)
+[topへ](../index.md)
 
 # データのエンコードと型安全性
-Beamではパイプラインにおける`PCollection`は、中間データも含めてバイト列と相互に変換できる必要があります。この変換を行うオブジェクトはBeamでは`Coder`とよばれ、元データとバイト列の間で変換することをencode / decodeと読んでいます。
+Beamでは全ての`PCollection`は`Coder`の指定が必須です。ワーカーに渡されるデータは、中間データも含めてバイト列と相互に変換できる必要がありますが、この変換を担うのが`Coder`です。  
+ちなみに、バイト列への変換がencode、バイト列からの復元がdecodeです。
 
-JavaのBeam SDKでは、様々な型（Integer, Long, String, ... etc.）に対して`Coder`のサブクラスが定義されてます。基本的には暗黙的に`Coder`サブクラスが指定されて、encode / decodeをしてくれます。
+JavaのBeam SDKでは、様々な型（Integer, Long, String, ... etc.）に対して`Coder`サブクラスが事前定義されています。型推定が上手く動作する場合は、暗黙的に`Coder`サブクラスが指定されるため、`Coder`を意識する必要はありません。
 
-注意点としては、一つの型に対して`Coder`は一意に決めなくてもよく、`PTransform`の前後で`Coder`を変えたりできます。たとえば整数型の`PCollection`に対し、inputは`BigEndianIntegerCoder`、outputは`VarIntCoder`、みたいな話です。
+> #### Memo
+> 一つの型に対する`Coder`は一意である必要はありません。型変換をしない`PTransform`の前後で`Coder`を変更することもできます。  
+> 例えば、`PTransform<Integer, Integer>`において、Inputは`BigEndianIntegerCoder`にしておき、Outputでは`VarIntCoder`を使う、のような具合です。  
+> `Coder`を変更することで、シリアル化するデータ量を（おそらく）減らせることもあるので、`Coder`を活用できれば処理性能を上げられるかもしれません。
 
 
 ## <span class="head">Coderの指定</span>
-Beamでは全ての`PCollection`は`Coder`が指定されている必要があるそうですが、基本的には`PCollection`の型やapplyする`PTransform`の型から自動的に`Coder`を決めてくれます。
-たとえば`DoFn<Integer,String>`の関数オブジェクトでは、outputはString型の`PCollection`になります。なので、outputの`PCollection`の`Coder`は、String型のdefaultの`Coder`（何も指定がなければ`StringUtf8Coder`）となります。  
-Beamで`Coder`がうまく推測出来ない場合は、ユーザ自身が明示的に`Coder`の指定を行わなければいけない場合もあるそうです。
+`PCollection`の型宣言や、applyする`PTransform`の型引数から型推定ができるので、基本的には自動的に`Coder`を決まる場合が多いです。ですが、カスタムクラスを使う場合など、`Coder`の推定が出来ない場合はユーザ自身が明示的に`Coder`の指定をする必要があります。
 
 `PCollection`の`Coder`を指定するには、`setCoder`メソッドを使います。たとえば、次のような感じです。
 
-```java=
-PCollection<String> pcol = ...;
-pcol.setCoder(StringUtf8Coder.of());
+```java
+PCollection<String> pCollection = ...;
+pCollection.setCoder(StringUtf8Coder.of());
 ```
 
-`PCollection`にapplyを適用した後で、`Coder`の指定をすると実行時にエラーが出ます。
+`Coder`がfinalizeされるのは、`PCollection`にtransformをapplyする段階です。
 
-```java=
-PCollection<String> pcol = ...;
-pcol.apply( ... );
-// pcolにapplyを適用した後なので、Coderを変更できない
-//pcol.setCoder(StringUtf8Coder.of());
+```java
+PCollection<String> pCollection = ...;
+pCollection.apply(...);
+
+// transformのapply後にCoder指定をすると、graph構築の段階でビルドに失敗する
+pCollection.setCoder(StringUtf8Coder.of());
 ```
 
-Beamは通常のプログラミングと違って、コードの一番上から順に、一つの行の処理を終えるごとに次の行の処理に移るわけではありません。  
-たとえばBigQueryのテーブルをGCSにテキストファイルとしてエクスポートする、みたいなpipelineを実行すると、BigQueryのテーブルの大きさにもよるかもですが読み込みと同時に書き出しも行われます。  
-そのため、applyを適用した段階で`PCollection`がfinalizeされ、変更が不可となります。
+Pipelineの各ステップは並列に実行され得ます。特定の型ではなく、特定の`PCollection`に注目した場合だと、encode / decodeの方法は統一されなければいけないのかと思います。
 
-`PCollection`の`Coder`を調べたければ、`getCoder`メソッドを用います。
+`PCollection`の`Coder`を調べるには、`getCoder`メソッドを用います。  
 
-```java=
-PCollection<String> pcol = ...;
-
-// StringUtf8Coder,　と出力されるはずです
-System.out.pritnln(pcol.getCoder());
+```java
+pCollection<String> pCollection = ...;
+System.out.pritnln(pcol.getCoder());    // (stdout) StringUtf8Coder
 ```
-もし`Coder`の指定がなく、また自動決定がされていなければ、`getCoder`メソッドはエラーを返します。
 
-in-memoryのデータから`Create`メソッドで`PCollection`を作る場合は、`withCoder`メソッドを使って`Coder`の指定を行います。
+`Coder`を指定しておらず、`Coder`の自動決定ができない場合、`getCoder`メソッドはエラーを返します。
+
+`Create`を使って`PCollection`を作る場合は、`withCoder`メソッドで`Coder`の指定します。
 
 ```java
 Pipeline pipeline = Pipeline.create();
-pipeline
-    .apply(
-        Create.of( [リスト] )
-        .withCoder( [Coder] )
-    )
-    ...
+pipeline.apply(Create.of(...).withCoder(...));
 ```
 
-`Create`は引数の型情報を参照しないらしいので、あまり型推測を信頼すべきでなく、`withCoder`で明示的に指定した方がよいようです。
+`Create`は引数の型情報を参照しないらしいので、型推定を信頼せずに`withCoder`で明示的に`Coder`を指定した方が良いようです。
+
+[コードサンプル](./codes/setCoder.md)
 
 ## <span class="head">デフォルトのCoderを指定する</span>
-`Pipeline`オブジェクトは`CoderRegistry`を持っていて、これを使うとdefaultの`Coder`を取得したり、Javaの型ごとにdefaultの`Coder`を指定することができます。
+`Pipeline`オブジェクトは`CoderRegistry`を持っていて、これを使うとdefaultの`Coder`を取得したり、defaultの`Coder`を登録したりすることができます。
 
-`CoderRegistry`は`Pipeline`オブジェクトの`getCoderRegistry`メソッドを使って取得可能でき、`CoderRegistry`オブジェクトの`getCoder`メソッドにclassインスタンスを渡すと、渡したクラスのdefaultの`Coder`が得られます。
+`CoderRegistry`は、`getCoderRegistry`を使って取得できます。
 
 ```java
-import org.apache.beam.sdk.Pipeline;
-import org.apache.beam.sdk.coders.CannotProvideCoderException;
 import org.apache.beam.sdk.coders.CoderRegistry;
 
-public class Cofact {
-    public static void main(String[] args) {
-        Pipeline pipeline = Pipeline.create();
-        CoderRegistry cr = pipeline.getCoderRegistry();
+Pipeline pipeline = ...
+CoderRegistry cr = pipeline.getCoderRegistry();
+```
 
-        // Integerの型を調べる
-        try {
-            System.out.println(cr.getCoder(Integer.class));
-        } catch (CannotProvideCoderException e) {}
-    }
+手抜きのカスタムクラスですが、これにdefaultの`Coder`を登録することを考えます。
+
+```java
+class MyCustomDataType implements Serializable {
+  public int a;
+  public int b;
 }
 ```
 
-defaultの`Coder`を変更したければ、`registerCoder`メソッドを用います。
-引数には、`Coder`を指定したい型のclassオブジェクトと、指定したい`Coder`サブクラスの
-オブジェクトを`of`で作成して渡します。
+`registerCoderForClass`を使うと、クラスに対するdefaultのCoderが指定できます。
 
 ```java
-cr.registerCoderForClass(Integer.class,BigEndianIntegerCoder.of());
+cr.registerCoderForClass(
+    MyCustomDataType.class,
+    // SerializableCoderは、java.io.Serializableを実装してるクラスに
+    // 使用可能で、Beamが上手いことencode/decodeしてくれます。
+    SerializableCoder.of(MyCustomDataType.class));
 ```
 
-## <span class="head">自作クラスにCoderを指定する</span>
 
-If your pipeline program defines a custom data type, you can use the @DefaultCoder annotation to specify the coder to use with that type. For example, let’s say you have a custom data type for which you want to use SerializableCoder. You can use the @DefaultCoder annotation as follows:
+`CoderRegistry`から`Coder`を取得するには、`getCoder`を使います。実引数にはClassオブジェクトを渡します。このメソッドを使うには、例外の捕捉が必要です。
+
+```java
+import org.apache.beam.sdk.coders.CannotProvideCoderException;
+
+try {
+  cr.getCoder(MyCustomDataType.class);
+} catch (CannotProvideCoderException e) {}
+```
+
+[コードサンプル](./codes/coderRegistry.md)
+
+## <span class="head">カスタムクラスのCoderを指定する</span>
+上のように`CoderRegistry`を使っても良いのですが、特に使い回しをするカスタムクラスに対して`Coder`の指定を何度も行うのはやや面倒です。
+
+カスタムクラスを定義する際、`@DefaultCoder`アノテーションをつけることでも、defaultの`Coder`を指定することができます。
+
+```java
+@DefaultCoder(SerializableCoder.class)
+public class MyCustomDataType implements Serializable { ... }
+```
+
+これをやっておくと`Coder`の登録なしに、複数のPipelineでカスタムクラスを使い回すことができます。
+
+[コードサンプル](./codes/defaultCoder.md)
+
+## <span class="head">カスタムCoderの作成 - 手抜き編</span>
+`SerializableCoder`に丸投げにするので十分かと思いますが、カスタムCoderを作成する方法をまとめておきます。`Coder`サブクラスを作るのですが、最低限必要になるのは、
+
++ Coderサブクラスがシングルトンになるようにする (必須かは不明...)  
+&rarr; Beamのコードを読む限りは必要そうです
++ encodeメソッドのOverride
++ decodeメソッドのOverride
+
+です。例として、
+
+```java
+class MyCustomData implements Serializable {
+  public int a;
+  public int b;
+  
+  // ... 中略
+}
+```
+
+に対するCoderを作ってみます。メンバ変数のencode, decodeはBuilt-inの`Coder`である、`BigEndianIntegerCoder`を使うのが簡単です。
+
+シングルトンにするのはそれほど難しくなく、Constructorへのアクセスを制限してやれば良いです。のちの都合上、メンバ変数用のCoderをここで作っておきます。
+
+```java
+class MyCoder extends Coder<T> {
+  private static final MyCoder INSTANCE = new MyCoder();
+  // Beam SDKのCoderを使う
+  private final Coder<Integer> aCoder;
+  private final Coder<Integer> bCoder;
+
+  // コンストラクタ
+  private TinyIntegerCoder() {
+    this.aCoder = BigEndianIntegerCoder.of();
+    this.bCoder = BigEndianIntegerCoder.of();
+  }
+  
+  // Coderインスタンスを返すメソッド
+  public static MyCoder of() {
+    return INSTANCE;
+  }
+  
+  // ... 中略
+}
+```
+
+encodeではバイト列への変換、decodeではバイト列から元の型への復元を行います。実際のシリアル化、デシリアル化はBuilt-inのCoderに丸投げにするわけです。  
+一つ注意点として、全データを直列に並べるため、encode / decodeの処理順序を変えると、当然ながらデータがおかしくなります。
+
+```java
+@Override
+public void encode(MyCustomData value, OutputStream outStream)
+    throws CoderException, IOException {
+  // decodeする順序と合わせる必要がある
+  aCoder.encode(value.a, outStream);
+  bCoder.encode(value.b, outStream);
+}
+
+@Override
+public MyCustomData decode(InputStream inStream)
+    throws CoderException, IOException {
+  // encodeの順序と合わせる必要がある
+  int a = aCoder.decode(inStream);
+  int b = bCoder.decode(inStream);
+  return new MyCustomData(a, b);
+}
+```
+
+追加で、後二つメソッドのOverrideが必須なのですが、手を抜いて差し支えないです。詳しくは、[コードサンプル](./codes/simpleCustomCoder.md)を確認してください...。
+
+```java
+@Override
+public List<? extends Coder<?>> getCoderArguments() {
+  return Collections.emptyList();
+}
+
+@Override
+public void verifyDeterministic() throws NonDeterministicException {
+}
+```
+
+## <span class="head">カスタムCoderの作成 - 本格編</span>
+手抜き編でも面倒なので、本格編は真面目に説明しません。  
+大雑把な流れとしては、`java.io.DataInputStream`と`java.io.DataOutputStream`を使って、自分で元データとバイト列の間の相互変換を実装します。
+
+[コードサンプル](./codes/customCoder.md)では、IntegerのCoderを作っています。ただ、下位1バイトしかencode, decodeしないようにしています。最終結果も、あえておかしくなるようにしています。
