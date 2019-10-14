@@ -8,7 +8,7 @@
 3. [Pipeline](./sect2/pipeline.md)
 4. [PCollection](./sect3/pcollection.md)
 5. [PTransform](./sect4/ptransform.md)
-6. [Pipeline I/O](./sect5/io.html)
+6. [Pipeline I/O](./sect5/io.md)
 7. [データのエンコードと型安全性](./sect6/coder.md)
 8. window
 9. trigger

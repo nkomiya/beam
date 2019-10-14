@@ -88,8 +88,8 @@ build sect3
 # sect 4
 build sect4
 
-# # sect 5
-# build sect5
+# sect 5
+build sect5
 
 # # sect 6
 # build sect6
