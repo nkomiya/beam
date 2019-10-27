@@ -10,5 +10,5 @@
 5. [PTransform](./sect4/ptransform.md)
 6. [Pipeline I/O](./sect5/io.md)
 7. [データのエンコードと型安全性](./sect6/coder.md)
-8. window
+8. [window](./sect7/overview.md)
 9. trigger

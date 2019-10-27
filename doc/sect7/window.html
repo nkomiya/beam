@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>Beam Programming Guide</title>
+  <style>
+      code{white-space: pre-wrap;}
+      span.smallcaps{font-variant: small-caps;}
+      span.underline{text-decoration: underline;}
+      div.column{display: inline-block; vertical-align: top; width: 50%;}
+  </style>
+  <link rel="stylesheet" href="../github.css" />
+  <!--[if lt IE 9]>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/html5shiv/3.7.3/html5shiv-printshiv.min.js"></script>
+  <![endif]-->
+  <script src="../prism.js"></script>
+</head>
+<body>
+<p><a href="../index.html">topへ</a></p>
+<h1 id="window">Window</h1>
+<p><strong>目次</strong></p>
+<ol type="1">
+<li><a href="#overview">概要</a></li>
+<li><a href="#basic">ウィンドウの基礎</a></li>
+</ol>
+<h2 id="概要"><span id="overview" class="lhead">概要</span></h2>
+<p>この章では、<code>PCollection</code>を要素の持つtimestampに基づいて（主にですが）グループ化する、<code>window</code>を扱います。<br />
+<code>GroupByKey</code>や<code>Combine</code>のようなtransformでは、<code>PCollection</code>の要素全体に作用して集計処理などを行いました。しかし、全データが決して揃うことのない、unboundedな<code>PCollection</code>でこのような処理をするには、どうすればよいのか？となります。</p>
+<p>この問題を解決するのが<code>window</code>の考え方です。Beamではtimestampに基づいて、入力データを有限サイズのデータの塊に分割して取り扱うことができます。特定の時間範囲に収まるデータをひと塊りにすることで、分割された有限サイズのデータの塊とみなします。この時間範囲が<code>window</code>です。</p>
+<p>時間範囲を持つ<code>window</code>を作れば、ここに収まるデータが揃い終えるときが来ます。そのため<code>PCollection</code>がunboundedであっても、<code>window</code>であれば<code>GroupByKey</code>のような集計処理が可能になります。Beamでは常に、集計のような処理は<u>windowごと</u>に行われます。</p>
+<h2 id="ウィンドウの基礎"><span id="basic" class="lhead">ウィンドウの基礎</span></h2>
+<p><code>PCollection</code>がboundedでもunboundedでも、<code>window</code>に分割することが可能です。また、どんな<code>PCollection</code>であっても、少なくとも一つの<code>window</code>を持ちます。</p>
+<p>概要でも触れた通り、<code>GroupByKey</code>のような処理は<code>window</code>単位での処理です。なので、<code>GroupByKey</code>であれば、keyと<strong>window</strong>によってデータをグループ化します。</p>
+<p>デフォルトでは、<code>PCollection</code>全体に対して単一かつ共通の<code>window</code>が設けられます。なので、unboundedな<code>PCollection</code>に対して<code>GroupByKey</code>のような処理を行うには、以下のうちの少なくとも一つを行う必要があります。</p>
+<ul>
+<li>デフォルトでないwindowを使用する。</li>
+<li>triggerの設定をする。詳しくは次章。</li>
+</ul>
+<p>いずれも行わずに<code>GroupByKey</code>のような処理を行うと、エラーが発生します。</p>
+</body>
+</html>

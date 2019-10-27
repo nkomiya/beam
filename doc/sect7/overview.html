@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>Beam Programming Guide</title>
+  <style>
+      code{white-space: pre-wrap;}
+      span.smallcaps{font-variant: small-caps;}
+      span.underline{text-decoration: underline;}
+      div.column{display: inline-block; vertical-align: top; width: 50%;}
+  </style>
+  <link rel="stylesheet" href="../github.css" />
+  <!--[if lt IE 9]>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/html5shiv/3.7.3/html5shiv-printshiv.min.js"></script>
+  <![endif]-->
+  <script src="../prism.js"></script>
+</head>
+<body>
+<p><a href="../index.html">topへ</a></p>
+<h2 id="window">Window</h2>
+<p><strong>目次</strong></p>
+<ol type="1">
+<li><a href="#overview">概要</a></li>
+<li><a href="#basic">ウィンドウの基礎</a></li>
+<li><a href="#note">ウィンドウに関する注意点</a></li>
+<li><a href="#bounded">Bounded PCollectionとウィンドウ</a></li>
+<li><a href="./built-in.html">Built-inのwindow</a></li>
+</ol>
+<h2 id="概要"><span id="overview" class="lhead">概要</span></h2>
+<p>この章では、<code>PCollection</code>を要素の持つtimestampに基づいてグループ化を行う<code>window</code>について扱います。</p>
+<p><code>GroupByKey</code>や<code>Combine</code>のようなtransformでは、<code>PCollection</code>の要素全体に作用して集計処理などを行いました。しかし、全データが決して揃うことのない、unboundedな<code>PCollection</code>でこのような処理をするには、どうすればよいのか？となります。</p>
+<p>この問題を解決するのが<code>window</code>の考え方です。Beamではtimestampに基づいて、入力データを有限サイズのデータの塊に分割して取り扱うことができます。特定の時間範囲に収まるデータをひと塊りにすることで、分割された有限サイズのデータの塊とみなします。この時間範囲が<code>window</code>です。</p>
+<p>時間範囲を持つ<code>window</code>を作れば、ここに収まるデータが揃い終えるときが来ます。そのため<code>PCollection</code>がunboundedであっても、<code>window</code>であれば<code>GroupByKey</code>のような集計処理が可能になります。Beamでは常に、集計のような処理は<u>windowごと</u>に行われます。</p>
+<h2 id="ウィンドウの基礎"><span id="basic" class="lhead">ウィンドウの基礎</span></h2>
+<p><code>PCollection</code>がboundedでもunboundedでも、<code>window</code>に分割することが可能です。また、どんな<code>PCollection</code>であっても、少なくとも一つの<code>window</code>を持ちます。</p>
+<p>概要でも触れた通り、<code>GroupByKey</code>のような処理は<code>window</code>単位での処理です。なので、<code>GroupByKey</code>であれば、keyと<strong>window</strong>によってデータをグループ化します。</p>
+<p>デフォルトでは、<code>PCollection</code>全体に対して単一かつ共通の<code>window</code>が設けられます。なので、unboundedな<code>PCollection</code>に対して<code>GroupByKey</code>のような処理を行うには、以下のうちの少なくとも一つを行う必要があります。</p>
+<ul>
+<li>デフォルトでないwindowを使用する。</li>
+<li>triggerの設定をする。詳しくは次章。</li>
+</ul>
+<p>いずれも行わずに<code>GroupByKey</code>のような処理を行うと、エラーが発生します。</p>
+<h2 id="ウィンドウに関する注意点"><span id="note" class="lhead">ウィンドウに関する注意点</span></h2>
+<p><code>PCollection</code>に<code>window</code>を設けると、これが使われるのは<u>集計処理を行う</u>タイミングです。window変換 (windowは<code>PTransform</code>で設定します) を行うと各要素が属するwindowは決まるだけで、<code>PCollection</code>が分割されるわけではありません。</p>
+<p><img src="./figs/windowing-pipeline-unbounded.png" width=600></p>
+<p>繰り返しになりますが上の図のように、window変換は<code>window</code>の割り当てをするだけであって、<code>GroupByKey</code>のような集計処理が行われるまで<u>何も影響が現れない</u>です。なので<code>ParDo</code>単体でみると、一つ前のwindow変換はあってもなくても結果は変わりません。<br />
+ですが次の<code>GroupByKey</code>では、設定した<code>window</code>によって結果が変わります (集計を行う間隔が5分なのか10分なのか、みたいな具合です)。</p>
+<h2 id="bounded-pcollectionとウィンドウ"><span id="bounded" class="lhead">Bounded PCollectionとウィンドウ</span></h2>
+<p>もともと有限サイズであるboundedな<code>PCollection</code>であっても、windowを使うことはできます。</p>
+<p>window変換はtimestampに基づきますが、有限サイズのデータソースから読み込む場合 (<code>TextIO</code>など)、デフォルトだと全要素に同一のtimestampが割り当てられます。つまり、明示的にtimestampを設定しない限り、window変換を行っても単一のwindowに全要素が入ります。<br />
+timestampを割り当てるtransformがあるのですが、これは後々紹介します。</p>
+<p>Boundedな<code>PCollection</code>に対して、window変換の有無で動作がどのように変わるかを説明します。key/valueペアを読み込んだ後に<code>GroupByKey</code>を行い、何かしらの変換を<code>ParDo</code>で行う場合を例に考えてみます。</p>
+<p>まず、window変換を行わない場合です。<br />
+globalなwindowに対して<code>GroupByKey</code>が処理されるため、<code>ParDo</code>はユニークなkeyごとに処理されます。</p>
+<p><img src="./figs/unwindowed-pipeline-bounded.png" width=400></p>
+<p>一方で、window変換を行う場合です。<br />
+<code>GroupByKey</code>の結果は、keyと<strong>window</strong>に対してユニークになります。つまり、keyが同じであっても属するwindowが異なれば別物として扱われます。そのため、<code>GroupByKey</code>の結果に同じkeyが現れ得ますし、後続の<code>ParDo</code>も別個に処理されます。</p>
+<p><img src="./figs/windowing-pipeline-bounded.png" width=520></p>
+</body>
+</html>
