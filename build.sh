@@ -29,7 +29,7 @@ build() {
 	echo "<script src=\"$(realpath --relative-to=${dname} ${jsfile})\"></script>" > tmp
 	sed -e "s/\.md/.html/" ${ifile}  | \
 	    pandoc -s -t html5 -c ${cssRelat} -o ${ofile} -H tmp \
-		   --metadata pagetitle="Beam Programming Guide"
+		   --metadata pagetitle="Ja: Beam Programming Guide"
 	rm tmp
 	sed -i "" \
 	    -e "s/pre class=\"sourceCode java\"/pre class=\"line-numbers\"/g" \
