@@ -12,11 +12,13 @@ outputDir=doc
 build() {
     local opt mdPath cssRelat ifile ofile dname depth pathes
     #
-    mdPath=$(realpath --relative-to=$(pwd)/$1 ../$1)
+    mdPath=$(realpath --relative-to=$(pwd)/$1 $(git rev-parse --show-toplevel)/md/$1)
     [ $# -eq 2 ] && opt="-maxdepth $2"
     #
-    [ ! -d "$1" ] && mkdir -p "$1"
-    cd $1
+    if [ ! -z "$1" ]; then
+	[ ! -d "$1" ] && mkdir -p "$1"
+	cd $1
+    fi
 
     pathes=()
     for ifile in $(find ${mdPath} -type f -name "*.md" ${opt}); do
@@ -71,7 +73,7 @@ cssfile=${docdir}/github.css
 jsfile=${docdir}/prism.js
 
 # index
-build . 1
+build "" 1
 
 # sect 0
 build sect0
