@@ -84,45 +84,25 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 </head>
 <body>
 <p><a href="../built-in.html">戻る</a></p>
-<h1 id="fixed-time-windows">Fixed time windows</h1>
+<h1 id="sliding-time-windows">Sliding time windows</h1>
 <h2 id="overview">Overview</h2>
-<p>Fixed time windows は<strong>固定のwindow幅</strong>、<strong>重なりを持たない</strong> window が作られる window変換です。</p>
-<p><img src="./figs/fixed-time-windows.png" width=600></p>
-<p>上の図では、30 秒の固定幅を持つ window が作成され、<code>PCollection</code>の要素はどれか一つの window に属することになります。<br />
-(※ 縦軸にkeyを取っているのは、window は<code>GroupByKey</code>のような<strong>集計処理</strong>と合わせて使う場合が多いためです。集計処理の単位は window と key であるので、上図での一つの長方形に収まるデータの集まりに対して集計処理が行われます。)</p>
-<p>windowの左端は window に含まれ、右端は含まれません。つまり、上の図のパイプラインを 00:00:00 ちょうどに起動した場合、各要素の window への割り当ては次のようになります。</p>
-<table>
-<thead>
-<tr class="header">
-<th style="text-align: center;">window</th>
-<th style="text-align: center;">Timestamp の範囲</th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td style="text-align: center;">0</td>
-<td style="text-align: center;">00:00:00 - 00:00:29</td>
-</tr>
-<tr class="even">
-<td style="text-align: center;">1</td>
-<td style="text-align: center;">00:00:30 - 00:00:59</td>
-</tr>
-<tr class="odd">
-<td style="text-align: center;">2</td>
-<td style="text-align: center;">00:01:00 - 00:01:29</td>
-</tr>
-</tbody>
-</table>
+<p>Sliding time windows も Fixed time windows と同じで、固定の時間幅を持つ window が作られます。ですが Sliding time windows では、各 window に重なりを持たせることができます。</p>
+<p><img src="./figs/sliding-time-windows.png" width=600></p>
+<p>上の図では 60秒の window 幅で、30秒おきに window が作成されます。そのため、各 window は 30秒重なり、<code>PCollection</code>の要素は基本的に二つの window に属することになります。</p>
+<p>Sliding time windows は、「直近 1日の検索ワードランキングを 10分おきに更新する」みたいな場合に有用です。<br />
+Fixed time windows でやろうとすると、更新間隔を短くするとデータを十分に溜めることができず、データを十分に溜めようとすると更新間隔が長くなってしまいます。</p>
 <h2 id="windowの設定">Windowの設定</h2>
-<p>Window の設定は、<code>PCollection</code>に<code>Window.&lt;T&gt;into</code>を作用させるのみです。</p>
-<div class="sourceCode" id="cb1"><pre class="line-numbers"><code class="language-java"><span id="cb1-1"><a href="#cb1-1"></a><span class="kw">import</span><span class="im"> org.apache.beam.sdk.transforms.windowing.FixedWindows;</span></span>
+<p>Windowの設定方法は、Fixed time windows とほぼ同じです。<br />
+ですが Sliding time windows では<u>window 幅</u>と、 <u>window を切る時間間隔</u>の二つを指定します。</p>
+<div class="sourceCode" id="cb1"><pre class="line-numbers"><code class="language-java"><span id="cb1-1"><a href="#cb1-1"></a><span class="kw">import</span><span class="im"> org.apache.beam.sdk.transforms.windowing.SlidingWindows;</span></span>
 <span id="cb1-2"><a href="#cb1-2"></a><span class="kw">import</span><span class="im"> org.apache.beam.sdk.transforms.windowing.Window;</span></span>
 <span id="cb1-3"><a href="#cb1-3"></a><span class="kw">import</span><span class="im"> org.apache.beam.sdk.values.PCollection;</span></span>
 <span id="cb1-4"><a href="#cb1-4"></a><span class="kw">import</span><span class="im"> org.joda.time.Duration;</span></span>
 <span id="cb1-5"><a href="#cb1-5"></a></span>
 <span id="cb1-6"><a href="#cb1-6"></a>PCollection&lt;T&gt; pCollection = ...;</span>
 <span id="cb1-7"><a href="#cb1-7"></a>PCollection&lt;T&gt; windowed = pCollection</span>
-<span id="cb1-8"><a href="#cb1-8"></a>    <span class="co">// 30 秒間隔の window を設定</span></span>
-<span id="cb1-9"><a href="#cb1-9"></a>    .<span class="fu">apply</span>(<span class="bu">Window</span>.&lt;T&gt;<span class="fu">into</span>(FixedWindows.<span class="fu">of</span>(<span class="bu">Duration</span>.<span class="fu">standardSeconds</span>(<span class="dv">30L</span>))));</span></code></pre></div>
+<span id="cb1-8"><a href="#cb1-8"></a>    <span class="co">// 60秒の window 幅で、30秒おきに window を設ける</span></span>
+<span id="cb1-9"><a href="#cb1-9"></a>    .<span class="fu">apply</span>(<span class="bu">Window</span>.&lt;<span class="bu">String</span>&gt;<span class="fu">into</span>(SlidingWindows.<span class="fu">of</span>(<span class="bu">Duration</span>.<span class="fu">standardSeconds</span>(<span class="dv">60L</span>))</span>
+<span id="cb1-10"><a href="#cb1-10"></a>        .<span class="fu">every</span>(<span class="bu">Duration</span>.<span class="fu">standardMinutes</span>(<span class="dv">30L</span>))));</span></code></pre></div>
 </body>
 </html>

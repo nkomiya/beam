@@ -9,4 +9,5 @@ Sliding time windowを見ると分かりますが、要素は**少なくとも**
 
 1. [Fixed time windows](./built-in/fixed.md)  
 固定幅で重なりを持たない window
+2. [Sliding time windows](./built-in/sliding.md)
 

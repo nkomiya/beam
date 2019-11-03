@@ -7,7 +7,8 @@ Fixed time windows は**固定のwindow幅**、**重なりを持たない** wind
 <img src="./figs/fixed-time-windows.png" width=600>
 
 
-上の図では、30 秒の固定幅を持つ window が作成され、`PCollection`の要素はどれか一つの window に属することになります。
+上の図では、30 秒の固定幅を持つ window が作成され、`PCollection`の要素はどれか一つの window に属することになります。  
+(※ 縦軸にkeyを取っているのは、window は`GroupByKey`のような**集計処理**と合わせて使う場合が多いためです。集計処理の単位は window と key であるので、上図での一つの長方形に収まるデータの集まりに対して集計処理が行われます。)
 
 windowの左端は window に含まれ、右端は含まれません。つまり、上の図のパイプラインを 00:00:00 ちょうどに起動した場合、各要素の window への割り当ては次のようになります。
 
