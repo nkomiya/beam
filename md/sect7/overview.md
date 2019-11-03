@@ -7,7 +7,7 @@
 2. [ウィンドウの基礎](#basic)
 3. [ウィンドウに関する注意点](#note)
 4. [Bounded PCollectionとウィンドウ](#bounded)
-5. [Built-inのwindow](./built-in.md)
+5. [Built-inのwindow変換](./built-in.md)
 
 ## <span class="lhead" id="overview">概要</span>
 この章では、`PCollection`を要素の持つtimestampに基づいてグループ化を行う`window`について扱います。
