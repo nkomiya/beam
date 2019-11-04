@@ -13,3 +13,5 @@ Sliding time windowを見ると分かりますが、要素は**少なくとも**
 固定幅で重なりを**持たせた** window
 3. [Session windows](./built-in/session.md)  
 到着時間が近いデータをまとめる window
+4. [Global window](./built-in/global.md)  
+全体で共通の window
