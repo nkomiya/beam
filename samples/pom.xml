@@ -16,7 +16,7 @@
         <maven-exec-plugin.version>1.6.0</maven-exec-plugin.version>
 
         <!-- Beam -->
-        <beam.version>2.15.0</beam.version>
+        <beam.version>2.16.0</beam.version>
 
         <!-- guava -->
         <guava.version>28.1-jre</guava.version>

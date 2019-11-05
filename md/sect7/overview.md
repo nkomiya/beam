@@ -9,6 +9,7 @@
 4. [Bounded PCollectionとウィンドウ](#bounded)
 5. [Built-inのwindow変換](./built-in.md)
 6. [Watermarkと遅延データ](./watermark.md)
+7. [Timestampの更新](./timestamp.md)
 
 ## <span class="lhead" id="overview">概要</span>
 この章では、`PCollection`を要素の持つtimestampに基づいてグループ化を行う`window`について扱います。

@@ -1,5 +1,6 @@
-package com.examples.beam.sect7;
+[戻る](../timestamp.md)
 
+```java
 import org.apache.beam.sdk.Pipeline;
 import org.apache.beam.sdk.coders.BigEndianIntegerCoder;
 import org.apache.beam.sdk.transforms.Create;
@@ -53,3 +54,4 @@ public class AddTimestamp {
     pipeline.run();
   }
 }
+```
