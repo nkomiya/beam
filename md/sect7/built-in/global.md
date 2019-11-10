@@ -17,3 +17,5 @@ PCollection<T> pCollection = ...;
 PCollection<T> windowed = pCollection
     .apply("Windowing", Window.<T>into(new GlobalWindows()));
 ```
+
+コードサンプルは[こちら](./codes/global.md)です。`PCollection`の要素に擬似的なタイムスタンプを付与し、window の設定をしています。

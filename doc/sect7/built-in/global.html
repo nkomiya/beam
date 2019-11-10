@@ -94,5 +94,6 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <span id="cb1-5"><a href="#cb1-5"></a>PCollection&lt;T&gt; pCollection = ...;</span>
 <span id="cb1-6"><a href="#cb1-6"></a>PCollection&lt;T&gt; windowed = pCollection</span>
 <span id="cb1-7"><a href="#cb1-7"></a>    .<span class="fu">apply</span>(<span class="st">&quot;Windowing&quot;</span>, <span class="bu">Window</span>.&lt;T&gt;<span class="fu">into</span>(<span class="kw">new</span> <span class="fu">GlobalWindows</span>()));</span></code></pre></div>
+<p>コードサンプルは<a href="./codes/global.html">こちら</a>です。<code>PCollection</code>の要素に擬似的なタイムスタンプを付与し、window の設定をしています。</p>
 </body>
 </html>

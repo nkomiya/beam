@@ -25,3 +25,5 @@ PCollection<T> pCollection = ...;
 PCollection<T> windowed = pCollection
     .apply(Window.<T>into(Sessions.withGapDuration(Duration.standardMinutes(10L))));
 ```
+
+コードサンプルは[こちら](./codes/session.md)です。`PCollection`の要素に擬似的なタイムスタンプを付与し、window の設定をしています。

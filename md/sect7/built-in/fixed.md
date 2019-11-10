@@ -32,3 +32,5 @@ PCollection<T> windowed = pCollection
     // 30 秒間隔の window を設定
     .apply(Window.<T>into(FixedWindows.of(Duration.standardSeconds(30L))));
 ```
+
+コードサンプルは[こちら](./codes/fixed.md)です。`PCollection`の要素に擬似的なタイムスタンプを付与し、window の設定をしています。

@@ -104,5 +104,6 @@ Fixed time windows でやろうとすると、更新間隔を短くするとデ�
 <span id="cb1-8"><a href="#cb1-8"></a>    <span class="co">// 60秒の window 幅で、30秒おきに window を設ける</span></span>
 <span id="cb1-9"><a href="#cb1-9"></a>    .<span class="fu">apply</span>(<span class="bu">Window</span>.&lt;<span class="bu">String</span>&gt;<span class="fu">into</span>(SlidingWindows.<span class="fu">of</span>(<span class="bu">Duration</span>.<span class="fu">standardSeconds</span>(<span class="dv">60L</span>))</span>
 <span id="cb1-10"><a href="#cb1-10"></a>        .<span class="fu">every</span>(<span class="bu">Duration</span>.<span class="fu">standardMinutes</span>(<span class="dv">30L</span>))));</span></code></pre></div>
+<p>コードサンプルは<a href="./codes/sliding.html">こちら</a>です。<code>PCollection</code>の要素に擬似的なタイムスタンプを付与し、window の設定をしています。</p>
 </body>
 </html>

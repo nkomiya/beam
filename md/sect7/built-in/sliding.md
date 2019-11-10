@@ -27,3 +27,5 @@ PCollection<T> windowed = pCollection
     .apply(Window.<String>into(SlidingWindows.of(Duration.standardSeconds(60L))
         .every(Duration.standardMinutes(30L))));
 ```
+
+コードサンプルは[こちら](./codes/sliding.md)です。`PCollection`の要素に擬似的なタイムスタンプを付与し、window の設定をしています。

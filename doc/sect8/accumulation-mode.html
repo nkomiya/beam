@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>Ja: Beam Programming Guide</title>
+  <style>
+      code{white-space: pre-wrap;}
+      span.smallcaps{font-variant: small-caps;}
+      span.underline{text-decoration: underline;}
+      div.column{display: inline-block; vertical-align: top; width: 50%;}
+  </style>
+  <style>
+code.sourceCode > span { display: inline-block; line-height: 1.25; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode { white-space: pre; position: relative; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+code.sourceCode { white-space: pre-wrap; }
+code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+    color: #aaaaaa;
+  }
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+code span.at { color: #7d9029; } /* Attribute */
+code span.bn { color: #40a070; } /* BaseN */
+code span.bu { } /* BuiltIn */
+code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+code span.ch { color: #4070a0; } /* Char */
+code span.cn { color: #880000; } /* Constant */
+code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+code span.dt { color: #902000; } /* DataType */
+code span.dv { color: #40a070; } /* DecVal */
+code span.er { color: #ff0000; font-weight: bold; } /* Error */
+code span.ex { } /* Extension */
+code span.fl { color: #40a070; } /* Float */
+code span.fu { color: #06287e; } /* Function */
+code span.im { } /* Import */
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+code span.op { color: #666666; } /* Operator */
+code span.ot { color: #007020; } /* Other */
+code span.pp { color: #bc7a00; } /* Preprocessor */
+code span.sc { color: #4070a0; } /* SpecialChar */
+code span.ss { color: #bb6688; } /* SpecialString */
+code span.st { color: #4070a0; } /* String */
+code span.va { color: #19177c; } /* Variable */
+code span.vs { color: #4070a0; } /* VerbatimString */
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+  </style>
+  <link rel="stylesheet" href="../github.css" />
+  <!--[if lt IE 9]>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/html5shiv/3.7.3/html5shiv-printshiv.min.js"></script>
+  <![endif]-->
+  <script src="../prism.js"></script>
+</head>
+<body>
+<p><a href="../index.html">topへ</a><br />
+<a href="./overview.html">Triggerの概要へ</a></p>
+<h1 id="集積モード">集積モード</h1>
+<p>Window に trigger を設定する場合、window の<strong>集積モード</strong>を指定する必要があります。</p>
+<p>Process-time triggers などのように、trigger は一つの window に対して複数回発火されることがあります。この際、処理が行われたデータの取り扱いを決めるのが集積モードです。</p>
+<ol type="1">
+<li><u>AccumulatingFiredPane</u><br />
+処理を行ったデータを「window に保持させる」</li>
+<li><u>DiscardingFiredPane</u><br />
+処理が行われたデータは「捨てる」</li>
+</ol>
+<p>例を使って、二つの集積モードを説明します。10分間隔の Fixed time windows を設け、データが 3つ届いた段階で処理の早期発火する Data-driven triggers を設定しているとします。</p>
+<p><img src="./figs/trigger-accumulation.png" width=600></p>
+<p>Window 0 にはデータが 9つ入るので、計3回処理が早期発火されます。</p>
+<h3 id="accumulatingfiredpane">AccumulatingFiredPane</h3>
+<p>この集積モードでは window が閉じるまで、処理を行ったデータを保持します。こまめに集計結果のアップデートをかけたい場合に便利です。動作のイメージとしては、以下の通りです。</p>
+<pre><code>First trigger : [5, 8, 3]
+Second trigger: [5, 8, 3, 15, 19, 23]
+Third trigger : [5, 8, 3, 15, 19, 23, 9, 13, 10]
+
+Watermark     : [5, 8, 3, 15, 19, 23, 9, 13, 10]</code></pre>
+<h3 id="discardingfiredpane">DiscardingFiredPane</h3>
+<p>この集積モードでは、処理が行われたデータを捨てます。各データに対して、一回だけ処理を行いたい場合に便利です。動作のイメージとしては、以下の通りです。</p>
+<pre><code>First trigger : [5, 8, 3]
+Second trigger:          [15, 19, 23]
+Third trigger :                     [ 9, 13, 10]
+
+Watermark     : []</code></pre>
+<h2 id="集積モードを指定する">集積モードを指定する</h2>
+<p>既出なので、細かく説明はしません。</p>
+<h3 id="accumulatingfiredpane-1">AccumulatingFiredPane</h3>
+<div class="sourceCode" id="cb3"><pre class="line-numbers"><code class="language-java"><span id="cb3-1"><a href="#cb3-1"></a>PCollection&lt;T&gt; pCollection = ...;</span>
+<span id="cb3-2"><a href="#cb3-2"></a>PCollection&lt;T&gt; windowed = pCollection</span>
+<span id="cb3-3"><a href="#cb3-3"></a>    .<span class="fu">apply</span>(<span class="bu">Window</span>.&lt;T&gt;<span class="fu">into</span>(...)</span>
+<span id="cb3-4"><a href="#cb3-4"></a>        .<span class="fu">withAllowedLateness</span>(...)</span>
+<span id="cb3-5"><a href="#cb3-5"></a>        .<span class="fu">triggering</span>(...).<span class="fu">accumulatingFiredPane</span>())</span></code></pre></div>
+<p><a href="./codes/accumulating-mode.html">コードサンプル</a></p>
+<h3 id="discardingfiredpane-1">DiscardingFiredPane</h3>
+<div class="sourceCode" id="cb4"><pre class="line-numbers"><code class="language-java"><span id="cb4-1"><a href="#cb4-1"></a>PCollection&lt;T&gt; pCollection = ...;</span>
+<span id="cb4-2"><a href="#cb4-2"></a>PCollection&lt;T&gt; windowed = pCollection</span>
+<span id="cb4-3"><a href="#cb4-3"></a>    .<span class="fu">apply</span>(<span class="bu">Window</span>.&lt;T&gt;<span class="fu">into</span>(...)</span>
+<span id="cb4-4"><a href="#cb4-4"></a>        .<span class="fu">withAllowedLateness</span>(...)</span>
+<span id="cb4-5"><a href="#cb4-5"></a>        .<span class="fu">triggering</span>(...).<span class="fu">accumulatingFiredPane</span>())</span></code></pre></div>
+<p><a href="./codes/discarding-mode.html">コードサンプル</a></p>
+</body>
+</html>

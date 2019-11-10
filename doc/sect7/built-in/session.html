@@ -102,5 +102,6 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <span id="cb1-6"><a href="#cb1-6"></a>PCollection&lt;T&gt; pCollection = ...;</span>
 <span id="cb1-7"><a href="#cb1-7"></a>PCollection&lt;T&gt; windowed = pCollection</span>
 <span id="cb1-8"><a href="#cb1-8"></a>    .<span class="fu">apply</span>(<span class="bu">Window</span>.&lt;T&gt;<span class="fu">into</span>(Sessions.<span class="fu">withGapDuration</span>(<span class="bu">Duration</span>.<span class="fu">standardMinutes</span>(<span class="dv">10L</span>))));</span></code></pre></div>
+<p>コードサンプルは<a href="./codes/session.html">こちら</a>です。<code>PCollection</code>の要素に擬似的なタイムスタンプを付与し、window の設定をしています。</p>
 </body>
 </html>
