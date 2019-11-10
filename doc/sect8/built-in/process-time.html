@@ -83,46 +83,33 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
   <script src="../../prism.js"></script>
 </head>
 <body>
-<p><a href="../built-in.html">戻る</a></p>
-<h1 id="event-time-triggers">Event-time triggers</h1>
-<p>Beam のデフォルトの trigger になります。名前的にはイベント時刻に基づく trigger ですが、実態としては watermark に基づく trigger です。</p>
-<p>デフォルトの挙動は、window に watermark が渡った段階で一度のみ処理が発火され、遅延データ（Watermarkが渡った後に届くもの）は許されません。</p>
+<p><a href="../overview.html">戻る</a></p>
+<h1 id="process-time-triggers">Process-time triggers</h1>
+<p>Process-time triggers は処理時刻、つまりパイプラインの起動時間に基づく trigger です。Watermark が絡んでこないため、動作のイメージは掴みやすいと思います。</p>
+<p>Process-time triggers の使い道は、処理の早期発火です。たとえば、「10分間隔で DB を準リアルタイムに更新したい」といった場合に有用です。動作としては、更新のタイミングで届いているデータに対して集計が行われます。</p>
 <h2 id="triggerを設定する">Triggerを設定する</h2>
-<p>初回であるため、まず Beam における trigger の設定方法について説明します。Trigger は window を設定するときに指定します。</p>
-<div class="sourceCode" id="cb1"><pre class="line-numbers"><code class="language-java"><span id="cb1-1"><a href="#cb1-1"></a><span class="kw">import</span><span class="im"> org.apache.beam.sdk.transforms.windowing.FixedWindows;</span></span>
-<span id="cb1-2"><a href="#cb1-2"></a><span class="kw">import</span><span class="im"> org.apache.beam.sdk.transforms.windowing.Window;</span></span>
-<span id="cb1-3"><a href="#cb1-3"></a><span class="kw">import</span><span class="im"> org.apache.beam.sdk.values.PCollection;</span></span>
+<p>Process-time triggers は<code>AfterProcessingTime.pastFirstElementInPane()</code>で設定できます。処理発火のタイミングは、<code>plusDelayOf</code>で指定します。下のサンプルでは、30秒間隔で処理が発火されます。</p>
+<div class="sourceCode" id="cb1"><pre class="line-numbers"><code class="language-java"><span id="cb1-1"><a href="#cb1-1"></a><span class="kw">import</span><span class="im"> org.apache.beam.sdk.transforms.windowing.AfterProcessingTime;</span></span>
+<span id="cb1-2"><a href="#cb1-2"></a><span class="kw">import</span><span class="im"> org.apache.beam.sdk.transforms.windowing.Trigger.OnceTrigger;</span></span>
+<span id="cb1-3"><a href="#cb1-3"></a><span class="kw">import</span><span class="im"> org.joda.time.Duration;</span></span>
 <span id="cb1-4"><a href="#cb1-4"></a></span>
-<span id="cb1-5"><a href="#cb1-5"></a>PCollection&lt;T&gt; pCollection = ...;</span>
-<span id="cb1-6"><a href="#cb1-6"></a>PCollection&lt;T&gt; windowed = pCollection</span>
-<span id="cb1-7"><a href="#cb1-7"></a>    .<span class="fu">apply</span>(<span class="bu">Window</span>.&lt;T&gt;<span class="fu">into</span>(...)</span>
-<span id="cb1-8"><a href="#cb1-8"></a>        .<span class="fu">withAllowedLateness</span>(...)</span>
-<span id="cb1-9"><a href="#cb1-9"></a>        <span class="co">// ここで trigger の設定をする</span></span>
-<span id="cb1-10"><a href="#cb1-10"></a>        .<span class="fu">triggering</span>(...).<span class="fu">discardingFiredPanes</span>());</span></code></pre></div>
-<p>さらに、デフォルトでない Trigger を設定する場合、以下二つを明示的に指定する必要があります。</p>
-<ul>
-<li><u>遅延データの取り扱い</u><br />
-<code>withAllowedLateness</code>で指定できる、watermark が渡った後にどの程度待つか。<br />
-</li>
-<li><u>window の集積モード</u><br />
-この説明は後に回します。上のコードでは、<code>discardingFiredPanes</code>にあたります。</li>
-</ul>
-<h3 id="event-time-triggersの設定方法">Event-time triggersの設定方法</h3>
-<p>上のコードでの <code>.triggering()</code>の中身について説明します。</p>
-<p>Watermark ベースの trigger は<code>AfterWatermark.pastEndOfWindow()</code>で作成します。これは watermark が渡った段階で発火される trigger ですが、<code>withLateFirings</code>で遅延データが届いた際の挙動を設定できます。</p>
-<p>下の例では遅延データが届いた場合、すぐに処理を発火するような trigger の設定になります。</p>
+<span id="cb1-5"><a href="#cb1-5"></a>OnceTrigger processTimeTrigger =</span>
+<span id="cb1-6"><a href="#cb1-6"></a>    AfterProcessingTime.<span class="fu">pastFirstElementInPane</span>()</span>
+<span id="cb1-7"><a href="#cb1-7"></a>        .<span class="fu">plusDelayOf</span>(<span class="bu">Duration</span>.<span class="fu">standardSeconds</span>(<span class="dv">30L</span>));</span></code></pre></div>
+<p><a href="./event-time.html">Event-time triggers</a> に載せたコード例に修正を加え、処理の早期発火が行えるようにします。もともとある Event-time triggers の<code>withEarlyFirings</code>メソッドで、上で作成した Process-time triggers を指定します。</p>
 <div class="sourceCode" id="cb2"><pre class="line-numbers"><code class="language-java"><span id="cb2-1"><a href="#cb2-1"></a><span class="kw">import</span><span class="im"> org.apache.beam.sdk.transforms.windowing.AfterPane;</span></span>
 <span id="cb2-2"><a href="#cb2-2"></a><span class="kw">import</span><span class="im"> org.apache.beam.sdk.transforms.windowing.AfterWatermark;</span></span>
 <span id="cb2-3"><a href="#cb2-3"></a></span>
 <span id="cb2-4"><a href="#cb2-4"></a>PCollection&lt;T&gt; windowed = pCollection</span>
 <span id="cb2-5"><a href="#cb2-5"></a>    .<span class="fu">apply</span>(<span class="bu">Window</span>.&lt;T&gt;<span class="fu">into</span>(...)</span>
 <span id="cb2-6"><a href="#cb2-6"></a>        .<span class="fu">withAllowedLateness</span>(...)</span>
-<span id="cb2-7"><a href="#cb2-7"></a>        <span class="co">// trigger の設定</span></span>
-<span id="cb2-8"><a href="#cb2-8"></a>        .<span class="fu">triggering</span>(</span>
-<span id="cb2-9"><a href="#cb2-9"></a>            AfterWatermark.<span class="fu">pastEndOfWindow</span>()</span>
-<span id="cb2-10"><a href="#cb2-10"></a>                <span class="co">// 遅延データが届いたら、即発火</span></span>
-<span id="cb2-11"><a href="#cb2-11"></a>                .<span class="fu">withLateFirings</span>(AfterPane.<span class="fu">elementCountAtLeast</span>(<span class="dv">1</span>)))</span>
-<span id="cb2-12"><a href="#cb2-12"></a>        ).<span class="fu">accumulatingFiredPanes</span>())</span></code></pre></div>
-<p>コード全体のサンプルは<a href="./codes/event-time.html">こちら</a>です。ローカル実行の場合 Watermark が渡るのが遅いせいか、処理が発火されないです…。</p>
+<span id="cb2-7"><a href="#cb2-7"></a>        .<span class="fu">triggering</span>(</span>
+<span id="cb2-8"><a href="#cb2-8"></a>            AfterWatermark.<span class="fu">pastEndOfWindow</span>()</span>
+<span id="cb2-9"><a href="#cb2-9"></a>                <span class="co">//-------------------------------------- 追加</span></span>
+<span id="cb2-10"><a href="#cb2-10"></a>                .<span class="fu">withEarlyFirings</span>(processTimeTrigger)</span>
+<span id="cb2-11"><a href="#cb2-11"></a>                <span class="co">//------------------------------------------</span></span>
+<span id="cb2-12"><a href="#cb2-12"></a>                .<span class="fu">withLateFirings</span>(AfterPane.<span class="fu">elementCountAtLeast</span>(<span class="dv">1</span>)))</span>
+<span id="cb2-13"><a href="#cb2-13"></a>        ).<span class="fu">accumulatingFiredPanes</span>())</span></code></pre></div>
+<p>動作するコードサンプルは<a href="./codes/process-time.html">こちら</a>です。</p>
 </body>
 </html>

@@ -4,7 +4,9 @@
 # Built inのTrigger
 Beam では built-in の trigger が複数用意されています。
 
-+ [Event-time triggers](./built-in/event-time.md)
-+ Process-time triggers
++ [Event-time triggers](./built-in/event-time.md)  
+watermark ベースの trigger
++ [Process-time triggers](./built-in/process-time.md)  
+処理時刻ベースの trigger
 + Data-driven triggers
 + Composite triggers

@@ -48,7 +48,7 @@ PCollection<T> windowed = pCollection
             AfterWatermark.pastEndOfWindow()
                 // 遅延データが届いたら、即発火
                 .withLateFirings(AfterPane.elementCountAtLeast(1)))
-        ).discardingFiredPanes());
+        ).accumulatingFiredPanes())
 ```
 
 コード全体のサンプルは[こちら](./codes/event-time.md)です。ローカル実行の場合 Watermark が渡るのが遅いせいか、処理が発火されないです...。
