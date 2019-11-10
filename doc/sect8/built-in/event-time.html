@@ -109,7 +109,8 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 </ul>
 <h3 id="event-time-triggersの設定方法">Event-time triggersの設定方法</h3>
 <p>上のコードでの <code>.triggering()</code>の中身について説明します。</p>
-<p>Watermark ベースの trigger は<code>AfterWatermark.pastEndOfWindow()</code>で作成します。これは watermark が渡った段階で発火される trigger ですが、<code>withLateFirings</code>で遅延データが届いた際の挙動を設定できます。</p>
+<p>Watermark ベースの trigger は<code>AfterWatermark.pastEndOfWindow()</code>で作成します。これは watermark が渡った段階で発火される trigger ですが、<code>withLateFirings</code>で遅延データが届いた際の挙動を設定できます。<br />
+<code>withLateFirings</code>の中身については、<a href="./data-driven.html">Data-driven triggers</a>で説明します。</p>
 <p>下の例では遅延データが届いた場合、すぐに処理を発火するような trigger の設定になります。</p>
 <div class="sourceCode" id="cb2"><pre class="line-numbers"><code class="language-java"><span id="cb2-1"><a href="#cb2-1"></a><span class="kw">import</span><span class="im"> org.apache.beam.sdk.transforms.windowing.AfterPane;</span></span>
 <span id="cb2-2"><a href="#cb2-2"></a><span class="kw">import</span><span class="im"> org.apache.beam.sdk.transforms.windowing.AfterWatermark;</span></span>

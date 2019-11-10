@@ -32,7 +32,8 @@ PCollection<T> windowed = pCollection
 ### Event-time triggersの設定方法
 上のコードでの `.triggering()`の中身について説明します。
 
-Watermark ベースの trigger は`AfterWatermark.pastEndOfWindow()`で作成します。これは watermark が渡った段階で発火される trigger ですが、`withLateFirings`で遅延データが届いた際の挙動を設定できます。
+Watermark ベースの trigger は`AfterWatermark.pastEndOfWindow()`で作成します。これは watermark が渡った段階で発火される trigger ですが、`withLateFirings`で遅延データが届いた際の挙動を設定できます。  
+`withLateFirings`の中身については、[Data-driven triggers](./data-driven.md)で説明します。
 
 下の例では遅延データが届いた場合、すぐに処理を発火するような trigger の設定になります。
 

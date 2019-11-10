@@ -8,5 +8,6 @@ Beam では built-in の trigger が複数用意されています。
 watermark ベースの trigger
 + [Process-time triggers](./built-in/process-time.md)  
 処理時刻ベースの trigger
-+ Data-driven triggers
++ [Data-driven triggers](./built-in/data-driven.md)  
+パイプラインに到着したデータ数ベースの trigger
 + Composite triggers
