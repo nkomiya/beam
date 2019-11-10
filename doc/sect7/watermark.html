@@ -96,9 +96,11 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 </ol>
 <p>さらにイベントが発生した順序と、データがパイプラインに到着する順序が同じである保証もありません。このような問題のため、Beam では watermark を追跡します。watermark はいつ window に全データが揃うかを表す印で、<strong>入力ソースに依存します</strong>。watermark が window に渡されると、それ以降のデータは遅延データとして扱われます。</p>
 <p>Beam のデフォルトでは、遅延データは<strong>捨てられます</strong>。次章で扱う trigger を使うことで、遅延データの取り扱いや処理の発火タイミングを柔軟に変更することができます。</p>
+<p>気をつけるべきは、デフォルトでは window が閉じたときに処理が発火されますが、window が閉じるのは watermark が window に渡されたときです。<br />
+たとえば、30分の時間幅を持つ fixed-time windows で、watermark が windowの終端から 15分後に渡されるとします。このとき、一つの window が開いている（パイプラインがデータを受け付ける）のは 45分間であって、<strong>30分間ではない</strong>です。</p>
 <h2 id="遅延データを許容させる">遅延データを許容させる</h2>
 <p>window 変換を行う際に、<code>withAllowedLateness</code>メソッドを呼び出すことで、遅延データを取り扱うことができます。</p>
-<p>下のサンプルではパイプラインにデータが届くまで、1分間の遅れを許容します。</p>
+<p>下のサンプルでは watermark が window に渡った後、1分間の遅れを許容します。</p>
 <div class="sourceCode" id="cb1"><pre class="line-numbers"><code class="language-java"><span id="cb1-1"><a href="#cb1-1"></a><span class="kw">import</span><span class="im"> org.apache.beam.sdk.transforms.windowing.FixedWindows;</span></span>
 <span id="cb1-2"><a href="#cb1-2"></a><span class="kw">import</span><span class="im"> org.apache.beam.sdk.transforms.windowing.Window;</span></span>
 <span id="cb1-3"><a href="#cb1-3"></a><span class="kw">import</span><span class="im"> org.apache.beam.sdk.values.PCollection;</span></span>
@@ -106,7 +108,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <span id="cb1-5"><a href="#cb1-5"></a></span>
 <span id="cb1-6"><a href="#cb1-6"></a>PCollection&lt;T&gt; pCollection = ...;</span>
 <span id="cb1-7"><a href="#cb1-7"></a>PCollection&lt;<span class="bu">String</span>&gt; windowed = pCollection</span>
-<span id="cb1-8"><a href="#cb1-8"></a>    .<span class="fu">apply</span>(<span class="bu">Window</span>.&lt;<span class="bu">String</span>&gt;<span class="fu">into</span>(FixedWindows.<span class="fu">of</span>(<span class="bu">Duration</span>.<span class="fu">standardSeconds</span>(<span class="dv">30L</span>)))</span>
+<span id="cb1-8"><a href="#cb1-8"></a>    .<span class="fu">apply</span>(<span class="bu">Window</span>.&lt;<span class="bu">String</span>&gt;<span class="fu">into</span>(FixedWindows.<span class="fu">of</span>(<span class="bu">Duration</span>.<span class="fu">standardMinutes</span>(<span class="dv">30L</span>)))</span>
 <span id="cb1-9"><a href="#cb1-9"></a>        .<span class="fu">withAllowedLateness</span>(<span class="bu">Duration</span>.<span class="fu">standardMinutes</span>(<span class="dv">1L</span>)));</span></code></pre></div>
 </body>
 </html>
