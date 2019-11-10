@@ -5,6 +5,7 @@
 
 1. [概要](#overview)
 2. [Built-inのtrigger](./built-in.md)
+3. [集積モード](./accumulation-mode.md)
 
 
 ## <span class="lhead" id="overview">概要</span>
