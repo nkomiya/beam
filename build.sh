@@ -98,3 +98,6 @@ build sect6
 
 # sect 7
 build sect7
+
+# sect 8
+build sect8

@@ -11,4 +11,4 @@
 6. [Pipeline I/O](./sect5/io.md)
 7. [データのエンコードと型安全性](./sect6/coder.md)
 8. [window](./sect7/overview.md)
-9. trigger
+9. [trigger](./sect8/overview.md)
