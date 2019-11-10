@@ -98,14 +98,14 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <span id="cb1-7"><a href="#cb1-7"></a>    .<span class="fu">apply</span>(<span class="bu">Window</span>.&lt;T&gt;<span class="fu">into</span>(...)</span>
 <span id="cb1-8"><a href="#cb1-8"></a>        .<span class="fu">withAllowedLateness</span>(...)</span>
 <span id="cb1-9"><a href="#cb1-9"></a>        <span class="co">// ここで trigger の設定をする</span></span>
-<span id="cb1-10"><a href="#cb1-10"></a>        .<span class="fu">triggering</span>(...).<span class="fu">discardingFiredPanes</span>());</span></code></pre></div>
+<span id="cb1-10"><a href="#cb1-10"></a>        .<span class="fu">triggering</span>(...).<span class="fu">accumulatingFiredPanes</span>());</span></code></pre></div>
 <p>さらに、デフォルトでない Trigger を設定する場合、以下二つを明示的に指定する必要があります。</p>
 <ul>
 <li><u>遅延データの取り扱い</u><br />
 <code>withAllowedLateness</code>で指定できる、watermark が渡った後にどの程度待つか。<br />
 </li>
 <li><u>window の集積モード</u><br />
-この説明は後に回します。上のコードでは、<code>discardingFiredPanes</code>にあたります。</li>
+この説明は後に回します。上のコードでは、<code>accumulatingFiredPanes</code>にあたります。</li>
 </ul>
 <h3 id="event-time-triggersの設定方法">Event-time triggersの設定方法</h3>
 <p>上のコードでの <code>.triggering()</code>の中身について説明します。</p>

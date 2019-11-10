@@ -19,7 +19,7 @@ PCollection<T> windowed = pCollection
     .apply(Window.<T>into(...)
         .withAllowedLateness(...)
         // ここで trigger の設定をする
-        .triggering(...).discardingFiredPanes());
+        .triggering(...).accumulatingFiredPanes());
 ```
 
 さらに、デフォルトでない Trigger を設定する場合、以下二つを明示的に指定する必要があります。
@@ -27,7 +27,7 @@ PCollection<T> windowed = pCollection
 * <u>遅延データの取り扱い</u>  
 `withAllowedLateness`で指定できる、watermark が渡った後にどの程度待つか。  
 * <u>window の集積モード</u>  
-この説明は後に回します。上のコードでは、`discardingFiredPanes`にあたります。
+この説明は後に回します。上のコードでは、`accumulatingFiredPanes`にあたります。
 
 ### Event-time triggersの設定方法
 上のコードでの `.triggering()`の中身について説明します。
