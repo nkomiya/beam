@@ -95,24 +95,27 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 処理が行われたデータは「捨てる」</li>
 </ol>
 <p>例を使って、二つの集積モードを説明します。10分間隔の Fixed time windows を設け、データが 3つ届いた段階で処理の早期発火する Data-driven triggers を設定しているとします。</p>
-<p><img src="./figs/trigger-accumulation.png" width=600></p>
+<blockquote>
+<p><img src="./figs/trigger-accumulation.png" width=600><br />
+<a href="https://beam.apache.org/images/trigger-accumulation.png">https://beam.apache.org/images/trigger-accumulation.png</a></p>
+</blockquote>
 <p>Window 0 にはデータが 9つ入るので、計3回処理が早期発火されます。</p>
 <h3 id="accumulatingfiredpane">AccumulatingFiredPane</h3>
 <p>この集積モードでは window が閉じるまで、処理を行ったデータを保持します。こまめに集計結果のアップデートをかけたい場合に便利です。動作のイメージとしては、以下の通りです。</p>
-<pre><code>First trigger : [5, 8, 3]
-Second trigger: [5, 8, 3, 15, 19, 23]
-Third trigger : [5, 8, 3, 15, 19, 23, 9, 13, 10]
+<pre><code>1st trigger    : [5, 8, 3]
+2nd trigger    : [5, 8, 3, 15, 19, 23]
+3rd trigger    : [5, 8, 3, 15, 19, 23, 9, 13, 10]
 
-Watermark     : [5, 8, 3, 15, 19, 23, 9, 13, 10]</code></pre>
+After watermark: [5, 8, 3, 15, 19, 23, 9, 13, 10]</code></pre>
 <h3 id="discardingfiredpane">DiscardingFiredPane</h3>
 <p>この集積モードでは、処理が行われたデータを捨てます。各データに対して、一回だけ処理を行いたい場合に便利です。動作のイメージとしては、以下の通りです。</p>
-<pre><code>First trigger : [5, 8, 3]
-Second trigger:          [15, 19, 23]
-Third trigger :                     [ 9, 13, 10]
+<pre><code>1st trigger    : [5, 8, 3]
+2nd trigger    :          [15, 19, 23]
+3rd trigger    :                      [9, 13, 10]
 
-Watermark     : []</code></pre>
+After watermark: []</code></pre>
 <h2 id="集積モードを指定する">集積モードを指定する</h2>
-<p>既出なので、細かく説明はしません。</p>
+<p>既出なので、細かくは説明しません。</p>
 <h3 id="accumulatingfiredpane-1">AccumulatingFiredPane</h3>
 <div class="sourceCode" id="cb3"><pre class="line-numbers"><code class="language-java"><span id="cb3-1"><a href="#cb3-1"></a>PCollection&lt;T&gt; pCollection = ...;</span>
 <span id="cb3-2"><a href="#cb3-2"></a>PCollection&lt;T&gt; windowed = pCollection</span>
@@ -125,7 +128,7 @@ Watermark     : []</code></pre>
 <span id="cb4-2"><a href="#cb4-2"></a>PCollection&lt;T&gt; windowed = pCollection</span>
 <span id="cb4-3"><a href="#cb4-3"></a>    .<span class="fu">apply</span>(<span class="bu">Window</span>.&lt;T&gt;<span class="fu">into</span>(...)</span>
 <span id="cb4-4"><a href="#cb4-4"></a>        .<span class="fu">withAllowedLateness</span>(...)</span>
-<span id="cb4-5"><a href="#cb4-5"></a>        .<span class="fu">triggering</span>(...).<span class="fu">accumulatingFiredPane</span>())</span></code></pre></div>
+<span id="cb4-5"><a href="#cb4-5"></a>        .<span class="fu">triggering</span>(...).<span class="fu">discardingFiredPane</span>())</span></code></pre></div>
 <p><a href="./codes/discarding-mode.html">コードサンプル</a></p>
 </body>
 </html>
