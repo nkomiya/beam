@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>Ja: Beam Programming Guide</title>
+  <style>
+      code{white-space: pre-wrap;}
+      span.smallcaps{font-variant: small-caps;}
+      span.underline{text-decoration: underline;}
+      div.column{display: inline-block; vertical-align: top; width: 50%;}
+  </style>
+  <style>
+code.sourceCode > span { display: inline-block; line-height: 1.25; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode { white-space: pre; position: relative; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+code.sourceCode { white-space: pre-wrap; }
+code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+    color: #aaaaaa;
+  }
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+code span.at { color: #7d9029; } /* Attribute */
+code span.bn { color: #40a070; } /* BaseN */
+code span.bu { } /* BuiltIn */
+code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+code span.ch { color: #4070a0; } /* Char */
+code span.cn { color: #880000; } /* Constant */
+code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+code span.dt { color: #902000; } /* DataType */
+code span.dv { color: #40a070; } /* DecVal */
+code span.er { color: #ff0000; font-weight: bold; } /* Error */
+code span.ex { } /* Extension */
+code span.fl { color: #40a070; } /* Float */
+code span.fu { color: #06287e; } /* Function */
+code span.im { } /* Import */
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+code span.op { color: #666666; } /* Operator */
+code span.ot { color: #007020; } /* Other */
+code span.pp { color: #bc7a00; } /* Preprocessor */
+code span.sc { color: #4070a0; } /* SpecialChar */
+code span.ss { color: #bb6688; } /* SpecialString */
+code span.st { color: #4070a0; } /* String */
+code span.va { color: #19177c; } /* Variable */
+code span.vs { color: #4070a0; } /* VerbatimString */
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+  </style>
+  <link rel="stylesheet" href="../../github.css" />
+  <!--[if lt IE 9]>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/html5shiv/3.7.3/html5shiv-printshiv.min.js"></script>
+  <![endif]-->
+  <script src="../../prism.js"></script>
+</head>
+<body>
+<p><a href="../core.html">戻る</a></p>
+<h1 id="groupbykey">GroupByKey</h1>
+<p><code>GroupByKey</code>は、inputの<code>PCollection</code>としてmultimap（key/valueペアであるが、同じkeyが登場し得る）を取り、同じkeyをもつものをグループ化したkey/valueペアの<code>PCollection</code>を返します。</p>
+<p>再び<a href="https://enterprisezine.jp/dbonline/detail/4440">Map/Shuffle/Reduce</a>モデルでいうと、Shuffleに似ているとのことです。<br />
+下の画像だとCOMBINEとなっているところです。</p>
+<blockquote>
+<p><img src="./figs/what-is-mapreduce.jpg" width="700"><br />
+<a href="https://jp.talend.com/resources/what-is-mapreduce">https://jp.talend.com/resources/what-is-mapreduce/</a></p>
+</blockquote>
+<p><code>GropuByKey</code>の使用例として、顧客の注文履歴データみたいのを考えます。一回の注文を<code>PCollection</code>の要素、注文者のIDをkey、名前や商品名などその他もろもろをvalueとします。<br />
+同じ顧客からの注文は複数ありえますが、注文者のIDをkeyとして<code>GroupByKey</code>変換をしてあげると、顧客ごとにデータをまとめられることができます。</p>
+<p>簡単なinput/outputの例を見て期待する動作を説明します。</p>
+<p><strong>input</strong><br />
+key/valueペアですが、keyに重複があります</p>
+<div class="sourceCode" id="cb1"><pre class="line-numbers"><code class="language-json"><span id="cb1-1"><a href="#cb1-1"></a><span class="ot">[</span></span>
+<span id="cb1-2"><a href="#cb1-2"></a>  <span class="fu">{</span> <span class="dt">&quot;cat&quot;</span><span class="fu">:</span> <span class="dv">1</span> <span class="fu">}</span><span class="ot">,</span></span>
+<span id="cb1-3"><a href="#cb1-3"></a>  <span class="fu">{</span> <span class="dt">&quot;dog&quot;</span><span class="fu">:</span> <span class="dv">5</span> <span class="fu">}</span><span class="ot">,</span></span>
+<span id="cb1-4"><a href="#cb1-4"></a>  <span class="fu">{</span> <span class="dt">&quot;and&quot;</span><span class="fu">:</span> <span class="dv">1</span> <span class="fu">}</span><span class="ot">,</span></span>
+<span id="cb1-5"><a href="#cb1-5"></a>  <span class="fu">{</span> <span class="dt">&quot;jump&quot;</span><span class="fu">:</span> <span class="dv">3</span> <span class="fu">}</span><span class="ot">,</span></span>
+<span id="cb1-6"><a href="#cb1-6"></a>  <span class="fu">{</span> <span class="dt">&quot;tree&quot;</span><span class="fu">:</span> <span class="dv">2</span> <span class="fu">}</span><span class="ot">,</span></span>
+<span id="cb1-7"><a href="#cb1-7"></a>  <span class="fu">{</span> <span class="dt">&quot;cat&quot;</span><span class="fu">:</span> <span class="dv">5</span> <span class="fu">}</span><span class="ot">,</span></span>
+<span id="cb1-8"><a href="#cb1-8"></a>  <span class="fu">{</span> <span class="dt">&quot;dog&quot;</span><span class="fu">:</span> <span class="dv">2</span> <span class="fu">}</span><span class="ot">,</span></span>
+<span id="cb1-9"><a href="#cb1-9"></a>  <span class="fu">{</span> <span class="dt">&quot;and&quot;</span><span class="fu">:</span> <span class="dv">2</span> <span class="fu">}</span><span class="ot">,</span></span>
+<span id="cb1-10"><a href="#cb1-10"></a>  <span class="fu">{</span> <span class="dt">&quot;cat&quot;</span><span class="fu">:</span> <span class="dv">9</span> <span class="fu">}</span><span class="ot">,</span></span>
+<span id="cb1-11"><a href="#cb1-11"></a>  <span class="fu">{</span> <span class="dt">&quot;and&quot;</span><span class="fu">:</span> <span class="dv">6</span> <span class="fu">}</span></span>
+<span id="cb1-12"><a href="#cb1-12"></a><span class="ot">]</span></span></code></pre></div>
+<p><strong>output</strong><br />
+keyについてvalueがまとめられます。</p>
+<div class="sourceCode" id="cb2"><pre class="line-numbers"><code class="language-json"><span id="cb2-1"><a href="#cb2-1"></a><span class="ot">[</span></span>
+<span id="cb2-2"><a href="#cb2-2"></a>  <span class="fu">{</span> <span class="dt">&quot;cat&quot;</span><span class="fu">:</span> <span class="ot">[</span><span class="dv">1</span><span class="ot">,</span><span class="dv">5</span><span class="ot">,</span><span class="dv">9</span><span class="ot">]</span> <span class="fu">}</span><span class="ot">,</span></span>
+<span id="cb2-3"><a href="#cb2-3"></a>  <span class="fu">{</span> <span class="dt">&quot;dog&quot;</span><span class="fu">:</span> <span class="ot">[</span><span class="dv">5</span><span class="ot">,</span><span class="dv">2</span><span class="ot">]</span> <span class="fu">}</span><span class="ot">,</span></span>
+<span id="cb2-4"><a href="#cb2-4"></a>  <span class="fu">{</span> <span class="dt">&quot;and&quot;</span><span class="fu">:</span> <span class="ot">[</span><span class="dv">1</span><span class="ot">,</span><span class="dv">2</span><span class="ot">,</span><span class="dv">6</span><span class="ot">]</span> <span class="fu">}</span><span class="ot">,</span></span>
+<span id="cb2-5"><a href="#cb2-5"></a>  <span class="fu">{</span> <span class="dt">&quot;jump&quot;</span><span class="fu">:</span> <span class="ot">[</span><span class="dv">3</span><span class="ot">]</span> <span class="fu">}</span><span class="ot">,</span></span>
+<span id="cb2-6"><a href="#cb2-6"></a>  <span class="fu">{</span> <span class="dt">&quot;tree&quot;</span><span class="fu">:</span> <span class="ot">[</span><span class="dv">2</span><span class="ot">]</span> <span class="fu">}</span></span>
+<span id="cb2-7"><a href="#cb2-7"></a><span class="ot">]</span></span></code></pre></div>
+<p>こういう例だと足し合わせたくもなりますが、<code>GroupByKey</code>はあくまでグループ化をするだけで、keyをuniqueにすることが目的です。<br />
+足し合わせみたいのをしたければ、<code>Combine</code>を使います。</p>
+<h2 id="コードサンプル">コードサンプル</h2>
+<p>まず、inputの<code>PCollection</code>を作ります。<br />
+Beamではkey/valueペア用に、<code>KV&lt;K,V&gt;</code>型が用意されています。Kがkeyの型、Vがvalueの型です。<code>KV.of</code>で一つのkey/valueペアが作れます。</p>
+<div class="sourceCode" id="cb3"><pre class="line-numbers"><code class="language-java"><span id="cb3-1"><a href="#cb3-1"></a><span class="kw">import</span><span class="im"> java.util.Arrays;</span></span>
+<span id="cb3-2"><a href="#cb3-2"></a><span class="kw">import</span><span class="im"> java.util.List;</span></span>
+<span id="cb3-3"><a href="#cb3-3"></a><span class="kw">import</span><span class="im"> org.apache.beam.sdk.Pipeline;</span></span>
+<span id="cb3-4"><a href="#cb3-4"></a><span class="kw">import</span><span class="im"> org.apache.beam.sdk.transforms.Create;</span></span>
+<span id="cb3-5"><a href="#cb3-5"></a><span class="kw">import</span><span class="im"> org.apache.beam.sdk.values.KV;</span></span>
+<span id="cb3-6"><a href="#cb3-6"></a><span class="kw">import</span><span class="im"> org.apache.beam.sdk.values.PCollection;</span></span>
+<span id="cb3-7"><a href="#cb3-7"></a></span>
+<span id="cb3-8"><a href="#cb3-8"></a><span class="co">// ... 中略 ...</span></span>
+<span id="cb3-9"><a href="#cb3-9"></a></span>
+<span id="cb3-10"><a href="#cb3-10"></a><span class="bu">List</span>&lt;KV&lt;<span class="bu">String</span>, <span class="bu">Integer</span>&gt;&gt; input =</span>
+<span id="cb3-11"><a href="#cb3-11"></a>    <span class="bu">Arrays</span>.<span class="fu">asList</span>(KV.<span class="fu">of</span>(<span class="st">&quot;cat&quot;</span>, <span class="dv">1</span>), KV.<span class="fu">of</span>(<span class="st">&quot;dog&quot;</span>, <span class="dv">5</span>), ...);</span>
+<span id="cb3-12"><a href="#cb3-12"></a></span>
+<span id="cb3-13"><a href="#cb3-13"></a>Pipeline pipeline = Pipeline.<span class="fu">create</span>();</span>
+<span id="cb3-14"><a href="#cb3-14"></a>PCollection&lt;KV&lt;<span class="bu">String</span>, <span class="bu">Integer</span>&gt;&gt; col = pipeline.<span class="fu">apply</span>(<span class="st">&quot;CreateInput&quot;</span>,</span>
+<span id="cb3-15"><a href="#cb3-15"></a>    Create.<span class="fu">of</span>(input).<span class="fu">withCoder</span>(KvCoder.<span class="fu">of</span>(StringUtf8Coder.<span class="fu">of</span>(), BigEndianIntegerCoder.<span class="fu">of</span>())));</span></code></pre></div>
+<p><code>KV</code>型の<code>PCollection</code>さえ作れてしまえば、<code>GroupByKey</code>をapplyするだけです。</p>
+<div class="sourceCode" id="cb4"><pre class="line-numbers"><code class="language-java"><span id="cb4-1"><a href="#cb4-1"></a><span class="kw">import</span><span class="im"> org.apache.beam.sdk.transforms.GroupByKey;</span></span>
+<span id="cb4-2"><a href="#cb4-2"></a></span>
+<span id="cb4-3"><a href="#cb4-3"></a><span class="co">// ... 中略 ...</span></span>
+<span id="cb4-4"><a href="#cb4-4"></a></span>
+<span id="cb4-5"><a href="#cb4-5"></a>col.<span class="fu">apply</span>(<span class="st">&quot;ApplyGroupByKey&quot;</span>, GroupByKey.<span class="fu">create</span>());</span></code></pre></div>
+<p>動作するコードの全体は、<a href="./codes/gbk.html">こちら</a>を参照してください。</p>
+<blockquote>
+<h4 id="groupbykeyとunbounded-pcollection"><span id="comment">GroupByKeyとunbounded PCollection</span></h4>
+<p><code>GroupByKey</code>は<code>ParDo</code>と違って、<u>全データが到着するのを待たなければ</u>処理を行うことができません。ですが、unboundedな<code>PCollection</code>では全データは決して揃いません。<br />
+unboundedな<code>PCollection</code>においてこのような処理を行う場合は、<a href="../../chapter3/pcollection.html#detail">PCollectionの章</a>で軽く触れたwindowや、後々出てくるtriggerを使って、処理を発火させるタイミングを明示的に指定する必要があります。</p>
+</blockquote>
+</body>
+</html>

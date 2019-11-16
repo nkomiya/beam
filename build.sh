@@ -76,28 +76,6 @@ jsfile=${docdir}/prism.js
 build "" 1
 
 # sect 0
-build sect0
-
-# sect 1
-build sect1
-
-# sect 2
-build sect2
-
-# sect 3
-build sect3
-
-# sect 4
-build sect4
-
-# sect 5
-build sect5
-
-# sect 6
-build sect6
-
-# sect 7
-build sect7
-
-# sect 8
-build sect8
+for i in `seq 0 8`; do
+    build chapter${i}
+done
