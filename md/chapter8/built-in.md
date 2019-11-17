@@ -10,3 +10,4 @@ watermark ベースの trigger
 処理時刻ベースの trigger
 + [Data-driven triggers](./built-in/data-driven.md)  
 パイプラインに到着したデータ数ベースの trigger
++ [この節のまとめ](./built-in/summary.md)
