@@ -1,10 +1,10 @@
 package com.examples.beam.chapter8;
 
 import org.apache.beam.sdk.Pipeline;
-import org.apache.beam.sdk.extensions.gcp.options.GcpOptions;
 import org.apache.beam.sdk.io.TextIO;
 import org.apache.beam.sdk.io.gcp.pubsub.PubsubIO;
 import org.apache.beam.sdk.options.Description;
+import org.apache.beam.sdk.options.PipelineOptions;
 import org.apache.beam.sdk.options.PipelineOptionsFactory;
 import org.apache.beam.sdk.transforms.windowing.AfterWatermark;
 import org.apache.beam.sdk.transforms.windowing.AfterPane;
@@ -20,7 +20,7 @@ public class DataDrivenTrigger {
   /**
    * 実行時オプション
    */
-  public interface MyOptions extends GcpOptions {
+  public interface MyOptions extends PipelineOptions {
     @Description("Pub/Sub subscription name")
     String getSubscription();
 
