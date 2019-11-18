@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>Ja: Beam Programming Guide</title>
+  <style>
+      code{white-space: pre-wrap;}
+      span.smallcaps{font-variant: small-caps;}
+      span.underline{text-decoration: underline;}
+      div.column{display: inline-block; vertical-align: top; width: 50%;}
+  </style>
+  <link rel="stylesheet" href="../github.css" />
+  <!--[if lt IE 9]>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/html5shiv/3.7.3/html5shiv-printshiv.min.js"></script>
+  <![endif]-->
+  <script src="../prism.js"></script>
+</head>
+<body>
+<p><a href="./overview.html">Triggerの概要へ</a></p>
+<h1 id="composite-triggers">Composite triggers</h1>
+<p>今までは、メインの trigger として<code>AfterWatermark.pastEndOfWindow</code>のみを使っていました。</p>
+<h2 id="afterwatermark.pastendofwindow">AfterWatermark.pastEndOfWindow</h2>
+<p>Watermark が渡されたタイミングで、処理が発火されます。</p>
+<p>以下二つの補助的な trigger を使い、挙動を調整できます。</p>
+<ul>
+<li><u>withEarlyFiring</u><br />
+処理の早期発火</li>
+<li><u>withLateFiring</u><br />
+遅延データのための trigger</li>
+</ul>
+<h2 id="repeatedly.forever">Repeatedly.forever</h2>
+<p>名前の通り、条件が満たされたタイミングで処理を発火し続けます。</p>
+<p>以下二つの補助的な trigger を使い、挙動を調整できます。</p>
+<ul>
+<li>繰り返しの条件
+<ul>
+<li>例) 30秒おきに処理を発火</li>
+</ul></li>
+<li>繰り返しをやめる条件 (optional)
+<ul>
+<li>例) データが 5つ届いたら発火しない、など。</li>
+</ul></li>
+</ul>
+<h2 id="aftereach.inorder">AfterEach.inOrder</h2>
+<h2 id="afterfirst.of">AfterFirst.of</h2>
+<h2 id="afterall.of">AfterAll.of</h2>
+</body>
+</html>
