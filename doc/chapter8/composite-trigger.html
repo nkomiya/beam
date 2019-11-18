@@ -11,6 +11,71 @@
       span.underline{text-decoration: underline;}
       div.column{display: inline-block; vertical-align: top; width: 50%;}
   </style>
+  <style>
+code.sourceCode > span { display: inline-block; line-height: 1.25; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode { white-space: pre; position: relative; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+code.sourceCode { white-space: pre-wrap; }
+code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+    color: #aaaaaa;
+  }
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+code span.at { color: #7d9029; } /* Attribute */
+code span.bn { color: #40a070; } /* BaseN */
+code span.bu { } /* BuiltIn */
+code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+code span.ch { color: #4070a0; } /* Char */
+code span.cn { color: #880000; } /* Constant */
+code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+code span.dt { color: #902000; } /* DataType */
+code span.dv { color: #40a070; } /* DecVal */
+code span.er { color: #ff0000; font-weight: bold; } /* Error */
+code span.ex { } /* Extension */
+code span.fl { color: #40a070; } /* Float */
+code span.fu { color: #06287e; } /* Function */
+code span.im { } /* Import */
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+code span.op { color: #666666; } /* Operator */
+code span.ot { color: #007020; } /* Other */
+code span.pp { color: #bc7a00; } /* Preprocessor */
+code span.sc { color: #4070a0; } /* SpecialChar */
+code span.ss { color: #bb6688; } /* SpecialString */
+code span.st { color: #4070a0; } /* String */
+code span.va { color: #19177c; } /* Variable */
+code span.vs { color: #4070a0; } /* VerbatimString */
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+  </style>
   <link rel="stylesheet" href="../github.css" />
   <!--[if lt IE 9]>
     <script src="//cdnjs.cloudflare.com/ajax/libs/html5shiv/3.7.3/html5shiv-printshiv.min.js"></script>
@@ -20,7 +85,8 @@
 <body>
 <p><a href="./overview.html">Triggerの概要へ</a></p>
 <h1 id="composite-triggers">Composite triggers</h1>
-<p>今までは、メインの trigger として<code>AfterWatermark.pastEndOfWindow</code>のみを使っていました。</p>
+<p>今までは、メインの trigger として<code>AfterWatermark.pastEndOfWindow</code>のみを使っていました。ですが Built-in の trigger には、これ以外にもいくつか trigger が用意されています。</p>
+<p><code>AfterWatermark.pastEndOfWindow</code>と同じく、動作を調整するには補助的な trigger を指定する必要があります。複数の trigger を組み合わせて処理の発火タイミングをコントロールする、という意味で<code>Composite trigger</code>と呼ばれていると思われます。</p>
 <h2 id="afterwatermark.pastendofwindow">AfterWatermark.pastEndOfWindow</h2>
 <p>Watermark が渡されたタイミングで、処理が発火されます。</p>
 <p>以下二つの補助的な trigger を使い、挙動を調整できます。</p>
@@ -30,9 +96,22 @@
 <li><u>withLateFiring</u><br />
 遅延データのための trigger</li>
 </ul>
+<h3 id="サンプル">サンプル</h3>
+<p>次のサンプルコードの変数<code>trigger</code>は、window 変換の <code>triggering</code>に渡せます。</p>
+<p>挙動としては、30秒おきに早期発火、また、遅延データが届く度に処理を発火します。</p>
+<div class="sourceCode" id="cb1"><pre class="line-numbers"><code class="language-java"><span id="cb1-1"><a href="#cb1-1"></a><span class="kw">import</span><span class="im"> org.apache.beam.sdk.transforms.windowing.AfterPane;</span></span>
+<span id="cb1-2"><a href="#cb1-2"></a><span class="kw">import</span><span class="im"> org.apache.beam.sdk.transforms.windowing.AfterProcessingTime;</span></span>
+<span id="cb1-3"><a href="#cb1-3"></a><span class="kw">import</span><span class="im"> org.apache.beam.sdk.transforms.windowing.AfterWatermark;</span></span>
+<span id="cb1-4"><a href="#cb1-4"></a><span class="kw">import</span><span class="im"> org.apache.beam.sdk.transforms.windowing.Trigger;</span></span>
+<span id="cb1-5"><a href="#cb1-5"></a><span class="kw">import</span><span class="im"> org.joda.time.Duration;</span></span>
+<span id="cb1-6"><a href="#cb1-6"></a></span>
+<span id="cb1-7"><a href="#cb1-7"></a>Trigger trigger = AfterWatermark.<span class="fu">pastEndOfWindow</span>()</span>
+<span id="cb1-8"><a href="#cb1-8"></a>    .<span class="fu">withEarlyFirings</span>(AfterProcessingTime.<span class="fu">pastFirstElementInPane</span>()</span>
+<span id="cb1-9"><a href="#cb1-9"></a>        .<span class="fu">plusDelayOf</span>(<span class="bu">Duration</span>.<span class="fu">standardSeconds</span>(<span class="dv">30L</span>)))</span>
+<span id="cb1-10"><a href="#cb1-10"></a>    .<span class="fu">withLateFirings</span>(AfterPane.<span class="fu">elementCountAtLeast</span>(<span class="dv">1</span>));</span></code></pre></div>
 <h2 id="repeatedly.forever">Repeatedly.forever</h2>
 <p>名前の通り、条件が満たされたタイミングで処理を発火し続けます。</p>
-<p>以下二つの補助的な trigger を使い、挙動を調整できます。</p>
+<p>以下二つの条件を設定することで、trigger の挙動を調整します。</p>
 <ul>
 <li>繰り返しの条件
 <ul>
@@ -43,8 +122,63 @@
 <li>例) データが 5つ届いたら発火しない、など。</li>
 </ul></li>
 </ul>
+<h3 id="サンプル-1">サンプル</h3>
+<p>挙動としては、30秒おきに処理を発火し、データが 5つ届いた段階で処理が発火されなくなります。Pub/Sub などでこの trigger を使うと、<strong>message は消費される</strong>ので気をつけてください…</p>
+<div class="sourceCode" id="cb2"><pre class="line-numbers"><code class="language-java"><span id="cb2-1"><a href="#cb2-1"></a><span class="kw">import</span><span class="im"> org.apache.beam.sdk.transforms.windowing.AfterPane;</span></span>
+<span id="cb2-2"><a href="#cb2-2"></a><span class="kw">import</span><span class="im"> org.apache.beam.sdk.transforms.windowing.AfterProcessingTime;</span></span>
+<span id="cb2-3"><a href="#cb2-3"></a><span class="kw">import</span><span class="im"> org.apache.beam.sdk.transforms.windowing.Repeatedly;</span></span>
+<span id="cb2-4"><a href="#cb2-4"></a><span class="kw">import</span><span class="im"> org.apache.beam.sdk.transforms.windowing.Trigger;</span></span>
+<span id="cb2-5"><a href="#cb2-5"></a></span>
+<span id="cb2-6"><a href="#cb2-6"></a>Trigger trigger = Repeatedly.<span class="fu">forever</span>(</span>
+<span id="cb2-7"><a href="#cb2-7"></a>    AfterProcessingTime.<span class="fu">pastFirstElementInPane</span>()</span>
+<span id="cb2-8"><a href="#cb2-8"></a>        .<span class="fu">plusDelayOf</span>(<span class="bu">Duration</span>.<span class="fu">standardSeconds</span>(<span class="dv">30L</span>))</span>
+<span id="cb2-9"><a href="#cb2-9"></a>).<span class="fu">orFinally</span>(AfterPane.<span class="fu">elementCountAtLeast</span>(<span class="dv">5</span>));</span></code></pre></div>
+<p>動作するサンプルは、<a href="./codes/repeatedlyForever.html">こちら</a>から。</p>
 <h2 id="aftereach.inorder">AfterEach.inOrder</h2>
+<p>この trigger は複数の trigger を、指定された順番で発火します。</p>
+<div class="sourceCode" id="cb3"><pre class="line-numbers"><code class="language-java"><span id="cb3-1"><a href="#cb3-1"></a><span class="kw">import</span><span class="im"> org.apache.beam.sdk.transforms.windowing.AfterEach;</span></span>
+<span id="cb3-2"><a href="#cb3-2"></a><span class="kw">import</span><span class="im"> org.apache.beam.sdk.transforms.windowing.AfterPane;</span></span>
+<span id="cb3-3"><a href="#cb3-3"></a><span class="kw">import</span><span class="im"> org.apache.beam.sdk.transforms.windowing.AfterWatermark;</span></span>
+<span id="cb3-4"><a href="#cb3-4"></a><span class="kw">import</span><span class="im"> org.apache.beam.sdk.transforms.windowing.Trigger;</span></span>
+<span id="cb3-5"><a href="#cb3-5"></a></span>
+<span id="cb3-6"><a href="#cb3-6"></a>Trigger trigger = AfterEach.<span class="fu">inOrder</span>(</span>
+<span id="cb3-7"><a href="#cb3-7"></a>    <span class="co">// 1. 3つ集まったら発火</span></span>
+<span id="cb3-8"><a href="#cb3-8"></a>    AfterPane.<span class="fu">elementCountAtLeast</span>(<span class="dv">3</span>),</span>
+<span id="cb3-9"><a href="#cb3-9"></a>    <span class="co">// 2. 5つ集まったら発火</span></span>
+<span id="cb3-10"><a href="#cb3-10"></a>    AfterPane.<span class="fu">elementCountAtLeast</span>(<span class="dv">5</span>),</span>
+<span id="cb3-11"><a href="#cb3-11"></a>    <span class="co">// 3. Watermark が渡されたタイミングで発火</span></span>
+<span id="cb3-12"><a href="#cb3-12"></a>    AfterWatermark.<span class="fu">pastEndOfWindow</span>()</span>
+<span id="cb3-13"><a href="#cb3-13"></a>);</span></code></pre></div>
+<p>動作するサンプルは、<a href="./codes/afterEachInOrder.html">こちら</a>から。</p>
 <h2 id="afterfirst.of">AfterFirst.of</h2>
+<p>この trigger は、指定した複数の trigger のいずれか一つが満たされたタイミングで処理を発火します。</p>
+<div class="sourceCode" id="cb4"><pre class="line-numbers"><code class="language-java"><span id="cb4-1"><a href="#cb4-1"></a><span class="kw">import</span><span class="im"> org.apache.beam.sdk.transforms.windowing.AfterFirst;</span></span>
+<span id="cb4-2"><a href="#cb4-2"></a><span class="kw">import</span><span class="im"> org.apache.beam.sdk.transforms.windowing.AfterPane;</span></span>
+<span id="cb4-3"><a href="#cb4-3"></a><span class="kw">import</span><span class="im"> org.apache.beam.sdk.transforms.windowing.AfterWatermark;</span></span>
+<span id="cb4-4"><a href="#cb4-4"></a><span class="kw">import</span><span class="im"> org.apache.beam.sdk.transforms.windowing.Trigger;</span></span>
+<span id="cb4-5"><a href="#cb4-5"></a></span>
+<span id="cb4-6"><a href="#cb4-6"></a>Trigger trigger = AfterFirst.<span class="fu">of</span>(</span>
+<span id="cb4-7"><a href="#cb4-7"></a>    <span class="co">// 30秒おきに発火</span></span>
+<span id="cb4-8"><a href="#cb4-8"></a>    AfterProcessingTime.<span class="fu">pastFirstElementInPane</span>()</span>
+<span id="cb4-9"><a href="#cb4-9"></a>        .<span class="fu">plusDelayOf</span>(<span class="bu">Duration</span>.<span class="fu">standardSeconds</span>(<span class="dv">30L</span>)),</span>
+<span id="cb4-10"><a href="#cb4-10"></a>    <span class="co">// 30秒おきに発火</span></span>
+<span id="cb4-11"><a href="#cb4-11"></a>    AfterPane.<span class="fu">elementCountAtLeast</span>(<span class="dv">5</span>)</span>
+<span id="cb4-12"><a href="#cb4-12"></a>);</span></code></pre></div>
+<p>動作するサンプルは、<a href="./codes/afterFirst.html">こちら</a>から。</p>
 <h2 id="afterall.of">AfterAll.of</h2>
+<p>この trigger は、指定した複数の trigger のいずれか一つが満たされたタイミングで処理を発火します。</p>
+<div class="sourceCode" id="cb5"><pre class="line-numbers"><code class="language-java"><span id="cb5-1"><a href="#cb5-1"></a><span class="kw">import</span><span class="im"> org.apache.beam.sdk.transforms.windowing.AfterAll;</span></span>
+<span id="cb5-2"><a href="#cb5-2"></a><span class="kw">import</span><span class="im"> org.apache.beam.sdk.transforms.windowing.AfterPane;</span></span>
+<span id="cb5-3"><a href="#cb5-3"></a><span class="kw">import</span><span class="im"> org.apache.beam.sdk.transforms.windowing.AfterWatermark;</span></span>
+<span id="cb5-4"><a href="#cb5-4"></a><span class="kw">import</span><span class="im"> org.apache.beam.sdk.transforms.windowing.Trigger;</span></span>
+<span id="cb5-5"><a href="#cb5-5"></a></span>
+<span id="cb5-6"><a href="#cb5-6"></a>Trigger trigger = AfterAll.<span class="fu">of</span>(</span>
+<span id="cb5-7"><a href="#cb5-7"></a>    <span class="co">// 30秒おきに発火</span></span>
+<span id="cb5-8"><a href="#cb5-8"></a>    AfterProcessingTime.<span class="fu">pastFirstElementInPane</span>()</span>
+<span id="cb5-9"><a href="#cb5-9"></a>        .<span class="fu">plusDelayOf</span>(<span class="bu">Duration</span>.<span class="fu">standardSeconds</span>(<span class="dv">30L</span>)),</span>
+<span id="cb5-10"><a href="#cb5-10"></a>    <span class="co">// 30秒おきに発火</span></span>
+<span id="cb5-11"><a href="#cb5-11"></a>    AfterPane.<span class="fu">elementCountAtLeast</span>(<span class="dv">2</span>)</span>
+<span id="cb5-12"><a href="#cb5-12"></a>);</span></code></pre></div>
+<p>動作するサンプルは、<a href="./codes/afterAll.html">こちら</a>から。</p>
 </body>
 </html>

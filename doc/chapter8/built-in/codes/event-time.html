@@ -85,10 +85,10 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <body>
 <p><a href="../event-time.html">戻る</a></p>
 <div class="sourceCode" id="cb1"><pre class="line-numbers"><code class="language-java"><span id="cb1-1"><a href="#cb1-1"></a><span class="kw">import</span><span class="im"> org.apache.beam.sdk.Pipeline;</span></span>
-<span id="cb1-2"><a href="#cb1-2"></a><span class="kw">import</span><span class="im"> org.apache.beam.sdk.extensions.gcp.options.GcpOptions;</span></span>
-<span id="cb1-3"><a href="#cb1-3"></a><span class="kw">import</span><span class="im"> org.apache.beam.sdk.io.TextIO;</span></span>
-<span id="cb1-4"><a href="#cb1-4"></a><span class="kw">import</span><span class="im"> org.apache.beam.sdk.io.gcp.pubsub.PubsubIO;</span></span>
-<span id="cb1-5"><a href="#cb1-5"></a><span class="kw">import</span><span class="im"> org.apache.beam.sdk.options.Description;</span></span>
+<span id="cb1-2"><a href="#cb1-2"></a><span class="kw">import</span><span class="im"> org.apache.beam.sdk.io.TextIO;</span></span>
+<span id="cb1-3"><a href="#cb1-3"></a><span class="kw">import</span><span class="im"> org.apache.beam.sdk.io.gcp.pubsub.PubsubIO;</span></span>
+<span id="cb1-4"><a href="#cb1-4"></a><span class="kw">import</span><span class="im"> org.apache.beam.sdk.options.Description;</span></span>
+<span id="cb1-5"><a href="#cb1-5"></a><span class="kw">import</span><span class="im"> org.apache.beam.sdk.options.PipelineOptions;</span></span>
 <span id="cb1-6"><a href="#cb1-6"></a><span class="kw">import</span><span class="im"> org.apache.beam.sdk.options.PipelineOptionsFactory;</span></span>
 <span id="cb1-7"><a href="#cb1-7"></a><span class="kw">import</span><span class="im"> org.apache.beam.sdk.transforms.windowing.AfterPane;</span></span>
 <span id="cb1-8"><a href="#cb1-8"></a><span class="kw">import</span><span class="im"> org.apache.beam.sdk.transforms.windowing.AfterWatermark;</span></span>
@@ -103,7 +103,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <span id="cb1-17"><a href="#cb1-17"></a>  <span class="co">/**</span></span>
 <span id="cb1-18"><a href="#cb1-18"></a>   <span class="co">*</span> 実行時オプション</span>
 <span id="cb1-19"><a href="#cb1-19"></a>   <span class="co">*/</span></span>
-<span id="cb1-20"><a href="#cb1-20"></a>  <span class="kw">public</span> <span class="kw">interface</span> MyOptions <span class="kw">extends</span> GcpOptions {</span>
+<span id="cb1-20"><a href="#cb1-20"></a>  <span class="kw">public</span> <span class="kw">interface</span> MyOptions <span class="kw">extends</span> PipelineOptions {</span>
 <span id="cb1-21"><a href="#cb1-21"></a>    <span class="at">@Description</span>(<span class="st">&quot;Pub/Sub subscription name&quot;</span>)</span>
 <span id="cb1-22"><a href="#cb1-22"></a>    <span class="bu">String</span> <span class="fu">getSubscription</span>();</span>
 <span id="cb1-23"><a href="#cb1-23"></a></span>
