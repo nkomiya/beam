@@ -5,9 +5,9 @@
 <!-- TOC -->
 
 - [クイックスタート](#クイックスタート)
-  - [Maven プロジェクトの雛形取得](#maven-プロジェクトの雛形取得)
-  - [Build](#build)
-  - [サンプルコード実行](#サンプルコード実行)
+    - [Maven プロジェクトの雛形取得](#maven-プロジェクトの雛形取得)
+    - [Build](#build)
+    - [サンプルコード実行](#サンプルコード実行)
 
 <!-- /TOC -->
 
@@ -25,13 +25,13 @@ $ BEAM_VERSION=2.20.0
 
 # 雛形取得
 $ mvn archetype:generate \
-   -DinteractiveMode=false \
-   -DarchetypeGroupId=org.apache.beam \
-   -DarchetypeArtifactId=beam-sdks-java-maven-archetypes-starter \
-   -DarchetypeVersion="${BEAM_VERSION}" \
-   -DtargetPlatform=1.8 \
-   -DartifactId=check-pipeline-dependencies \
-   -DgroupId=org.apache.beam.samples
+    -DinteractiveMode=false \
+    -DarchetypeGroupId=org.apache.beam \
+    -DarchetypeArtifactId=beam-sdks-java-maven-archetypes-starter \
+    -DarchetypeVersion="${BEAM_VERSION}" \
+    -DtargetPlatform=1.8 \
+    -DartifactId=check-pipeline-dependencies \
+    -DgroupId=org.apache.beam.samples
 
 # 変数開放
 $ unset BEAM_VERSION

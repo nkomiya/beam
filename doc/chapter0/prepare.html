@@ -6,75 +6,74 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
   <title>Ja: Beam Programming Guide</title>
   <style>
-      code{white-space: pre-wrap;}
-      span.smallcaps{font-variant: small-caps;}
-      span.underline{text-decoration: underline;}
-      div.column{display: inline-block; vertical-align: top; width: 50%;}
-  </style>
-  <style>
-code.sourceCode > span { display: inline-block; line-height: 1.25; }
-code.sourceCode > span { color: inherit; text-decoration: inherit; }
-code.sourceCode > span:empty { height: 1.2em; }
-.sourceCode { overflow: visible; }
-code.sourceCode { white-space: pre; position: relative; }
-div.sourceCode { margin: 1em 0; }
-pre.sourceCode { margin: 0; }
-@media screen {
-div.sourceCode { overflow: auto; }
-}
-@media print {
-code.sourceCode { white-space: pre-wrap; }
-code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
-}
-pre.numberSource code
-  { counter-reset: source-line 0; }
-pre.numberSource code > span
-  { position: relative; left: -4em; counter-increment: source-line; }
-pre.numberSource code > span > a:first-child::before
-  { content: counter(source-line);
-    position: relative; left: -1em; text-align: right; vertical-align: baseline;
-    border: none; display: inline-block;
-    -webkit-touch-callout: none; -webkit-user-select: none;
-    -khtml-user-select: none; -moz-user-select: none;
-    -ms-user-select: none; user-select: none;
-    padding: 0 4px; width: 4em;
-    color: #aaaaaa;
-  }
-pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
-div.sourceCode
-  {   }
-@media screen {
-code.sourceCode > span > a:first-child::before { text-decoration: underline; }
-}
-code span.al { color: #ff0000; font-weight: bold; } /* Alert */
-code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
-code span.at { color: #7d9029; } /* Attribute */
-code span.bn { color: #40a070; } /* BaseN */
-code span.bu { } /* BuiltIn */
-code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
-code span.ch { color: #4070a0; } /* Char */
-code span.cn { color: #880000; } /* Constant */
-code span.co { color: #60a0b0; font-style: italic; } /* Comment */
-code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
-code span.do { color: #ba2121; font-style: italic; } /* Documentation */
-code span.dt { color: #902000; } /* DataType */
-code span.dv { color: #40a070; } /* DecVal */
-code span.er { color: #ff0000; font-weight: bold; } /* Error */
-code span.ex { } /* Extension */
-code span.fl { color: #40a070; } /* Float */
-code span.fu { color: #06287e; } /* Function */
-code span.im { } /* Import */
-code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
-code span.kw { color: #007020; font-weight: bold; } /* Keyword */
-code span.op { color: #666666; } /* Operator */
-code span.ot { color: #007020; } /* Other */
-code span.pp { color: #bc7a00; } /* Preprocessor */
-code span.sc { color: #4070a0; } /* SpecialChar */
-code span.ss { color: #bb6688; } /* SpecialString */
-code span.st { color: #4070a0; } /* String */
-code span.va { color: #19177c; } /* Variable */
-code span.vs { color: #4070a0; } /* VerbatimString */
-code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+    code{white-space: pre-wrap;}
+    span.smallcaps{font-variant: small-caps;}
+    span.underline{text-decoration: underline;}
+    div.column{display: inline-block; vertical-align: top; width: 50%;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    ul.task-list{list-style: none;}
+    pre > code.sourceCode { white-space: pre; position: relative; }
+    pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+    pre > code.sourceCode > span:empty { height: 1.2em; }
+    code.sourceCode > span { color: inherit; text-decoration: inherit; }
+    div.sourceCode { margin: 1em 0; }
+    pre.sourceCode { margin: 0; }
+    @media screen {
+    div.sourceCode { overflow: auto; }
+    }
+    @media print {
+    pre > code.sourceCode { white-space: pre-wrap; }
+    pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+    }
+    pre.numberSource code
+      { counter-reset: source-line 0; }
+    pre.numberSource code > span
+      { position: relative; left: -4em; counter-increment: source-line; }
+    pre.numberSource code > span > a:first-child::before
+      { content: counter(source-line);
+        position: relative; left: -1em; text-align: right; vertical-align: baseline;
+        border: none; display: inline-block;
+        -webkit-touch-callout: none; -webkit-user-select: none;
+        -khtml-user-select: none; -moz-user-select: none;
+        -ms-user-select: none; user-select: none;
+        padding: 0 4px; width: 4em;
+        color: #aaaaaa;
+      }
+    pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+    div.sourceCode
+      {   }
+    @media screen {
+    pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+    }
+    code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+    code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+    code span.at { color: #7d9029; } /* Attribute */
+    code span.bn { color: #40a070; } /* BaseN */
+    code span.bu { } /* BuiltIn */
+    code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+    code span.ch { color: #4070a0; } /* Char */
+    code span.cn { color: #880000; } /* Constant */
+    code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+    code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+    code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+    code span.dt { color: #902000; } /* DataType */
+    code span.dv { color: #40a070; } /* DecVal */
+    code span.er { color: #ff0000; font-weight: bold; } /* Error */
+    code span.ex { } /* Extension */
+    code span.fl { color: #40a070; } /* Float */
+    code span.fu { color: #06287e; } /* Function */
+    code span.im { } /* Import */
+    code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+    code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+    code span.op { color: #666666; } /* Operator */
+    code span.ot { color: #007020; } /* Other */
+    code span.pp { color: #bc7a00; } /* Preprocessor */
+    code span.sc { color: #4070a0; } /* SpecialChar */
+    code span.ss { color: #bb6688; } /* SpecialString */
+    code span.st { color: #4070a0; } /* String */
+    code span.va { color: #19177c; } /* Variable */
+    code span.vs { color: #4070a0; } /* VerbatimString */
+    code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
   </style>
   <link rel="stylesheet" href="../github.css" />
   <!--[if lt IE 9]>
@@ -83,56 +82,66 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
   <script src="../prism.js"></script>
 </head>
 <body>
-<p><a href="../index.html">topへ</a></p>
-<h1 id="準備編">準備編</h1>
-<p>目次</p>
+<p><a href="../index.html">top へ</a></p>
+<!-- TOC -->
 <ul>
-<li><a href="#jdk">Open JDKのinstall</a></li>
-<li><a href="#maven">Apache Mavenのinstall</a></li>
-<li><a href="#jenv">Jenvのinstall</a></li>
-<li><a href="#intellij">IntelliJのinstall</a></li>
+<li><a href="#準備編">準備編</a>
+<ul>
+<li><a href="#jdk">JDK</a></li>
+<li><a href="#maven">Maven</a></li>
+<li><a href="#jenv">jEnv</a></li>
+</ul></li>
 </ul>
-<h2 id="open-jdkのinstall"><span id="jdk" class="lhead">Open JDKのinstall</span></h2>
-<p>Java 8を使いたければ、Oracleの無償のJDKはもう利用不可。代替策として<a href="https://adoptopenjdk.net">AdoptOpenJDK</a>のJava 8がLTSなので[^aoj]、こちらを利用します。 [^aoj]: <a href="https://adoptopenjdk.net/support.html">https://adoptopenjdk.net/support.html</a></p>
-<h2 id="mavenのinstall"><span id="maven" class="lhead">Mavenのinstall</span></h2>
-<p>Mavenは使用するライブラリの依存関係を解消してくれたり、ユニットテストが簡単に実行できたり、自作パッケージの公開ができたり…、と色々できるJavaのビルドツールです。 Homebrewでinstallするか、もしくは<a href="https://maven.apache.org/download.cgi">公式サイト</a>からバイナリファイルをダウンロードしてください。</p>
-<h2 id="jenvのinstall"><span id="jenv" class="lhead">jEnvのinstall</span></h2>
-<p>pyenvとかのJava版です。Git、Homebrewでインストール可能ですが、Gitを使ってinstallする方法をまとめます。</p>
+<!-- /TOC -->
+<h1 id="準備編">準備編</h1>
+<h2 id="jdk">JDK</h2>
+<ul>
+<li>Beam の安定動作には Java 8 が必要</li>
+<li>Java 11 対応は進行中<a href="#fn1" class="footnote-ref" id="fnref1" role="doc-noteref"><sup>1</sup></a></li>
+</ul>
+<h2 id="maven">Maven</h2>
+<p>Beam の公式ガイドや、Google が提供している Beam のプロジェクトで、<a href="https://maven.apache.org/">Maven</a> が使用されています。</p>
+<p>そのため、ビルドツールは Maven がおすすめです。</p>
+<h2 id="jenv">jEnv</h2>
+<p><a href="https://www.jenv.be/">jEnv</a> は、Java 用のバージョン管理ツール。Git 経由でインストールする方法をまとめます。</p>
+<ul>
+<li>ダウンロード</li>
+</ul>
 <div class="sourceCode" id="cb1"><pre class="line-numbers"><code class="language-bash"><span id="cb1-1"><a href="#cb1-1"></a>$ <span class="fu">git</span> clone https://github.com/gcuisinier/jenv.git ~/.jenv</span></code></pre></div>
-<p>.bash_profileにjenvの設定を追加。</p>
-<div class="sourceCode" id="cb2"><pre class="line-numbers"><code class="language-bash"><span id="cb2-1"><a href="#cb2-1"></a>$ <span class="bu">export</span> <span class="va">JENV_ROOT=</span><span class="st">&quot;</span><span class="va">${HOME}</span><span class="st">/.jenv&quot;</span></span>
-<span id="cb2-2"><a href="#cb2-2"></a>$ <span class="bu">echo</span> <span class="st">&#39;export PATH=&quot;${JENV_ROOT}/bin:$PATH&quot;&#39;</span> <span class="op">&gt;&gt;</span> ~/.bash_profile</span>
-<span id="cb2-3"><a href="#cb2-3"></a>$ <span class="bu">echo</span> <span class="st">&#39;eval &quot;$(jenv init -)&quot;&#39;</span> <span class="op">&gt;&gt;</span> ~/.bash_profile</span></code></pre></div>
-<p>Jenvは割と優秀で、環境変数の自動設定、Mavenの設定とかができます。</p>
-<div class="sourceCode" id="cb3"><pre class="line-numbers"><code class="language-bash"><span id="cb3-1"><a href="#cb3-1"></a>$ <span class="ex">jenv</span> enable-plugin export</span>
-<span id="cb3-2"><a href="#cb3-2"></a>$ <span class="ex">jenv</span> enable-plugin maven</span></code></pre></div>
-<p>インストールが終わったら、</p>
-<div class="sourceCode" id="cb4"><pre class="line-numbers"><code class="language-bash"><span id="cb4-1"><a href="#cb4-1"></a>$ <span class="ex">java</span> -version</span>
-<span id="cb4-2"><a href="#cb4-2"></a>$ <span class="ex">mvn</span> -version</span></code></pre></div>
-<p>を行い、javaのversionが両者で一致してることとかをcheckしておしまいです。</p>
-<h2 id="intellijのinstall"><span id="intellij" class="lhead">IntelliJのinstall</span></h2>
-<p>IntelliJでMavenが使えるようになるまで、多少苦戦したのでメモです。 Mavenはpom.xmlでプロジェクトの管理をします (JDKのバージョンとか、依存ライブラリなど)。JDKのバージョンを頻繁に変えることはないかと思うので、デフォルトのpom.xmlをいじっておきます。</p>
-<h3 id="defaultのpom.xmlの編集">defaultのpom.xmlの編集</h3>
-<p>毎回設定を変更するのは面倒なので、defaultのpom.xmlを編集しておきます。</p>
-<p>IntelliJのトップ画面から、Configure &gt; Preferencesを選択します。</p>
-<p><img src="./figs/top.png" width="500"></p>
-<p>Editor &gt; File and Code Templates &gt; Otherを選びます。</p>
-<p><img src="./figs/preference.png" width="500"></p>
-<p>その中にMaven project.xmlがあると思うので、ファイル末尾にちょい足しします。</p>
-<div class="sourceCode" id="cb5"><pre class="line-numbers"><code class="language-xml"><span id="cb5-1"><a href="#cb5-1"></a>... 中略 ...</span>
-<span id="cb5-2"><a href="#cb5-2"></a></span>
-<span id="cb5-3"><a href="#cb5-3"></a>    <span class="kw">&lt;groupId&gt;</span>${GROUP_ID}<span class="kw">&lt;/groupId&gt;</span></span>
-<span id="cb5-4"><a href="#cb5-4"></a>    <span class="kw">&lt;artifactId&gt;</span>${ARTIFACT_ID}<span class="kw">&lt;/artifactId&gt;</span></span>
-<span id="cb5-5"><a href="#cb5-5"></a>    <span class="kw">&lt;version&gt;</span>${VERSION}<span class="kw">&lt;/version&gt;</span></span>
-<span id="cb5-6"><a href="#cb5-6"></a>    </span>
-<span id="cb5-7"><a href="#cb5-7"></a>    <span class="co">&lt;!-- ここから --&gt;</span></span>
-<span id="cb5-8"><a href="#cb5-8"></a>    <span class="kw">&lt;properties&gt;</span></span>
-<span id="cb5-9"><a href="#cb5-9"></a>        <span class="kw">&lt;maven.compiler.source&gt;</span>1.8<span class="kw">&lt;/maven.compiler.source&gt;</span></span>
-<span id="cb5-10"><a href="#cb5-10"></a>        <span class="kw">&lt;maven.compiler.target&gt;</span>1.8<span class="kw">&lt;/maven.compiler.target&gt;</span></span>
-<span id="cb5-11"><a href="#cb5-11"></a>    <span class="kw">&lt;/properties&gt;</span></span>
-<span id="cb5-12"><a href="#cb5-12"></a>    <span class="co">&lt;!-- ここまでを追加 --&gt;</span></span>
-<span id="cb5-13"><a href="#cb5-13"></a></span>
-<span id="cb5-14"><a href="#cb5-14"></a>    ${END}</span>
-<span id="cb5-15"><a href="#cb5-15"></a><span class="er">&lt;</span>/project&gt;</span></code></pre></div>
+<ul>
+<li>.bash_profile に jEnv の設定追加</li>
+</ul>
+<div class="sourceCode" id="cb2"><pre class="line-numbers"><code class="language-bash"><span id="cb2-1"><a href="#cb2-1"></a>$ <span class="fu">cat</span> <span class="op">&lt;&lt; &#39;_EOF_&#39;</span> <span class="op">&gt;&gt;</span> <span class="va">${HOME}</span><span class="ex">/.bash_profile</span></span>
+<span id="cb2-2"><a href="#cb2-2"></a>&gt; <span class="op">e</span><span class="ex">xport</span> JENV_ROOT=<span class="st">&quot;</span><span class="va">${HOME}</span><span class="st">/.jenv&quot;</span></span>
+<span id="cb2-3"><a href="#cb2-3"></a>&gt; export PATH=&quot;${JENV_ROOT}/bin:$PATH&quot;</span>
+<span id="cb2-4"><a href="#cb2-4"></a>&gt; eval &quot;$(jenv init -)&quot;</span>
+<span id="cb2-5"><a href="#cb2-5"></a>&gt; . &quot;${HOME}/jenv/completions/jenv.bash&quot;</span>
+<span id="cb2-6"><a href="#cb2-6"></a>&gt; _EOF_</span></code></pre></div>
+<ul>
+<li>プラグイン設定</li>
+</ul>
+<div class="sourceCode" id="cb3"><pre class="line-numbers"><code class="language-bash"><span id="cb3-1"><a href="#cb3-1"></a><span class="co"># 環境変数 (JAVA_HOME) の自動設定</span></span>
+<span id="cb3-2"><a href="#cb3-2"></a>$ <span class="ex">jenv</span> enable-plugin export</span>
+<span id="cb3-3"><a href="#cb3-3"></a></span>
+<span id="cb3-4"><a href="#cb3-4"></a><span class="co"># Maven 用 設定</span></span>
+<span id="cb3-5"><a href="#cb3-5"></a>$ <span class="ex">jenv</span> enable-plugin maven</span></code></pre></div>
+<ul>
+<li>Java バージョンの一致確認</li>
+</ul>
+<div class="sourceCode" id="cb4"><pre class="line-numbers"><code class="language-bash"><span id="cb4-1"><a href="#cb4-1"></a><span class="co"># Java バージョン (抜粋)</span></span>
+<span id="cb4-2"><a href="#cb4-2"></a>$ <span class="ex">java</span> -version</span>
+<span id="cb4-3"><a href="#cb4-3"></a><span class="ex">openjdk</span> version <span class="st">&quot;1.8.0_222&quot;</span></span>
+<span id="cb4-4"><a href="#cb4-4"></a></span>
+<span id="cb4-5"><a href="#cb4-5"></a><span class="co"># Maven バージョン (抜粋)</span></span>
+<span id="cb4-6"><a href="#cb4-6"></a>$ <span class="ex">mvn</span> -version</span>
+<span id="cb4-7"><a href="#cb4-7"></a><span class="ex">Apache</span> Maven 3.6.3 (cecedd343002696d0abb50b32b541b8a6ba2883f)</span>
+<span id="cb4-8"><a href="#cb4-8"></a><span class="ex">Java</span> version: 1.8.0_222</span></code></pre></div>
+<p>を行い、java の version が両者で一致してることとかを check しておしまいです。</p>
+<section class="footnotes" role="doc-endnotes">
+<hr />
+<ol>
+<li id="fn1" role="doc-endnote"><p><a href="https://beam.apache.org/roadmap/java-sdk/">https://beam.apache.org/roadmap/java-sdk/</a><a href="#fnref1" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+</ol>
+</section>
 </body>
 </html>

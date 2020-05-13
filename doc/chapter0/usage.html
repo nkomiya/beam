@@ -6,75 +6,74 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
   <title>Ja: Beam Programming Guide</title>
   <style>
-      code{white-space: pre-wrap;}
-      span.smallcaps{font-variant: small-caps;}
-      span.underline{text-decoration: underline;}
-      div.column{display: inline-block; vertical-align: top; width: 50%;}
-  </style>
-  <style>
-code.sourceCode > span { display: inline-block; line-height: 1.25; }
-code.sourceCode > span { color: inherit; text-decoration: inherit; }
-code.sourceCode > span:empty { height: 1.2em; }
-.sourceCode { overflow: visible; }
-code.sourceCode { white-space: pre; position: relative; }
-div.sourceCode { margin: 1em 0; }
-pre.sourceCode { margin: 0; }
-@media screen {
-div.sourceCode { overflow: auto; }
-}
-@media print {
-code.sourceCode { white-space: pre-wrap; }
-code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
-}
-pre.numberSource code
-  { counter-reset: source-line 0; }
-pre.numberSource code > span
-  { position: relative; left: -4em; counter-increment: source-line; }
-pre.numberSource code > span > a:first-child::before
-  { content: counter(source-line);
-    position: relative; left: -1em; text-align: right; vertical-align: baseline;
-    border: none; display: inline-block;
-    -webkit-touch-callout: none; -webkit-user-select: none;
-    -khtml-user-select: none; -moz-user-select: none;
-    -ms-user-select: none; user-select: none;
-    padding: 0 4px; width: 4em;
-    color: #aaaaaa;
-  }
-pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
-div.sourceCode
-  {   }
-@media screen {
-code.sourceCode > span > a:first-child::before { text-decoration: underline; }
-}
-code span.al { color: #ff0000; font-weight: bold; } /* Alert */
-code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
-code span.at { color: #7d9029; } /* Attribute */
-code span.bn { color: #40a070; } /* BaseN */
-code span.bu { } /* BuiltIn */
-code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
-code span.ch { color: #4070a0; } /* Char */
-code span.cn { color: #880000; } /* Constant */
-code span.co { color: #60a0b0; font-style: italic; } /* Comment */
-code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
-code span.do { color: #ba2121; font-style: italic; } /* Documentation */
-code span.dt { color: #902000; } /* DataType */
-code span.dv { color: #40a070; } /* DecVal */
-code span.er { color: #ff0000; font-weight: bold; } /* Error */
-code span.ex { } /* Extension */
-code span.fl { color: #40a070; } /* Float */
-code span.fu { color: #06287e; } /* Function */
-code span.im { } /* Import */
-code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
-code span.kw { color: #007020; font-weight: bold; } /* Keyword */
-code span.op { color: #666666; } /* Operator */
-code span.ot { color: #007020; } /* Other */
-code span.pp { color: #bc7a00; } /* Preprocessor */
-code span.sc { color: #4070a0; } /* SpecialChar */
-code span.ss { color: #bb6688; } /* SpecialString */
-code span.st { color: #4070a0; } /* String */
-code span.va { color: #19177c; } /* Variable */
-code span.vs { color: #4070a0; } /* VerbatimString */
-code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+    code{white-space: pre-wrap;}
+    span.smallcaps{font-variant: small-caps;}
+    span.underline{text-decoration: underline;}
+    div.column{display: inline-block; vertical-align: top; width: 50%;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    ul.task-list{list-style: none;}
+    pre > code.sourceCode { white-space: pre; position: relative; }
+    pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+    pre > code.sourceCode > span:empty { height: 1.2em; }
+    code.sourceCode > span { color: inherit; text-decoration: inherit; }
+    div.sourceCode { margin: 1em 0; }
+    pre.sourceCode { margin: 0; }
+    @media screen {
+    div.sourceCode { overflow: auto; }
+    }
+    @media print {
+    pre > code.sourceCode { white-space: pre-wrap; }
+    pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+    }
+    pre.numberSource code
+      { counter-reset: source-line 0; }
+    pre.numberSource code > span
+      { position: relative; left: -4em; counter-increment: source-line; }
+    pre.numberSource code > span > a:first-child::before
+      { content: counter(source-line);
+        position: relative; left: -1em; text-align: right; vertical-align: baseline;
+        border: none; display: inline-block;
+        -webkit-touch-callout: none; -webkit-user-select: none;
+        -khtml-user-select: none; -moz-user-select: none;
+        -ms-user-select: none; user-select: none;
+        padding: 0 4px; width: 4em;
+        color: #aaaaaa;
+      }
+    pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+    div.sourceCode
+      {   }
+    @media screen {
+    pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+    }
+    code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+    code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+    code span.at { color: #7d9029; } /* Attribute */
+    code span.bn { color: #40a070; } /* BaseN */
+    code span.bu { } /* BuiltIn */
+    code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+    code span.ch { color: #4070a0; } /* Char */
+    code span.cn { color: #880000; } /* Constant */
+    code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+    code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+    code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+    code span.dt { color: #902000; } /* DataType */
+    code span.dv { color: #40a070; } /* DecVal */
+    code span.er { color: #ff0000; font-weight: bold; } /* Error */
+    code span.ex { } /* Extension */
+    code span.fl { color: #40a070; } /* Float */
+    code span.fu { color: #06287e; } /* Function */
+    code span.im { } /* Import */
+    code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+    code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+    code span.op { color: #666666; } /* Operator */
+    code span.ot { color: #007020; } /* Other */
+    code span.pp { color: #bc7a00; } /* Preprocessor */
+    code span.sc { color: #4070a0; } /* SpecialChar */
+    code span.ss { color: #bb6688; } /* SpecialString */
+    code span.st { color: #4070a0; } /* String */
+    code span.va { color: #19177c; } /* Variable */
+    code span.vs { color: #4070a0; } /* VerbatimString */
+    code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
   </style>
   <link rel="stylesheet" href="../github.css" />
   <!--[if lt IE 9]>
@@ -83,59 +82,66 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
   <script src="../prism.js"></script>
 </head>
 <body>
-<p><a href="../index.html">topへ</a></p>
-<h1 id="mavenの使い方">Mavenの使い方</h1>
-<h2 id="beam用にmaven-projectを作成する">Beam用にMaven projectを作成する</h2>
-<p>Mavenはリポジトリ管理機能つきのbuildツールです。Mavenリポジトリ上のパッケージを自分のプロジェクトで使ったり、自作のパッケージを公開したりできます（たぶん）。 設定ファイルがxmlなのは面倒ですが設定ファイルは幸い一つなので、テンプレ的なやつを作ればとりあえずはokです。</p>
-<p>Beamを使う上で簡単なのは、<a href="https://cloud.google.com/dataflow/docs/quickstarts/quickstart-java-maven#wordcount-">Dataflowのクイックスタート</a>に載っているサンプルコードを落とす方法です。これをMaven Projectを作ると、使わない依存関係も入ると思いますが…</p>
-<div class="sourceCode" id="cb1"><pre class="line-numbers"><code class="language-bash"><span id="cb1-1"><a href="#cb1-1"></a>$ <span class="va">BEAM_VERSION=</span>2.15.0</span>
-<span id="cb1-2"><a href="#cb1-2"></a>$ <span class="va">GROUP_ID=</span>[<span class="ex">Maven</span>プロジェクトのグループID]</span>
-<span id="cb1-3"><a href="#cb1-3"></a>$ <span class="va">ARTIFACT_ID=</span>[ビルドで作成される成果物の名前]</span>
-<span id="cb1-4"><a href="#cb1-4"></a>$ <span class="va">VERSION=</span>[プロジェクトのバージョン]</span>
+<p><a href="../index.html">top へ</a></p>
+<h1 id="クイックスタート">クイックスタート</h1>
+<!-- TOC -->
+<ul>
+<li><a href="#クイックスタート">クイックスタート</a>
+<ul>
+<li><a href="#maven-プロジェクトの雛形取得">Maven プロジェクトの雛形取得</a></li>
+<li><a href="#build">Build</a></li>
+<li><a href="#サンプルコード実行">サンプルコード実行</a></li>
+</ul></li>
+</ul>
+<!-- /TOC -->
+<h2 id="maven-プロジェクトの雛形取得">Maven プロジェクトの雛形取得</h2>
+<p>依存ライブラリの取得にあたり、pom.xml の編集が必要。</p>
+<p><a href="https://beam.apache.org/documentation/sdks/java-dependencies/">こちら</a>、もしくは<a href="https://beam.apache.org/get-started/quickstart-java/">こちらの</a> Beam のサンプルプロジェクトをダウンロードし、pom.xml の雛形を取得しておくと良いかと思われます。</p>
+<ul>
+<li>ダウンロード</li>
+</ul>
+<div class="sourceCode" id="cb1"><pre class="line-numbers"><code class="language-bash"><span id="cb1-1"><a href="#cb1-1"></a><span class="co"># Beam SDK バージョン指定</span></span>
+<span id="cb1-2"><a href="#cb1-2"></a>$ <span class="va">BEAM_VERSION=</span>2.20.0</span>
+<span id="cb1-3"><a href="#cb1-3"></a></span>
+<span id="cb1-4"><a href="#cb1-4"></a><span class="co"># 雛形取得</span></span>
 <span id="cb1-5"><a href="#cb1-5"></a>$ <span class="ex">mvn</span> archetype:generate \</span>
-<span id="cb1-6"><a href="#cb1-6"></a>      -DarchetypeGroupId=org.apache.beam \</span>
-<span id="cb1-7"><a href="#cb1-7"></a>      -DarchetypeArtifactId=beam-sdks-java-maven-archetypes-examples \</span>
-<span id="cb1-8"><a href="#cb1-8"></a>      -DarchetypeVersion=<span class="va">$BEAM_VERSION</span> \</span>
-<span id="cb1-9"><a href="#cb1-9"></a>      -DgroupId=<span class="va">$GROUP_ID</span> \</span>
-<span id="cb1-10"><a href="#cb1-10"></a>      -DartifactId=<span class="va">$ARTIFACT_ID</span> \</span>
-<span id="cb1-11"><a href="#cb1-11"></a>      -Dversion=<span class="va">$VERSION</span> \</span>
-<span id="cb1-12"><a href="#cb1-12"></a>      -Dpackage=org.apache.beam.examples \</span>
-<span id="cb1-13"><a href="#cb1-13"></a>      -DinteractiveMode=false</span></code></pre></div>
-<p>Group ID, Artifact IDはMavenで使う概念っぽいです。Groupは組織とか (パッケージがGroup配下にまとめられる) 、Artifactがビルドされたパッケージ的な感じです。適当な値を入れて問題ないです。</p>
-<p>外部パッケージはたいてい<a href="https://mvnrepository.com">Mave Central Repository</a>から持ってくることになると思いますが、https://mvnrepository.com/artifact/<strong>GROUP_ID</strong>/<strong>ARTIFACT_ID</strong> みたいな感じでパッケージがまとめられます。Beamだとこんな感じです。</p>
-<pre><code>org.apach.beam
-  ├── beam-sdks-java-core
-  ├── beam-runners-direct-java
-  └── ...</code></pre>
-<p>コマンドを実行すると、カレントディレクトリに<code>DartifactId</code>で指定したディレクトリができるはずです。欲しいのはpom.xmlのみなので、その他もろもろは全て消してOKです。</p>
-<div class="sourceCode" id="cb3"><pre class="line-numbers"><code class="language-bash"><span id="cb3-1"><a href="#cb3-1"></a>$ <span class="fu">rm</span> -r <span class="va">${ARTIFACT_ID}</span>/src/main/java/*<span class="kw">;</span> <span class="kw">\</span></span>
-<span id="cb3-2"><a href="#cb3-2"></a>  <span class="fu">rm</span> -r <span class="va">${ARTIFACT_ID}</span>/src/test/java/*<span class="kw">;</span> <span class="kw">\</span></span>
-<span id="cb3-3"><a href="#cb3-3"></a>  <span class="bu">cd</span> <span class="va">${ARTIFACT_ID}</span>/src<span class="kw">;</span> <span class="kw">\</span></span>
-<span id="cb3-4"><a href="#cb3-4"></a>  <span class="fu">mkdir</span> -p main/java/<span class="va">$(</span><span class="bu">echo</span> <span class="va">$GROUP_ID</span> <span class="kw">|</span> <span class="fu">sed</span> <span class="st">&quot;s/\./\//g&quot;</span><span class="va">)</span> <span class="kw">&amp;&amp;</span> <span class="kw">\</span></span>
-<span id="cb3-5"><a href="#cb3-5"></a>  <span class="bu">echo</span> <span class="st">&quot;package </span><span class="va">${GROUP_ID}</span><span class="st">;&quot;</span> <span class="op">&gt;</span> main/java/<span class="va">$(</span><span class="bu">echo</span> <span class="va">$GROUP_ID</span> <span class="kw">|</span> <span class="fu">sed</span> <span class="st">&quot;s/\./\//g&quot;</span><span class="va">)</span>/Main.java<span class="kw">;</span> <span class="kw">\</span></span>
-<span id="cb3-6"><a href="#cb3-6"></a>  <span class="fu">mkdir</span> -p test/java/<span class="va">$(</span><span class="bu">echo</span> <span class="va">$GROUP_ID</span> <span class="kw">|</span> <span class="fu">sed</span> <span class="st">&quot;s/\./\//g&quot;</span><span class="va">)</span><span class="kw">;</span> <span class="kw">\</span></span>
-<span id="cb3-7"><a href="#cb3-7"></a>  <span class="bu">cd</span> ../..<span class="kw">;</span> <span class="kw">\</span></span>
-<span id="cb3-8"><a href="#cb3-8"></a>  <span class="bu">unset</span> <span class="va">BEAM_VERSION</span> <span class="va">GROUP_ID</span> <span class="va">ARTIFACT_ID</span> <span class="va">VERSION</span></span></code></pre></div>
-<h3 id="build">Build</h3>
-<p>Buildするだけならシンプル。Mavenプロジェクトのルートに移動し、次のコマンドを実行します。</p>
-<div class="sourceCode" id="cb4"><pre class="line-numbers"><code class="language-bash"><span id="cb4-1"><a href="#cb4-1"></a>$ <span class="ex">mvn</span> compile</span></code></pre></div>
-<p>初回はリポジトリからBeam SDKを落とすので、Buildに時間が掛かるかもです。</p>
-<h3 id="ローカルでの実行">ローカルでの実行</h3>
-<p>実行したいクラスをDexec.mainClassで、コマンドライン引数をDexec.argsに渡します。</p>
-<div class="sourceCode" id="cb5"><pre class="line-numbers"><code class="language-bash"><span id="cb5-1"><a href="#cb5-1"></a>$ <span class="ex">mvn</span> exec:java -Dexec.mainClass=path.to.class \</span>
-<span id="cb5-2"><a href="#cb5-2"></a>  -Dexec.args=<span class="st">&quot;--arg1=hoge --arg2=fuga&quot;</span></span></code></pre></div>
-<p>みたいな。依存パッケージのパス指定はMavenが上手いことしてくれます (プラグインの追加が必要ですが、落としたpomファイルには記載ありです)。</p>
-<h3 id="dataflowでの実行">Dataflowでの実行</h3>
-<p>Mavenとbeamの両方でRunnerの指定が必要。</p>
-<div class="sourceCode" id="cb6"><pre class="line-numbers"><code class="language-bash"><span id="cb6-1"><a href="#cb6-1"></a>$ <span class="ex">mvn</span> -Pdataflow-runner exec:java -Dexec.mainClass=path.to.class \</span>
-<span id="cb6-2"><a href="#cb6-2"></a>  -Dexec.args=<span class="st">&quot;--runner=DataflowRunner \</span></span>
-<span id="cb6-3"><a href="#cb6-3"></a><span class="st">    --tempLocation=gs://bucket名 \</span></span>
-<span id="cb6-4"><a href="#cb6-4"></a><span class="st">    --arg1=hoge --arg2=fuga ...&quot;</span></span></code></pre></div>
-<p>tempLocationは一時ファイル置き場で、Cloud Storageのバケットを指定します。</p>
-<blockquote>
-<h4 id="メモ">メモ</h4>
-<p>Dataflowでの処理は、Compute Engineのデフォルトサービスアカウントが使われます。プロジェクト編集者の権限がついてるので、一つのプロジェクトで閉じているなら権限設定はたいていの場合必要ないです。<br />
-クロスプロジェクトで走らせたりする場合には、Compute Engineのデフォルトサービスアカウントに適切な権限を付与する必要があります（実行時のサービスアカウントは変更可です）。</p>
-</blockquote>
+<span id="cb1-6"><a href="#cb1-6"></a>    -DinteractiveMode=false \</span>
+<span id="cb1-7"><a href="#cb1-7"></a>    -DarchetypeGroupId=org.apache.beam \</span>
+<span id="cb1-8"><a href="#cb1-8"></a>    -DarchetypeArtifactId=beam-sdks-java-maven-archetypes-starter \</span>
+<span id="cb1-9"><a href="#cb1-9"></a>    -DarchetypeVersion=<span class="st">&quot;</span><span class="va">${BEAM_VERSION}</span><span class="st">&quot;</span> \</span>
+<span id="cb1-10"><a href="#cb1-10"></a>    -DtargetPlatform=1.8 \</span>
+<span id="cb1-11"><a href="#cb1-11"></a>    -DartifactId=check-pipeline-dependencies \</span>
+<span id="cb1-12"><a href="#cb1-12"></a>    -DgroupId=org.apache.beam.samples</span>
+<span id="cb1-13"><a href="#cb1-13"></a></span>
+<span id="cb1-14"><a href="#cb1-14"></a><span class="co"># 変数開放</span></span>
+<span id="cb1-15"><a href="#cb1-15"></a>$ <span class="bu">unset</span> <span class="va">BEAM_VERSION</span></span></code></pre></div>
+<ul>
+<li>確認</li>
+</ul>
+<div class="sourceCode" id="cb2"><pre class="line-numbers"><code class="language-bash"><span id="cb2-1"><a href="#cb2-1"></a>$ <span class="bu">cd</span> check-pipeline-dependencies</span>
+<span id="cb2-2"><a href="#cb2-2"></a></span>
+<span id="cb2-3"><a href="#cb2-3"></a>$ <span class="fu">find</span> . -type f</span>
+<span id="cb2-4"><a href="#cb2-4"></a><span class="ex">./pom.xml</span></span>
+<span id="cb2-5"><a href="#cb2-5"></a><span class="ex">./src/main/java/org/apache/beam/samples/StarterPipeline.java</span></span></code></pre></div>
+<h2 id="build">Build</h2>
+<p>Maven プロジェクトのルートに移動し、次のコマンドを実行します。</p>
+<div class="sourceCode" id="cb3"><pre class="line-numbers"><code class="language-bash"><span id="cb3-1"><a href="#cb3-1"></a><span class="co"># ビルド</span></span>
+<span id="cb3-2"><a href="#cb3-2"></a>$ <span class="ex">mvn</span> compile</span>
+<span id="cb3-3"><a href="#cb3-3"></a></span>
+<span id="cb3-4"><a href="#cb3-4"></a><span class="co"># 確認</span></span>
+<span id="cb3-5"><a href="#cb3-5"></a>$ <span class="fu">find</span> target -type f</span>
+<span id="cb3-6"><a href="#cb3-6"></a><span class="ex">target/classes/org/apache/beam/samples/StarterPipeline.class</span></span>
+<span id="cb3-7"><a href="#cb3-7"></a><span class="ex">target/classes/org/apache/beam/samples/StarterPipeline</span><span class="va">$1</span><span class="ex">.class</span></span>
+<span id="cb3-8"><a href="#cb3-8"></a><span class="ex">target/classes/org/apache/beam/samples/StarterPipeline</span><span class="va">$2</span><span class="ex">.class</span></span>
+<span id="cb3-9"><a href="#cb3-9"></a><span class="ex">target/maven-status/maven-compiler-plugin/compile/default-compile/inputFiles.lst</span></span>
+<span id="cb3-10"><a href="#cb3-10"></a><span class="ex">target/maven-status/maven-compiler-plugin/compile/default-compile/createdFiles.lst</span></span></code></pre></div>
+<p>初回はリポジトリから Beam SDK を落とすため、Build にやや時間が掛かかります。</p>
+<h2 id="サンプルコード実行">サンプルコード実行</h2>
+<p>サンプルコードの実行は<code>-D exec.mainClass</code>で、クラスパス <code>org.apache.beam.samples.StarterPipeline</code> を指定します。</p>
+<div class="sourceCode" id="cb4"><pre class="line-numbers"><code class="language-bash"><span id="cb4-1"><a href="#cb4-1"></a>$ <span class="ex">mvn</span> -q exec:java -D exec.mainClass=org.apache.beam.samples.StarterPipeline</span>
+<span id="cb4-2"><a href="#cb4-2"></a><span class="ex">May</span> 14, 2020 12:12:18 AM org.apache.beam.samples.StarterPipeline<span class="va">$2</span> processElement</span>
+<span id="cb4-3"><a href="#cb4-3"></a><span class="ex">INFO</span>: HELLO</span>
+<span id="cb4-4"><a href="#cb4-4"></a><span class="ex">May</span> 14, 2020 12:12:18 AM org.apache.beam.samples.StarterPipeline<span class="va">$2</span> processElement</span>
+<span id="cb4-5"><a href="#cb4-5"></a><span class="ex">INFO</span>: WORLD</span></code></pre></div>
 </body>
 </html>

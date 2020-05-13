@@ -3,9 +3,9 @@
 <!-- TOC -->
 
 - [準備編](#準備編)
-  - [JDK](#jdk)
-  - [Maven](#maven)
-  - [jEnv](#jenv)
+    - [JDK](#jdk)
+    - [Maven](#maven)
+    - [jEnv](#jenv)
 
 <!-- /TOC -->
 
