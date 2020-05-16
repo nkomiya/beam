@@ -1,110 +1,143 @@
-[topへ](../index.md)
+[top へ](../index.md)
 
 # Overview
-## <span class="head">Beamによるデータ処理</span>
-Apache Beamでは大規模なデータ処理をわりと簡単に (?) 実装できます。並列化の実装を全くせずに、パイプラインにおける処理が並列に捌かれます。たとえばDataflowで複数のVMに処理をさせるときに、コードの変更であったり並列処理の仕掛けを作ってやる必要がありません。
 
-またストリーミング処理をバッチ処理とほぼ同じ感じで実装可能です。ストリーミング処理で気にするのは、どのタイミングで処理を発火させるのか、くらいですかね。
+<!-- TOC -->
 
+- [Overview](#overview)
+    - [Beam の特徴](#beam-の特徴)
+    - [Beam 固有の概念](#beam-固有の概念)
+        - [Pipeline](#pipeline)
+        - [PCollection](#pcollection)
+        - [PTransform](#ptransform)
+        - [I/O transform](#io-transform)
+    - [Beam プログラミングの流れ](#beam-プログラミングの流れ)
+        - [Pipeline インスタンスの作成](#pipeline-インスタンスの作成)
+        - [データ初期化の定義](#データ初期化の定義)
+        - [データ変換の定義](#データ変換の定義)
+        - [外部出力の定義](#外部出力の定義)
+        - [Pipeline の実行](#pipeline-の実行)
 
-Beamを使ったプログラミング・実行の際に、ユーザが決めるべきことは
+<!-- /TOC -->
 
-+ プログラミング時
-  + 実行時オプション  
-    プログラムの実行時にパラメータをとれますが、当然定義は必要です
-  + Input / Output  
-    けっこうな入出力先がサポートされてます[^1]  
-  + 行う変換処理
+## Beam の特徴
 
-+ 実行時
-  + 実行環境[^2]
-  + 実行時オプション
+Beam は、並列処理パイプラインの定義を容易化するためのオープンソースです。
 
-[^1]: https://beam.apache.org/documentation/io/built-in/
-[^2]: https://beam.apache.org/documentation/runners/capability-matrix
+特徴は以下の通り。
 
-## <span class="head">Beamで現れる概念</span>
-Beamには特有の用語がいくつかあります。
+1. `並列処理のためのロジックが実装不要`
+    処理を行うワーカー (マシン) へのデータ配分等、物理的な処理はライブラリ側で自動的に行われる
+    &rarr; データ処理のロジックのみに専念することが可能
+1. `バッチ/ストリーミングの両方に対応`
+    バッチ、ストリーミングパイプラインの両方を実装でき、Beam の仕掛け上、データ処理は同じ要領でコーディング可能
+1. `対応データソースが多い`
+    ローカル PC, GCP/AWS の各種ストレージサービスなど、様々なデータソースへの接続がサポート[^io]
+1. `ポータビリティ`
+    ソースコードの変更無しに、様々なプラットフォーム上で実行可能[^plat]
 
-<ul>
-<li><code>Pipeline</code></li>
-データ処理の最初から最後まで。
+[^io]: https://beam.apache.org/documentation/io/built-in/
+[^plat]: https://beam.apache.org/get-started/beam-overview/#apache-beam-pipeline-runners
 
-<li><code>PCollection</code></li>
-処理を行うデータの集まりで、Beamではこのデータの塊に対して処理を加えていきます。  
-原則、<code>PCollection</code>の中の要素は等価だと思うべきです。
-<pre><code>苗字の集まり。
-[
-  "佐藤","鈴木","田中", ...
-]  
-文字列の集まり。佐藤さんの情報たち、と捉えない方が良いです。
-[
-  "佐藤","32歳","172cm", ...
-]
-</code></pre>
+## Beam 固有の概念
 
-バッチ処理とストリーミング処理の違いは、データの終わりの有無です。前述の通りBeamではどちらもほぼ同じように扱えます。ただ全く同じわけではないので、それぞれ名前が付いてます。
+Beam では、並列処理パイプラインの実装を容易化するため、いくつかの抽象的な Beam に固有の概念を使います。
 
-<ul>
-<li>Bounded</li>
-データに終わりがある。(e.g. ファイル読み込み)
-<li>Unbound</li>
-データに終わりがない。(e.g. Twitterとか)
-</ul>
+- `Pipeline`
+- `PCollection`
+- `PTransform`
+- `I/O transform`
 
-通常は外部ソースからの読み込みですが、unit testや練習のために、コード内でデータを作ることもできます（BeamではJUnitが使えます）。
+パイプラインの定義は、上記概念に沿って行うことになります。
 
-<li><code>PTransform</code></li>
-Pipelineにおける各処理のステップです。Beam SDKで提供される`PTransform`はたくさんありますが、ユーザ定義の変換処理を適用可能です。
-`PCollection`をinputとして受け取り、処理を加えた`PCollection`をoutputとして返す。
+### Pipeline
 
-<li>I/O Transform</li>
-入出力を行う`PTransform`なのですが、`Pipeline`の始めと終わりになります。
-Beamでは様々な入出力先をサポートしてます。Datastore, BigQuery, Cloud Storage, Amazon S3, ... etc.
-</ul>
+データの読み込み、変換、出力までの一連のタスクをひとまとめにした概念が `Pipeline` です。
 
-> #### I/O Transformについてメモ
-> `pipeline`の途中の`PTransform`では`PCollection`を受け取り、変換処理を行います。ですがBeam SDKによるデータの読み込みでは、`PCollection`を受け取りません。  
-> なのでBeamを使って、GCSにアップされたファイルを読み込み、そのファイルに書かれた別のファイルたちを読み込みたい、みたいな処理は難しかったりします。  
-> 入出力を可変にするならば、`pipeline`の実行時オプションとして指定するのが吉です。
+`Pipeline` を作成する際、行うタスクのみでなく、パイプライン実行時に受け付けるオプション (読み込むファイルの名前等) の定義も行います。
 
+### PCollection
 
-## <span class="head">Codingの流れ</span>
-### 1. Pipelineオブジェクトの作成
-実行時に受け付けるオプション（入出力先とか）を定義した後、`Pipeline`オブジェクトを作ります。
+データ変換処理の適応対象となる、データの集まりのことを `PCollection` といいます。
 
-### 2. PCollectionの作成
-I/O Transformを使って外部から読むか、コード内で適当に初期値を作るか（主に）のどちらか。Pipelineのデータソースは複数指定可能で、`Pipeline`オブジェクトに関連づけられます。
+分散処理の都合上、`PCollection` 内の要素順序は制御ができません。そのため、各要素は "等価" となることが望ましいです。
 
-### 3. PTransformの適用
-`PCollection`に処理を加えていきます。できることを大雑把に触れておくと、
+- ○: 名字の集まり
 
-* データの変換、整形
-* フィルター
-* グループ化（国籍で分ける、みたいな）
-* 解析（平均値の計算とか）
-* `PCollection`内の要素を調べる
+```json
+["佐藤", "鈴木", "田中", ...]
+```
 
-とかです。
+- △: 佐藤さんのプロパティ
 
-### 4. I/OTransformで、外部への出力
-ローカルファイルとか、BigQueryのtableにデータを出力します。
+```json
+["佐藤", "32歳", "172cm", ...]
+```
 
-### 5. Pipelineの実行
-一連の処理の流れを作り終えたら、Pipelineを実行するためのメソッドの呼び出します。処理の一連の流れはgraphっていう。こんな感じでgraphに分岐があってもokです。  
+データサイズが有限 (全て集めることができる) かどうか、という意味で、バッチとストリーミングで扱うデータの性質は異なります。
+
+Beam はどちらも `PCollection` として扱うものの、集計のような処理を行う場合は区別が必要となります。  
+サイズが有限の `PCollection` は bounded、無限であるものは unbounded といいます。
+
+### PTransform
+
+`Pipeline` における各処理のステップが `PTransform` です。
+
+Beam SDK に組み込まれている `PTransform` は数多くありますが、ユーザ定義の `PTransform` を作ることも可能です。
+
+基本動作は、`PCollection`を入力として受け取り、処理結果を `PCollection` として出力します。
+
+### I/O transform
+
+データストレージへの入出力を行う `PTransform` となります。
+
+I/O transform は `Pipeline` の先頭、または末尾にのみ記載可能です。  
+(`PCollection` を入力に取らない、または出力しないという意味で、少し特殊な `PTransform` なため)
+
+> **メモ**
+上の制約から、「テキストファイルから処理するファイルのパスを動的に取得し、取得したファイルパスからデータを読み取る」といった処理は作りづらいです。
+入出力を可変にするならば、`Pipeline`の実行時オプション経由で指定する方が簡単です。
+
+## Beam プログラミングの流れ
+
+Beam プログラミングの目標は、下図のような **Pipeline graph** をソースコードへ落とし込むことです。
 
 > <img src="./figs/monitoring-side-input-write.png" width="800">  
 > [https://cloud.google.com/dataflow/docs/guides/using-monitoring-intf#side_input_metrics](https://cloud.google.com/dataflow/docs/guides/using-monitoring-intf#side_input_metrics)
 
-また、Pipeline処理の完了後に何か処理を行うこともできます。
+コーディングレベルで、流れを説明します。
 
-Beamの動作詳細としては、
+### Pipeline インスタンスの作成
 
-1. Pipeline graphの作成（&uarr;の写真みたいな）  
-処理の依存関係をみたりしてるのかと思ってます。  
-2. 作成されたgraphの実行  
+まずは、`Pipeline` クラスをインスタンス化します。
 
-BeamでのPipeline処理は並行分散処理なので、捌かれる要素の順番を指定するのは原則不可です。また、場合によっては複数回同じ処理が実行されたりします。
+パイプライン実行時に受け付けるオプション引数の定義も、この段階で行います。
 
-> #### memo
-> Cloud SQL &rarr; Cloud Spannerのデータ移行をDataflowで行なった際、同一レコードが複数回書き込まれる現象に遭遇しました。
+### データ初期化の定義
+
+`Pipeline` インスタンスに I/O Transform を使い、処理対象のデータを取得方法を定義します。
+
+これにより、`Pipeline` インスタンスに関連付けられた、`PCollection` インスタンスが得られます。
+
+(※ ソースコードに記載した値を使い、`PCollection` を作ることも可能)
+
+### データ変換の定義
+
+得られた `PCollection` インスタンスに対して、適用する処理 (`PTransform`) を定義していきます。
+
+Beam SDK の標準メソッドで、できることを大雑把に触れておきます。
+
+- データの変換、整形
+- フィルター
+- グループ化
+- 集計
+
+### 外部出力の定義
+
+`PTransform` 適用後の `PCollection` に対して、 I/O transform を使い、データ出力先を定義します。
+
+### Pipeline の実行
+
+ここまでで、データ入出力、および一連の変換処理が定義された `Pipeline` インスタンスが出来ます。
+
+`Pipeline` インスタンスのメソッド `run` を呼び出すことで、処理が起動されます。
