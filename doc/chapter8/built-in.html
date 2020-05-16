@@ -21,17 +21,19 @@
 </head>
 <body>
 <p><a href="../index.html">topへ</a><br />
-<a href="./overview.html">Triggerの概要へ</a></p>
-<h1 id="built-inのtrigger">Built inのTrigger</h1>
-<p>Beam では built-in の trigger が複数用意されています。</p>
-<ul>
-<li><a href="./built-in/event-time.html">Event-time triggers</a><br />
-watermark ベースの trigger</li>
-<li><a href="./built-in/process-time.html">Process-time triggers</a><br />
-処理時刻ベースの trigger</li>
-<li><a href="./built-in/data-driven.html">Data-driven triggers</a><br />
-パイプラインに到着したデータ数ベースの trigger</li>
-<li><a href="./built-in/summary.html">この節のまとめ</a></li>
-</ul>
+<a href="overview.html">Windowに戻る</a></p>
+<h1 id="build-inのwindow変換">Build-inのwindow変換</h1>
+<p><a href="https://beam.apache.org/documentation/programming-guide/#provided-windowing-functions">公式Guide</a>で紹介されているBeamのbuilt-inのwindow変換を紹介します。</p>
+<p>Sliding time windowを見ると分かりますが、要素は<strong>少なくとも</strong>一つのwindowに属し、かつ複数個のwindowに属することもあり得ます。</p>
+<ol type="1">
+<li><a href="./built-in/fixed.html">Fixed time windows</a><br />
+固定幅で重なりを<strong>持たない</strong> window</li>
+<li><a href="./built-in/sliding.html">Sliding time windows</a><br />
+固定幅で重なりを<strong>持たせた</strong> window</li>
+<li><a href="./built-in/session.html">Session windows</a><br />
+到着時間が近いデータをまとめる window</li>
+<li><a href="./built-in/global.html">Global window</a><br />
+全体で共通の window</li>
+</ol>
 </body>
 </html>

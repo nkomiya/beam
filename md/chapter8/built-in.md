@@ -1,13 +1,17 @@
 [topへ](../index.md)  
-[Triggerの概要へ](./overview.md)
+[Windowに戻る](overview.md)
 
-# Built inのTrigger
-Beam では built-in の trigger が複数用意されています。
 
-+ [Event-time triggers](./built-in/event-time.md)  
-watermark ベースの trigger
-+ [Process-time triggers](./built-in/process-time.md)  
-処理時刻ベースの trigger
-+ [Data-driven triggers](./built-in/data-driven.md)  
-パイプラインに到着したデータ数ベースの trigger
-+ [この節のまとめ](./built-in/summary.md)
+# Build-inのwindow変換
+[公式Guide](https://beam.apache.org/documentation/programming-guide/#provided-windowing-functions)で紹介されているBeamのbuilt-inのwindow変換を紹介します。
+
+Sliding time windowを見ると分かりますが、要素は**少なくとも**一つのwindowに属し、かつ複数個のwindowに属することもあり得ます。
+
+1. [Fixed time windows](./built-in/fixed.md)  
+固定幅で重なりを**持たない** window
+2. [Sliding time windows](./built-in/sliding.md)  
+固定幅で重なりを**持たせた** window
+3. [Session windows](./built-in/session.md)  
+到着時間が近いデータをまとめる window
+4. [Global window](./built-in/global.md)  
+全体で共通の window

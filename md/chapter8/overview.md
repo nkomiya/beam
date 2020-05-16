@@ -1,45 +1,59 @@
 [topへ](../index.md)
 
-# Trigger
+## Window
 **目次**
 
 1. [概要](#overview)
-2. [Built-inのtrigger](./built-in.md)
-3. [集積モード](./accumulation-mode.md)
-4. [Composite trigger](./composite-trigger.md)
-
+2. [ウィンドウの基礎](#basic)
+3. [ウィンドウに関する注意点](#note)
+4. [Bounded PCollectionとウィンドウ](#bounded)
+5. [Built-inのwindow変換](./built-in.md)
+6. [Watermarkと遅延データ](./watermark.md)
+7. [Timestampの更新](./timestamp.md)
 
 ## <span class="lhead" id="overview">概要</span>
-Window でデータをグループ化をした場合、Beam がいつ集計処理を発火するのか、を決めるのに **trigger** を使います。
+この章では、`PCollection`を要素の持つtimestampに基づいてグループ化を行う`window`について扱います。
 
-前章の Window は要素のタイムスタンプに基づくグループ化なので、基本的にはデータの発生時刻（= イベント時刻）に基づいてデータが分割されます。
+`GroupByKey`や`Combine`のようなtransformでは、`PCollection`の要素全体に作用して集計処理などを行いました。しかし、全データが決して揃うことのない、unboundedな`PCollection`でこのような処理をするには、どうすればよいのか？となります。
 
-ですが遅延データなどを考えると、パイプラインにデータが届いた時刻（= 処理時刻）に基づいて、集計を行うデータを集める時間枠を考える必要があります。
+この問題を解決するのが`window`の考え方です。Beamではtimestampに基づいて、入力データを有限サイズのデータの塊に分割して取り扱うことができます。特定の時間範囲に収まるデータをひと塊りにすることで、分割された有限サイズのデータの塊とみなします。この時間範囲が`window`です。
 
-少し詳しく考えてみます。下図はイベント時刻に対する処理時刻をのプロットです。仮に、パイプライン側でも window と同じ時間範囲でデータを集める、つまり集計を window の終わりに実行するとします。すると、処理を行う際にパイプラインに届いていないデータが発生し得ます（下図の黄色い点）。黄色い点も集計処理に入れたければ、パイプライン側で処理の開始を少し待つ必要があります。
+時間範囲を持つ`window`を作れば、ここに収まるデータが揃い終えるときが来ます。そのため`PCollection`がunboundedであっても、`window`であれば`GroupByKey`のような集計処理が可能になります。Beamでは常に、集計のような処理は<u>windowごと</u>に行われます。
 
-<div style="width:600px" align="center">
-<img src="./figs/trigger.png" width=400><br>
-図. イベント時刻に対して処理時刻をプロットしたグラフで、各点がデータを表します。
-</div>
+## <span class="lhead" id="basic">ウィンドウの基礎</span>
+`PCollection`がboundedでもunboundedでも、`window`に分割することが可能です。また、どんな`PCollection`であっても、少なくとも一つの`window`を持ちます。  
 
-このような事情から Beam では **trigger** を使って、パイプライン側でデータを収集する時間枠（= **pane**）を指定します。時間範囲の指定が二つあってややこしく感じますが、このおかげで処理発火のタイミングを柔軟に設定できます。
+概要でも触れた通り、`GroupByKey`のような処理は`window`単位での処理です。なので、`GroupByKey`であれば、keyと**window**によってデータをグループ化します。
 
-1. 遅延データへの対応  
-Window の終端以降に届いたデータも、集計処理に加えられます。
-2. 処理の早期発火  
-データが５つ届いたら処理を行うなど、Window を閉じる前でも処理を発火できます。
+デフォルトでは、`PCollection`全体に対して単一かつ共通の`window`が設けられます。なので、unboundedな`PCollection`に対して`GroupByKey`のような処理を行うには、以下のうちの少なくとも一つを行う必要があります。
 
-window を設定している場合、Beam の trigger のデフォルトの挙動は、Beam が window に対するデータが全て到着したと判断したタイミングで処理が発火されます。具体的には、window に watermark が渡るタイミングです。そして、これ以降に到着したこの window に対するデータは無視されます。
++ デフォルトでないwindowを使用する。
++ triggerの設定をする。詳しくは次章。
 
-### Triggerの設計
-以下 3点の何を重視するか、によって trigger を決めます。
+いずれも行わずに`GroupByKey`のような処理を行うと、エラーが発生します。
 
-1. **データの完全性**  
-"Window に対するデータが全て揃っていること"、がどれだけ重要か。
-2. **レイテンシ**  
-全てのデータが届くまで、どれだけ処理発火を待つことができるか。
-3. **コスト**  
-コンピューテーションコストと金額です。Dataflow について説明する機会があれば...。
+## <span class="lhead" id="note">ウィンドウに関する注意点</span>
+`PCollection`に`window`を設けると、これが使われるのは<u>集計処理を行う</u>タイミングです。window変換 (windowは`PTransform`で設定します) を行うと各要素が属するwindowは決まるだけで、`PCollection`が分割されるわけではありません。
 
-たとえば、「１分おきに更新すること」を重視するならば時間ベースの trigger になるでしょうし、「データが揃っていること」を重視するならば watermark ベースの default trigger がよいと思います。
+<img src="./figs/windowing-pipeline-unbounded.png" width=600>
+
+繰り返しになりますが上の図のように、window変換は`window`の割り当てをするだけであって、`GroupByKey`のような集計処理が行われるまで<u>何も影響が現れない</u>です。なので`ParDo`単体でみると、一つ前のwindow変換はあってもなくても結果は変わりません。  
+ですが次の`GroupByKey`では、設定した`window`によって結果が変わります (集計を行う間隔が5分なのか10分なのか、みたいな具合です)。
+
+## <span class="lhead" id="bounded">Bounded PCollectionとウィンドウ</span>
+もともと有限サイズであるboundedな`PCollection`であっても、windowを使うことはできます。
+
+window変換はtimestampに基づきますが、有限サイズのデータソースから読み込む場合 (`TextIO`など)、デフォルトだと全要素に同一のtimestampが割り当てられます。つまり、明示的にtimestampを設定しない限り、window変換を行っても単一のwindowに全要素が入ります。  
+timestampを割り当てるtransformがあるのですが、これは後々紹介します。
+
+Boundedな`PCollection`に対して、window変換の有無で動作がどのように変わるかを説明します。key/valueペアを読み込んだ後に`GroupByKey`を行い、何かしらの変換を`ParDo`で行う場合を例に考えてみます。
+
+まず、window変換を行わない場合です。  
+globalなwindowに対して`GroupByKey`が処理されるため、`ParDo`はユニークなkeyごとに処理されます。
+
+<img src="./figs/unwindowed-pipeline-bounded.png" width=400>
+
+一方で、window変換を行う場合です。  
+`GroupByKey`の結果は、keyと**window**に対してユニークになります。つまり、keyが同じであっても属するwindowが異なれば別物として扱われます。そのため、`GroupByKey`の結果に同じkeyが現れ得ますし、後続の`ParDo`も別個に処理されます。
+
+<img src="./figs/windowing-pipeline-bounded.png" width=520>
