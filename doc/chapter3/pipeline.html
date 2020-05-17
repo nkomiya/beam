@@ -83,69 +83,156 @@
 </head>
 <body>
 <p><a href="../index.html">topへ</a></p>
-<h1 id="pipelineの作成">Pipelineの作成</h1>
-<p>まず<code>Pipeline</code>オブジェクトを作らなければ何も始まらないので、とりあえず作り方を…。</p>
-<h2 id="オプション無しのpipeline"><span class="head">オプション無しのPipeline</span></h2>
-<p>JavaのBeam SDKで新たにインスタンスを作るときは、***.create()の形が多いかもです。</p>
+<h1 id="pipeline">Pipeline</h1>
+<!-- TOC -->
+<ul>
+<li><a href="#pipeline">Pipeline</a>
+<ul>
+<li><a href="#インスタンス作成">インスタンス作成</a>
+<ul>
+<li><a href="#最小構成">最小構成</a>
+<ul>
+<li><a href="#サンプル">サンプル</a></li>
+</ul></li>
+<li><a href="#ユーザ定義-オプション">ユーザ定義 オプション</a>
+<ul>
+<li><a href="#オプションクラスの定義">オプションクラスの定義</a>
+<ul>
+<li><a href="#オプションの必須化">オプションの必須化</a></li>
+<li><a href="#デフォルト値">デフォルト値</a></li>
+<li><a href="#ヘルプテキスト">ヘルプテキスト</a></li>
+</ul></li>
+<li><a href="#オプションクラスのインスタンス作成">オプションクラスのインスタンス作成</a></li>
+<li><a href="#サンプル-1">サンプル</a></li>
+</ul></li>
+</ul></li>
+</ul></li>
+</ul>
+<!-- /TOC -->
+<h2 id="インスタンス作成">インスタンス作成</h2>
+<p>まずは <code>Pipeline</code> インスタンスを作る方法について。</p>
+<h3 id="最小構成">最小構成</h3>
+<p>基本的に、以下の流れで <code>Pipeline</code> インスタンスを作ります。</p>
+<ol type="1">
+<li>実行時オプション定義のため、<code>PipelineOptions</code> インスタンスの作成</li>
+<li><code>Pipeline</code> インスタンスの作成</li>
+</ol>
+<p>Beam では runner (コードの実行環境) といった、パイプラインの構成に関するパラメータもオプション経由で指定します。</p>
+<p><code>PipelineOptions</code> 無しでも <code>Pipeline</code> インスタンスを作れますが、デフォルトの構成でしか実行できなくなります。<br />
+※ Direct runner (ローカルPC) でしか実行できなくなったりします</p>
+<h4 id="サンプル">サンプル</h4>
+<p>以下コードは定型文として覚えて良いと思います。</p>
 <div class="sourceCode" id="cb1"><pre class="line-numbers"><code class="language-java"><span id="cb1-1"><a href="#cb1-1"></a><span class="kw">import</span><span class="im"> org.apache.beam.sdk.Pipeline;</span></span>
 <span id="cb1-2"><a href="#cb1-2"></a><span class="kw">import</span><span class="im"> org.apache.beam.sdk.options.PipelineOptions;</span></span>
-<span id="cb1-3"><a href="#cb1-3"></a></span>
-<span id="cb1-4"><a href="#cb1-4"></a><span class="kw">public</span> <span class="kw">class</span> Main {</span>
-<span id="cb1-5"><a href="#cb1-5"></a>    <span class="kw">public</span> <span class="dt">static</span> <span class="dt">void</span> <span class="fu">main</span>(<span class="bu">String</span>[] args){</span>
-<span id="cb1-6"><a href="#cb1-6"></a>    Pipeline p = Pipeline.<span class="fu">create</span>();</span>
-<span id="cb1-7"><a href="#cb1-7"></a>    }</span>
-<span id="cb1-8"><a href="#cb1-8"></a>}</span></code></pre></div>
-<h2 id="実行時オプションの設定"><span class="head">実行時オプションの設定</span></h2>
-<p>Pipelineの入力元や、Dataflowを実行するGCPのプロジェクトIDを変更したりするたびに、いちいちBuildし直すのは面倒です。Pipelineの実行時にオプションを受け取れるようにしておくと便利です。</p>
-<p>Pipelineの実行時オプションは、</p>
-<ol type="1">
-<li>Beam SDKのオプションクラス</li>
-<li>カスタムオプションを作成</li>
-</ol>
-<p>を経由して指定できます。SDKのオプションで指定できるのはGCPのプロジェクトIDとか、Beamが作成する中間ファイルの保存場所とかです。</p>
-<h3 id="pipelineoptionsインスタンスの作成">PipelineOptionsインスタンスの作成</h3>
-<p>コマンドライン引数（main関数の引数）を<code>PipelineOptions</code>インスタンスに渡すには、こんな感じのコードになります。</p>
-<div class="sourceCode" id="cb2"><pre class="line-numbers"><code class="language-java"><span id="cb2-1"><a href="#cb2-1"></a><span class="kw">import</span><span class="im"> org.apache.beam.sdk.options.PipelineOptions;</span></span>
-<span id="cb2-2"><a href="#cb2-2"></a><span class="kw">import</span><span class="im"> org.apache.beam.sdk.options.PipelineOptions.PipelineOptionsFactory;</span></span>
-<span id="cb2-3"><a href="#cb2-3"></a></span>
-<span id="cb2-4"><a href="#cb2-4"></a><span class="kw">public</span> <span class="kw">class</span> Main {</span>
-<span id="cb2-5"><a href="#cb2-5"></a>    <span class="kw">public</span> <span class="dt">static</span> <span class="dt">void</span> <span class="fu">main</span>(<span class="bu">String</span>[] args ) {</span>
-<span id="cb2-6"><a href="#cb2-6"></a>        PipelineOptions opt = PipelineOptionsFactory</span>
-<span id="cb2-7"><a href="#cb2-7"></a>                .<span class="fu">fromArgs</span>(args)</span>
-<span id="cb2-8"><a href="#cb2-8"></a>                .<span class="fu">withValidation</span>()</span>
-<span id="cb2-9"><a href="#cb2-9"></a>                .<span class="fu">create</span>();</span>
-<span id="cb2-10"><a href="#cb2-10"></a>        Pipeline p = Pipeline.<span class="fu">create</span>();</span>
-<span id="cb2-11"><a href="#cb2-11"></a>    }</span>
-<span id="cb2-12"><a href="#cb2-12"></a>}</span></code></pre></div>
-<p><code>create</code>の前にメソッドを少し足してる。<code>withValidation()</code>は、コマンドライン引数のチェックをしてくれる。必須パラメータの指定があるか、とか整数にキャスト可能か、とかです。</p>
-<h3 id="カスタムオプションの設定">カスタムオプションの設定</h3>
-<p>PipelineOptionsを継承したインターフェースを定義します。Dataflowで使うならGcpOptionsの方が便利かもです。</p>
-<p>作り方の違いとしては、<code>PipelineOptions</code>のインスタンスを作るのに<code>create</code>でなく、<code>as</code>を使うことです。<br />
-やるべきは、設定したいオプションごとにgetterとsetterの型宣言をするのみです。オプションargAについてのメソッド名はそれぞれ、getArgA, setArgA、みたいにします。<br />
-コマンドラインオプションでアクセスするときはargAです。</p>
-<p>アノテーションを使って、default値、およびhelpメッセージも定義できます。</p>
-<div class="sourceCode" id="cb3"><pre class="line-numbers"><code class="language-java"><span id="cb3-1"><a href="#cb3-1"></a><span class="kw">import</span><span class="im"> org.apache.beam.sdk.options.Default;</span></span>
-<span id="cb3-2"><a href="#cb3-2"></a><span class="kw">import</span><span class="im"> org.apache.beam.sdk.options.Description;</span></span>
-<span id="cb3-3"><a href="#cb3-3"></a><span class="kw">import</span><span class="im"> org.apache.beam.sdk.options.PipelineOptions;</span></span>
-<span id="cb3-4"><a href="#cb3-4"></a><span class="kw">import</span><span class="im"> org.apache.beam.sdk.options.PipelineOptionsFactory;</span></span>
-<span id="cb3-5"><a href="#cb3-5"></a></span>
-<span id="cb3-6"><a href="#cb3-6"></a><span class="kw">public</span> <span class="kw">class</span> Main {</span>
-<span id="cb3-7"><a href="#cb3-7"></a>    <span class="kw">public</span> <span class="kw">interface</span> MyOptions <span class="kw">extends</span> PipelineOptions {</span>
-<span id="cb3-8"><a href="#cb3-8"></a>        <span class="at">@Description</span>(<span class="st">&quot;Help message&quot;</span>)</span>
-<span id="cb3-9"><a href="#cb3-9"></a>        <span class="at">@Default</span>.<span class="fu">String</span>(<span class="st">&quot;Some default value&quot;</span>)</span>
-<span id="cb3-10"><a href="#cb3-10"></a>        <span class="bu">String</span> <span class="fu">getArgA</span>();        <span class="co">// getter for option `argA`</span></span>
-<span id="cb3-11"><a href="#cb3-11"></a>        <span class="dt">void</span> <span class="fu">setArgA</span>(<span class="bu">String</span> s);  <span class="co">// setter for option `argA`</span></span>
-<span id="cb3-12"><a href="#cb3-12"></a>    }</span>
-<span id="cb3-13"><a href="#cb3-13"></a>    </span>
-<span id="cb3-14"><a href="#cb3-14"></a>    <span class="kw">public</span> <span class="dt">static</span> <span class="dt">void</span> <span class="fu">main</span>(<span class="bu">String</span>[] args){</span>
-<span id="cb3-15"><a href="#cb3-15"></a>        <span class="co">// as()にはClass objectを渡す</span></span>
-<span id="cb3-16"><a href="#cb3-16"></a>        MyOptions opt = PipelineOptionsFactory</span>
-<span id="cb3-17"><a href="#cb3-17"></a>            .<span class="fu">fromArgs</span>(args)</span>
-<span id="cb3-18"><a href="#cb3-18"></a>            .<span class="fu">withValidation</span>()</span>
-<span id="cb3-19"><a href="#cb3-19"></a>            .<span class="fu">as</span>(MyOptions.<span class="fu">class</span>);</span>
-<span id="cb3-20"><a href="#cb3-20"></a>        <span class="co">// 実行時にargAを指定すればprintできます</span></span>
-<span id="cb3-21"><a href="#cb3-21"></a>        <span class="bu">System</span>.<span class="fu">out</span>.<span class="fu">println</span>( opt.<span class="fu">getArgA</span>() );</span>
-<span id="cb3-22"><a href="#cb3-22"></a>    }</span>
-<span id="cb3-23"><a href="#cb3-23"></a>}</span></code></pre></div>
+<span id="cb1-3"><a href="#cb1-3"></a><span class="kw">import</span><span class="im"> org.apache.beam.sdk.options.PipelineOptionsFactory;</span></span>
+<span id="cb1-4"><a href="#cb1-4"></a></span>
+<span id="cb1-5"><a href="#cb1-5"></a><span class="kw">public</span> <span class="kw">class</span> MinimumPipeline {</span>
+<span id="cb1-6"><a href="#cb1-6"></a>  <span class="kw">public</span> <span class="dt">static</span> <span class="dt">void</span> <span class="fu">main</span>(<span class="bu">String</span>[] args) {</span>
+<span id="cb1-7"><a href="#cb1-7"></a>    <span class="co">// 実行時オプションをコマンドライン引数から取得</span></span>
+<span id="cb1-8"><a href="#cb1-8"></a>    PipelineOptions opt = PipelineOptionsFactory</span>
+<span id="cb1-9"><a href="#cb1-9"></a>        .<span class="fu">fromArgs</span>(args)</span>
+<span id="cb1-10"><a href="#cb1-10"></a>        .<span class="fu">withValidation</span>()</span>
+<span id="cb1-11"><a href="#cb1-11"></a>        .<span class="fu">create</span>();</span>
+<span id="cb1-12"><a href="#cb1-12"></a></span>
+<span id="cb1-13"><a href="#cb1-13"></a>    <span class="co">// オプション付き Pipeline インスタンスの作成</span></span>
+<span id="cb1-14"><a href="#cb1-14"></a>    Pipeline pipeline = Pipeline.<span class="fu">create</span>(opt);</span>
+<span id="cb1-15"><a href="#cb1-15"></a>  }</span>
+<span id="cb1-16"><a href="#cb1-16"></a>}</span></code></pre></div>
+<p>まず、コマンドライン引数 (args) 経由で <code>Pipeline</code> の実行時オプションを指定するため、<code>PipelineOptionsFactory</code> を使います。<br />
+<code>withValidation</code> を付けると、必須のオプションの指定有無や、値の検証が行えます。</p>
+<p><code>Pipeline</code> インスタンスの作成は、<code>Pipeline.create</code> へ <code>PipelineOptions</code> インスタンスを渡すのみです。</p>
+<ul>
+<li>補足: 実行方法</li>
+</ul>
+<p><code>fromArgs</code> は以下フォーマットの String 配列を引数に取ります。</p>
+<div class="sourceCode" id="cb2"><pre class="line-numbers"><code class="language-java"><span id="cb2-1"><a href="#cb2-1"></a>{<span class="st">&quot;--${オプション名}=${値}&quot;</span>, ...}</span></code></pre></div>
+<p>そのため、コード実行は、以下形式のコマンドで行います。</p>
+<div class="sourceCode" id="cb3"><pre class="line-numbers"><code class="language-bash"><span id="cb3-1"><a href="#cb3-1"></a>$ <span class="ex">mvn</span> compile exec:java \</span>
+<span id="cb3-2"><a href="#cb3-2"></a>    -D exec.mainClass=path.to.class \</span>
+<span id="cb3-3"><a href="#cb3-3"></a>    -D exec.args=<span class="st">&quot;\</span></span>
+<span id="cb3-4"><a href="#cb3-4"></a><span class="st">--option1=hoge \</span></span>
+<span id="cb3-5"><a href="#cb3-5"></a><span class="st">--option2=fuga&quot;</span></span></code></pre></div>
+<h3 id="ユーザ定義-オプション">ユーザ定義 オプション</h3>
+<p>ユーザ定義のオプションを、コマンドライン引数経由で渡すこともできます。</p>
+<h4 id="オプションクラスの定義">オプションクラスの定義</h4>
+<p><code>PipelineOptions</code> を継承したインターフェースを定義します。オプションごとに、setter と getter を定義する必要があります。</p>
+<p>下記サンプルでは、型 <code>T</code> のオプション <code>myOption</code> が定義されます。</p>
+<div class="sourceCode" id="cb4"><pre class="line-numbers"><code class="language-java"><span id="cb4-1"><a href="#cb4-1"></a><span class="kw">public</span> <span class="kw">interface</span> CustomOptions <span class="kw">extends</span> PipelineOptions {</span>
+<span id="cb4-2"><a href="#cb4-2"></a>  T <span class="fu">getMyOption</span>();</span>
+<span id="cb4-3"><a href="#cb4-3"></a>  <span class="dt">void</span> <span class="fu">setMyOption</span>(T t);</span>
+<span id="cb4-4"><a href="#cb4-4"></a>}</span></code></pre></div>
+<p>オプション名は、setter, getter のメソッド名から決まります。それぞれ、<code>set{{オプション名}}</code>, <code>get{{オプション名}}</code> の形にします。<br />
+型は setter の仮引数、および getter の戻り値の型から決まり、両者は一致する必要があります。</p>
+<p>getter にアノテーション付けることで、下記項目の設定が可能です。</p>
+<ul>
+<li>オプションの必須化</li>
+<li>デフォルト値</li>
+<li>ヘルプテキスト</li>
+</ul>
+<h5 id="オプションの必須化">オプションの必須化</h5>
+<p><code>@Validation.Required</code> を付けたオプションが実行時に指定されない場合、エラーとなります。</p>
+<div class="sourceCode" id="cb5"><pre class="line-numbers"><code class="language-java"><span id="cb5-1"><a href="#cb5-1"></a><span class="at">@Validation</span>.<span class="fu">Required</span></span>
+<span id="cb5-2"><a href="#cb5-2"></a>T <span class="fu">getMyOption</span>();</span></code></pre></div>
+<h5 id="デフォルト値">デフォルト値</h5>
+<p><code>@Default.{{型}}({{デフォルト値}})</code> で、オプションのデフォルト値を設定できます。</p>
+<div class="sourceCode" id="cb6"><pre class="line-numbers"><code class="language-java"><span id="cb6-1"><a href="#cb6-1"></a><span class="at">@Default</span>.<span class="fu">String</span>(<span class="st">&quot;default_value&quot;</span>)</span>
+<span id="cb6-2"><a href="#cb6-2"></a><span class="bu">String</span> <span class="fu">getMyOption</span>();</span></code></pre></div>
+<h5 id="ヘルプテキスト">ヘルプテキスト</h5>
+<p><code>@Description("{{ヘルプテキスト}}")</code> で、オプションのヘルプテキストを設定できます。</p>
+<div class="sourceCode" id="cb7"><pre class="line-numbers"><code class="language-java"><span id="cb7-1"><a href="#cb7-1"></a><span class="at">@Description</span>(<span class="st">&quot;This is a help text&quot;</span>)</span>
+<span id="cb7-2"><a href="#cb7-2"></a>T <span class="fu">getMyOption</span>();</span></code></pre></div>
+<p>コマンドラインでヘルプテキストを表示できるようにするには、<code>PipelineOptionsFactory</code> へオプションを登録しておく必要があります。</p>
+<div class="sourceCode" id="cb8"><pre class="line-numbers"><code class="language-java"><span id="cb8-1"><a href="#cb8-1"></a>PipelineOptionsFactory.<span class="fu">register</span>(CustomOptions.<span class="fu">class</span>);</span></code></pre></div>
+<p>上記設定により、以下コマンドでヘルプを表示することができます。</p>
+<div class="sourceCode" id="cb9"><pre class="line-numbers"><code class="language-bash"><span id="cb9-1"><a href="#cb9-1"></a>$ <span class="ex">mvn</span> -q compile exec:java \</span>
+<span id="cb9-2"><a href="#cb9-2"></a>    -D exec.mainClass=path.to.class \</span>
+<span id="cb9-3"><a href="#cb9-3"></a>    -D exec.args=<span class="st">&quot;--help=${オプション クラス名}&quot;</span></span></code></pre></div>
+<h4 id="オプションクラスのインスタンス作成">オプションクラスのインスタンス作成</h4>
+<p>ユーザ定義 オプションを使う場合も、<code>PipelineOptionsFactory</code> を使います。</p>
+<p>ただインスタンス作成の際、<code>create</code> ではなく <code>as</code> を使います。</p>
+<div class="sourceCode" id="cb10"><pre class="line-numbers"><code class="language-java"><span id="cb10-1"><a href="#cb10-1"></a>CustomOptions opt = PipelineOptionsFactory</span>
+<span id="cb10-2"><a href="#cb10-2"></a>    .<span class="fu">fromArgs</span>(args)</span>
+<span id="cb10-3"><a href="#cb10-3"></a>    .<span class="fu">withValidation</span>()</span>
+<span id="cb10-4"><a href="#cb10-4"></a>    .<span class="fu">as</span>(CustomOptions.<span class="fu">class</span>);</span></code></pre></div>
+<h4 id="サンプル-1">サンプル</h4>
+<div class="sourceCode" id="cb11"><pre class="line-numbers"><code class="language-java"><span id="cb11-1"><a href="#cb11-1"></a><span class="kw">import</span><span class="im"> org.apache.beam.sdk.Pipeline;</span></span>
+<span id="cb11-2"><a href="#cb11-2"></a><span class="kw">import</span><span class="im"> org.apache.beam.sdk.options.Default;</span></span>
+<span id="cb11-3"><a href="#cb11-3"></a><span class="kw">import</span><span class="im"> org.apache.beam.sdk.options.Description;</span></span>
+<span id="cb11-4"><a href="#cb11-4"></a><span class="kw">import</span><span class="im"> org.apache.beam.sdk.options.PipelineOptions;</span></span>
+<span id="cb11-5"><a href="#cb11-5"></a><span class="kw">import</span><span class="im"> org.apache.beam.sdk.options.PipelineOptionsFactory;</span></span>
+<span id="cb11-6"><a href="#cb11-6"></a><span class="kw">import</span><span class="im"> org.apache.beam.sdk.options.Validation;</span></span>
+<span id="cb11-7"><a href="#cb11-7"></a></span>
+<span id="cb11-8"><a href="#cb11-8"></a><span class="kw">public</span> <span class="kw">class</span> CustomOptionsPipeline {</span>
+<span id="cb11-9"><a href="#cb11-9"></a></span>
+<span id="cb11-10"><a href="#cb11-10"></a>  <span class="co">/**</span> ユーザ定義 オプション <span class="co">*/</span></span>
+<span id="cb11-11"><a href="#cb11-11"></a>  <span class="kw">public</span> <span class="kw">interface</span> CustomOptions <span class="kw">extends</span> PipelineOptions {</span>
+<span id="cb11-12"><a href="#cb11-12"></a>    <span class="co">/**</span> option <span class="co">1</span> <span class="co">*/</span></span>
+<span id="cb11-13"><a href="#cb11-13"></a>    <span class="at">@Description</span>(<span class="st">&quot;Description for option 1&quot;</span>)</span>
+<span id="cb11-14"><a href="#cb11-14"></a>    <span class="at">@Validation</span>.<span class="fu">Required</span></span>
+<span id="cb11-15"><a href="#cb11-15"></a>    <span class="bu">String</span> <span class="fu">getOption1</span>();</span>
+<span id="cb11-16"><a href="#cb11-16"></a></span>
+<span id="cb11-17"><a href="#cb11-17"></a>    <span class="dt">void</span> <span class="fu">setOption1</span>(<span class="bu">String</span> s);</span>
+<span id="cb11-18"><a href="#cb11-18"></a></span>
+<span id="cb11-19"><a href="#cb11-19"></a>    <span class="co">/**</span> option2 <span class="co">*/</span></span>
+<span id="cb11-20"><a href="#cb11-20"></a>    <span class="at">@Default</span>.<span class="fu">String</span>(<span class="st">&quot;default_value&quot;</span>)</span>
+<span id="cb11-21"><a href="#cb11-21"></a>    <span class="at">@Description</span>(<span class="st">&quot;Description for option 2&quot;</span>)</span>
+<span id="cb11-22"><a href="#cb11-22"></a>    <span class="bu">String</span> <span class="fu">getOption2</span>();</span>
+<span id="cb11-23"><a href="#cb11-23"></a></span>
+<span id="cb11-24"><a href="#cb11-24"></a>    <span class="dt">void</span> <span class="fu">setOption2</span>(<span class="bu">String</span> s);</span>
+<span id="cb11-25"><a href="#cb11-25"></a>  }</span>
+<span id="cb11-26"><a href="#cb11-26"></a></span>
+<span id="cb11-27"><a href="#cb11-27"></a>  <span class="co">/**</span> Pipeline 作成 <span class="co">*/</span></span>
+<span id="cb11-28"><a href="#cb11-28"></a>  <span class="kw">public</span> <span class="dt">static</span> <span class="dt">void</span> <span class="fu">main</span>(<span class="bu">String</span>[] args) {</span>
+<span id="cb11-29"><a href="#cb11-29"></a>    PipelineOptionsFactory.<span class="fu">register</span>(CustomOptions.<span class="fu">class</span>);</span>
+<span id="cb11-30"><a href="#cb11-30"></a>    CustomOptions opt = PipelineOptionsFactory</span>
+<span id="cb11-31"><a href="#cb11-31"></a>        .<span class="fu">fromArgs</span>(args)</span>
+<span id="cb11-32"><a href="#cb11-32"></a>        .<span class="fu">withValidation</span>()</span>
+<span id="cb11-33"><a href="#cb11-33"></a>        .<span class="fu">as</span>(CustomOptions.<span class="fu">class</span>);</span>
+<span id="cb11-34"><a href="#cb11-34"></a></span>
+<span id="cb11-35"><a href="#cb11-35"></a>    Pipeline pipeline = Pipeline.<span class="fu">create</span>(opt);</span>
+<span id="cb11-36"><a href="#cb11-36"></a>    <span class="bu">System</span>.<span class="fu">out.printf</span>(<span class="st">&quot;option1=</span><span class="sc">%s\n</span><span class="st">&quot;</span>, opt.<span class="fu">getOption1</span>());</span>
+<span id="cb11-37"><a href="#cb11-37"></a>    <span class="bu">System</span>.<span class="fu">out.printf</span>(<span class="st">&quot;option2=</span><span class="sc">%s\n</span><span class="st">&quot;</span>, opt.<span class="fu">getOption2</span>());</span>
+<span id="cb11-38"><a href="#cb11-38"></a>  }</span>
+<span id="cb11-39"><a href="#cb11-39"></a>}</span></code></pre></div>
 </body>
 </html>
