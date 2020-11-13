@@ -112,7 +112,7 @@
 <p>特徴は以下の通り。</p>
 <ol type="1">
 <li><code>並列処理のためのロジックが実装不要</code> 処理を行うワーカー (マシン) へのデータ配分等、物理的な処理はライブラリ側で自動的に行われる → データ処理のロジックのみに専念することが可能</li>
-<li><code>バッチ/ストリーミングの両方に対応</code> バッチ、ストリーミングパイプラインの両方を実装でき、Beam の仕掛け上、データ処理は同じ要領でコーディング可能</li>
+<li><code>バッチ/ストリーミングの両方に対応</code> バッチ、ストリーミングパイプラインの両方を実装でき、Beam の仕掛け上ほぼ同じ要領でコーディング可能</li>
 <li><code>対応データソースが多い</code> ローカル PC, GCP/AWS の各種ストレージサービスなど、様々なデータソースへの接続がサポート<a href="#fn1" class="footnote-ref" id="fnref1" role="doc-noteref"><sup>1</sup></a></li>
 <li><code>ポータビリティ</code> ソースコードの変更無しに、様々なプラットフォーム上で実行可能<a href="#fn2" class="footnote-ref" id="fnref2" role="doc-noteref"><sup>2</sup></a></li>
 </ol>
@@ -129,8 +129,8 @@
 <p>データの読み込み、変換、出力までの一連のタスクをひとまとめにした概念が <code>Pipeline</code> です。</p>
 <p><code>Pipeline</code> を作成する際、行うタスクのみでなく、パイプライン実行時に受け付けるオプション (読み込むファイルの名前等) の定義も行います。</p>
 <h3 id="pcollection">PCollection</h3>
-<p>データ変換処理の適応対象となる、データの集まりのことを <code>PCollection</code> といいます。</p>
-<p>分散処理の都合上、<code>PCollection</code> 内の要素順序は制御ができません。そのため、各要素は “等価” となることが望ましいです。</p>
+<p>データ変換処理の適応対象となる、(分散)データセットのことを <code>PCollection</code> といいます。</p>
+<p>分散処理の特性上、<code>PCollection</code> 内の要素順序は制御ができません。そのため、各要素は “等価” となることが望ましいです。</p>
 <ul>
 <li>○: 名字の集まり</li>
 </ul>
@@ -139,53 +139,55 @@
 <li>△: 佐藤さんのプロパティ</li>
 </ul>
 <div class="sourceCode" id="cb2"><pre class="line-numbers"><code class="language-json"><span id="cb2-1"><a href="#cb2-1"></a><span class="ot">[</span><span class="st">&quot;佐藤&quot;</span><span class="ot">,</span> <span class="st">&quot;32歳&quot;</span><span class="ot">,</span> <span class="st">&quot;172cm&quot;</span><span class="ot">,</span> <span class="er">...</span><span class="ot">]</span></span></code></pre></div>
-<p>データサイズが有限 (全て集めることができる) かどうか、という意味で、バッチとストリーミングで扱うデータの性質は異なります。</p>
-<p>Beam はどちらも <code>PCollection</code> として扱うものの、集計のような処理を行う場合は区別が必要となります。<br />
+<p>データサイズが有限 (処理実行時に全てのデータが揃っている) かどうかという意味で、バッチとストリーミングで扱うデータの性質は異なります。</p>
+<p>Beam はどちらも <code>PCollection</code> として扱うものの、集計のような (データセット全体が対象となる) 処理を行う場合は、サイズが有限かどうかの区別が必要となります。<br />
 サイズが有限の <code>PCollection</code> は bounded、無限であるものは unbounded といいます。</p>
 <h3 id="ptransform">PTransform</h3>
 <p><code>Pipeline</code> における各処理のステップが <code>PTransform</code> です。</p>
-<p>Beam SDK に組み込まれている <code>PTransform</code> は数多くありますが、ユーザ定義の <code>PTransform</code> を作ることも可能です。</p>
-<p>基本動作は、<code>PCollection</code>を入力として受け取り、処理結果を <code>PCollection</code> として出力します。</p>
+<p>Beam SDK に組み込まれている <code>PTransform</code> は数多くありますが、ユーザ定義の処理を行う <code>PTransform</code> を作ることも可能です。</p>
+<p><code>PTransform</code> の基本動作としては、<code>PCollection</code>を入力として受け取り、処理結果を <code>PCollection</code> として出力します。</p>
 <h3 id="io-transform">I/O transform</h3>
 <p>データストレージへの入出力を行う <code>PTransform</code> となります。</p>
-<p>I/O transform は <code>Pipeline</code> の先頭、または末尾にのみ記載可能です。<br />
-(<code>PCollection</code> を入力に取らない、または出力しないという意味で、少し特殊な <code>PTransform</code> なため)</p>
+<p>I/O transform は一連の処理フローの先頭、または末尾にのみ記載可能です。<br />
+(<code>PCollection</code> を入力 / 出力がないという意味で、少し特殊な <code>PTransform</code> なため)</p>
 <blockquote>
 <p><strong>メモ</strong> 上の制約から、「テキストファイルから処理するファイルのパスを動的に取得し、取得したファイルパスからデータを読み取る」といった処理は作りづらいです。 入出力を可変にするならば、<code>Pipeline</code>の実行時オプション経由で指定する方が簡単です。</p>
 </blockquote>
 <h2 id="beam-プログラミングの流れ">Beam プログラミングの流れ</h2>
-<p>Beam プログラミングの目標は、下図のような <strong>Pipeline graph</strong> をソースコードへ落とし込むことです。</p>
+<p>Beam プログラミングの目標は、下図のグラフ (<strong>Pipeline graph</strong> といいます) のような、一連の処理フローをソースコードへ落とし込むことです。</p>
 <blockquote>
 <p><img src="./figs/monitoring-side-input-write.png" width="800"><br />
 <a href="https://cloud.google.com/dataflow/docs/guides/using-monitoring-intf#side_input_metrics">https://cloud.google.com/dataflow/docs/guides/using-monitoring-intf#side_input_metrics</a></p>
 </blockquote>
-<p>コーディングレベルで、流れを説明します。</p>
+<p>コーディングレベルで、Pipeline graph を作る流れを説明します。</p>
 <h3 id="pipeline-インスタンスの作成">Pipeline インスタンスの作成</h3>
 <p>まずは、<code>Pipeline</code> クラスをインスタンス化します。</p>
 <p>パイプライン実行時に受け付けるオプション引数の定義も、この段階で行います。</p>
 <h3 id="データ初期化の定義">データ初期化の定義</h3>
-<p><code>Pipeline</code> インスタンスに I/O Transform を使い、処理対象のデータを取得方法を定義します。</p>
-<p>これにより、<code>Pipeline</code> インスタンスに関連付けられた、<code>PCollection</code> インスタンスが得られます。</p>
+<p><code>Pipeline</code> インスタンスに I/O Transform を適用させ、処理対象のデータを取得方法を定義します。</p>
+<p>これにより、<code>Pipeline</code> インスタンスに紐付いた <code>PCollection</code> インスタンスが得られます。</p>
 <p>(※ ソースコードに記載した値を使い、<code>PCollection</code> を作ることも可能)</p>
 <h3 id="データ変換の定義">データ変換の定義</h3>
-<p>得られた <code>PCollection</code> インスタンスに対して、適用する処理 (<code>PTransform</code>) を定義していきます。</p>
-<p>Beam SDK の標準メソッドで、できることを大雑把に触れておきます。</p>
+<p>得られたデータセット (<code>PCollection</code>) にデータ変換 (<code>PTransform</code>) を適用させ、新たなデータセットを作ることを繰り返し、目的の変換データを作ります。<br />
+入力の <code>PCollection</code> を介して、出力の <code>PCollection</code> も特定の <code>Pipeline</code> インスタンスに紐付きます。</p>
+<p>Beam SDK に組み込まれている <code>PTransform</code> で行えるデータ変換を、大雑把に触れておきます。</p>
 <ul>
-<li>データの変換、整形</li>
+<li>1対1のデータ変換、整形</li>
 <li>フィルター</li>
 <li>グループ化</li>
 <li>集計</li>
 </ul>
+<p>※ Beam SDK の標準メソッドで対応できないデータ処理が必要な場合は、ユーザ定義の変換処理を定義します</p>
 <h3 id="外部出力の定義">外部出力の定義</h3>
-<p><code>PTransform</code> 適用後の <code>PCollection</code> に対して、 I/O transform を使い、データ出力先を定義します。</p>
+<p><code>PTransform</code> 適用させて得られた <code>PCollection</code> に対して、 I/O transform を使い、データ出力先 / 出力方式を定義します。</p>
+<p>出力方式についてですが、ファイル出力を例に取ると、出力ファイルの分割数や、ファイル圧縮等の指定が行えます。</p>
 <h3 id="pipeline-の実行">Pipeline の実行</h3>
-<p>ここまでで、データ入出力、および一連の変換処理が定義された <code>Pipeline</code> インスタンスが出来ます。</p>
-<p><code>Pipeline</code> インスタンスのメソッド <code>run</code> を呼び出すことで、処理が起動されます。</p>
+<p>ここまでで、目的の処理フローが定義された <code>Pipeline</code> インスタンスが出来ていることになります。 この <code>Pipeline</code> インスタンスのメソッド <code>run</code> を呼び出すことで、処理が起動されます。</p>
 <section class="footnotes" role="doc-endnotes">
 <hr />
 <ol>
-<li id="fn1" role="doc-endnote"><p>https://beam.apache.org/documentation/io/built-in/<a href="#fnref1" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
-<li id="fn2" role="doc-endnote"><p>https://beam.apache.org/get-started/beam-overview/#apache-beam-pipeline-runners<a href="#fnref2" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn1" role="doc-endnote"><p>対応 IO は <a href="https://beam.apache.org/documentation/io/built-in/">こちら</a> を参照<a href="#fnref1" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn2" role="doc-endnote"><p>対応 platform は <a href="https://beam.apache.org/get-started/beam-overview/#apache-beam-pipeline-runners">こちら</a> を参照<a href="#fnref2" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
 </ol>
 </section>
 </body>
