@@ -1,37 +1,42 @@
 [top へ](../index.md)
 
-# クイックスタート
+# Maven の使い方
 
 <!-- TOC -->
 
 - [クイックスタート](#クイックスタート)
-    - [Maven プロジェクトの雛形取得](#maven-プロジェクトの雛形取得)
-    - [Build](#build)
-    - [サンプルコード実行](#サンプルコード実行)
+    - [Beam のクイックスタートを試す](#beam-のクイックスタートを試す)
+        - [コード取得](#コード取得)
+            - [pom.xml についての補足](#pomxml-についての補足)
+        - [Build](#build)
+        - [実行](#実行)
 
 <!-- /TOC -->
 
-## Maven プロジェクトの雛形取得
+## Beam のクイックスタートを試す
 
-依存ライブラリの取得にあたり、pom.xml の編集が必要。
+Beam のクイックスタートをローカル実行する流れを通して、Maven の使い方を説明します。
 
-[こちら](https://beam.apache.org/documentation/sdks/java-dependencies/)、もしくは[こちらの](https://beam.apache.org/get-started/quickstart-java/) Beam のサンプルプロジェクトをダウンロードし、pom.xml の雛形を取得しておくと良いかと思われます。
+### 準備: コード取得
+
+Maven のコマンドを使って、Beam のクイックスタートのコードを取得します。
 
 - ダウンロード
+    - 現状 2.24.0 以降では得られる Java ファイルが正しくありません...
 
 ```bash
 # Beam SDK バージョン指定
-$ BEAM_VERSION=2.20.0
+$ BEAM_VERSION=2.23.0
 
 # 雛形取得
 $ mvn archetype:generate \
-    -DinteractiveMode=false \
-    -DarchetypeGroupId=org.apache.beam \
-    -DarchetypeArtifactId=beam-sdks-java-maven-archetypes-starter \
-    -DarchetypeVersion="${BEAM_VERSION}" \
-    -DtargetPlatform=1.8 \
-    -DartifactId=check-pipeline-dependencies \
-    -DgroupId=org.apache.beam.samples
+    -D interactiveMode=false \
+    -D archetypeGroupId=org.apache.beam \
+    -D archetypeArtifactId=beam-sdks-java-maven-archetypes-starter \
+    -D archetypeVersion="${BEAM_VERSION}" \
+    -D targetPlatform=1.8 \
+    -D artifactId=check-pipeline-dependencies \
+    -D groupId=org.apache.beam.samples
 
 # 変数開放
 $ unset BEAM_VERSION
@@ -47,15 +52,25 @@ $ find . -type f
 ./src/main/java/org/apache/beam/samples/StarterPipeline.java
 ```
 
-## Build
+#### pom.xml についての補足
 
-Maven プロジェクトのルートに移動し、次のコマンドを実行します。
+Maven では pom.xml を使って、依存ライブラリの管理などを行います。
+
+Maven で Beam プログラミングを行うにあたり、新規で pom.xml を作成しても良いですが、Beam 公式のサンプルを取得して pom.xml のみを流用するのが簡単です。
+
+最小構成の pom.xml を使いたければ[こちら](https://beam.apache.org/documentation/sdks/java-dependencies/)、頻繁に使いそうなライブラリ (GCP用のライブラリなど) が入ったものを使いたければ [こちら](https://beam.apache.org/get-started/quickstart-java/) を使うのが良いかと思います。
+
+### ビルド
+
+先程の Maven のコマンドで作成されたディレクトリのルート (pom.xml があるディレクトリ) にて、次のコマンドを実行すると Java コードがコンパイルできます。
 
 ```bash
-# ビルド
 $ mvn compile
+```
 
-# 確認
+上記コマンドの実行するとディレクトリ target が作成され、ここに class ファイルなどが作成されます。
+
+```bash
 $ find target -type f
 target/classes/org/apache/beam/samples/StarterPipeline.class
 target/classes/org/apache/beam/samples/StarterPipeline$1.class
@@ -66,12 +81,15 @@ target/maven-status/maven-compiler-plugin/compile/default-compile/createdFiles.l
 
 初回はリポジトリから Beam SDK を落とすため、Build にやや時間が掛かかります。
 
-## サンプルコード実行
+### 実行
 
-サンプルコードの実行は`-D exec.mainClass`で、クラスパス `org.apache.beam.samples.StarterPipeline` を指定します。
+サンプルでは、maven-exec-plugin が pom.xml に記載されているため、Maven コマンドによりプログラムを実行できます ([参考](https://qiita.com/hide/items/0c8795054219d04e5e98))。
+
+maven-exec-plugin では、実行するクラスはオプション exec.mainClass で指定可能です。
 
 ```bash
-$ mvn -q exec:java -D exec.mainClass=org.apache.beam.samples.StarterPipeline
+$ mvn -q exec:java \
+    -D exec.mainClass=org.apache.beam.samples.StarterPipeline
 May 14, 2020 12:12:18 AM org.apache.beam.samples.StarterPipeline$2 processElement
 INFO: HELLO
 May 14, 2020 12:12:18 AM org.apache.beam.samples.StarterPipeline$2 processElement

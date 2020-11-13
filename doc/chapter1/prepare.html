@@ -95,13 +95,9 @@
 <!-- /TOC -->
 <h1 id="準備編">準備編</h1>
 <h2 id="jdk">JDK</h2>
-<ul>
-<li>Beam の安定動作には Java 8 が必要</li>
-<li>Java 11 対応は進行中<a href="#fn1" class="footnote-ref" id="fnref1" role="doc-noteref"><sup>1</sup></a></li>
-</ul>
+<p>Beam の安定動作には Java 8 が必要で、Java 11 対応は進行中<a href="#fn1" class="footnote-ref" id="fnref1" role="doc-noteref"><sup>1</sup></a>。無償のものを使いたければ、<a href="https://adoptopenjdk.net/">こちら</a>などから Open JDK を落とす。</p>
 <h2 id="maven">Maven</h2>
-<p>Beam の公式ガイドや、Google が提供している Beam のプロジェクトで、<a href="https://maven.apache.org/">Maven</a> が使用されています。</p>
-<p>そのため、ビルドツールは Maven がおすすめです。</p>
+<p>Beam の公式ガイドや、Google が提供している多くの Beam のプロジェクトで、<a href="https://maven.apache.org/">Maven</a> が使用されているため、ビルドツールは Maven がおすすめです。</p>
 <h2 id="jenv">jEnv</h2>
 <p><a href="https://www.jenv.be/">jEnv</a> は、Java 用のバージョン管理ツール。Git 経由でインストールする方法をまとめます。</p>
 <ul>
@@ -112,21 +108,24 @@
 <li>.bash_profile に jEnv の設定追加</li>
 </ul>
 <div class="sourceCode" id="cb2"><pre class="line-numbers"><code class="language-bash"><span id="cb2-1"><a href="#cb2-1"></a>$ <span class="fu">cat</span> <span class="op">&lt;&lt; &#39;_EOF_&#39;</span> <span class="op">&gt;&gt;</span> <span class="va">${HOME}</span><span class="ex">/.bash_profile</span></span>
-<span id="cb2-2"><a href="#cb2-2"></a>&gt; <span class="op">e</span><span class="ex">xport</span> JENV_ROOT=<span class="st">&quot;</span><span class="va">${HOME}</span><span class="st">/.jenv&quot;</span></span>
-<span id="cb2-3"><a href="#cb2-3"></a>&gt; export PATH=&quot;${JENV_ROOT}/bin:$PATH&quot;</span>
-<span id="cb2-4"><a href="#cb2-4"></a>&gt; eval &quot;$(jenv init -)&quot;</span>
-<span id="cb2-5"><a href="#cb2-5"></a>&gt; . &quot;${HOME}/jenv/completions/jenv.bash&quot;</span>
-<span id="cb2-6"><a href="#cb2-6"></a>&gt; _EOF_</span></code></pre></div>
+<span id="cb2-2"><a href="#cb2-2"></a><span class="op">e</span><span class="ex">xport</span> JENV_ROOT=<span class="st">&quot;</span><span class="va">${HOME}</span><span class="st">/.jenv&quot;</span></span>
+<span id="cb2-3"><a href="#cb2-3"></a>export PATH=&quot;${JENV_ROOT}/bin:$PATH&quot;</span>
+<span id="cb2-4"><a href="#cb2-4"></a>eval &quot;$(jenv init -)&quot;</span>
+<span id="cb2-5"><a href="#cb2-5"></a>. &quot;${HOME}/jenv/completions/jenv.bash&quot;</span>
+<span id="cb2-6"><a href="#cb2-6"></a>_EOF_</span></code></pre></div>
 <ul>
 <li>プラグイン設定</li>
 </ul>
 <div class="sourceCode" id="cb3"><pre class="line-numbers"><code class="language-bash"><span id="cb3-1"><a href="#cb3-1"></a><span class="co"># 環境変数 (JAVA_HOME) の自動設定</span></span>
 <span id="cb3-2"><a href="#cb3-2"></a>$ <span class="ex">jenv</span> enable-plugin export</span>
 <span id="cb3-3"><a href="#cb3-3"></a></span>
-<span id="cb3-4"><a href="#cb3-4"></a><span class="co"># Maven 用 設定</span></span>
+<span id="cb3-4"><a href="#cb3-4"></a><span class="co"># Maven 用の設定</span></span>
 <span id="cb3-5"><a href="#cb3-5"></a>$ <span class="ex">jenv</span> enable-plugin maven</span></code></pre></div>
 <ul>
-<li>Java バージョンの一致確認</li>
+<li>Java バージョンの一致確認
+<ul>
+<li>両コマンドで Java の version が一致してれば OK です</li>
+</ul></li>
 </ul>
 <div class="sourceCode" id="cb4"><pre class="line-numbers"><code class="language-bash"><span id="cb4-1"><a href="#cb4-1"></a><span class="co"># Java バージョン (抜粋)</span></span>
 <span id="cb4-2"><a href="#cb4-2"></a>$ <span class="ex">java</span> -version</span>
@@ -136,7 +135,6 @@
 <span id="cb4-6"><a href="#cb4-6"></a>$ <span class="ex">mvn</span> -version</span>
 <span id="cb4-7"><a href="#cb4-7"></a><span class="ex">Apache</span> Maven 3.6.3 (cecedd343002696d0abb50b32b541b8a6ba2883f)</span>
 <span id="cb4-8"><a href="#cb4-8"></a><span class="ex">Java</span> version: 1.8.0_222</span></code></pre></div>
-<p>を行い、java の version が両者で一致してることとかを check しておしまいです。</p>
 <section class="footnotes" role="doc-endnotes">
 <hr />
 <ol>

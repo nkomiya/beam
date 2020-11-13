@@ -83,35 +83,45 @@
 </head>
 <body>
 <p><a href="../index.html">top へ</a></p>
-<h1 id="クイックスタート">クイックスタート</h1>
+<h1 id="maven-の使い方">Maven の使い方</h1>
 <!-- TOC -->
 <ul>
 <li><a href="#クイックスタート">クイックスタート</a>
 <ul>
-<li><a href="#maven-プロジェクトの雛形取得">Maven プロジェクトの雛形取得</a></li>
+<li><a href="#beam-のクイックスタートを試す">Beam のクイックスタートを試す</a>
+<ul>
+<li><a href="#コード取得">コード取得</a>
+<ul>
+<li><a href="#pomxml-についての補足">pom.xml についての補足</a></li>
+</ul></li>
 <li><a href="#build">Build</a></li>
-<li><a href="#サンプルコード実行">サンプルコード実行</a></li>
+<li><a href="#実行">実行</a></li>
+</ul></li>
 </ul></li>
 </ul>
 <!-- /TOC -->
-<h2 id="maven-プロジェクトの雛形取得">Maven プロジェクトの雛形取得</h2>
-<p>依存ライブラリの取得にあたり、pom.xml の編集が必要。</p>
-<p><a href="https://beam.apache.org/documentation/sdks/java-dependencies/">こちら</a>、もしくは<a href="https://beam.apache.org/get-started/quickstart-java/">こちらの</a> Beam のサンプルプロジェクトをダウンロードし、pom.xml の雛形を取得しておくと良いかと思われます。</p>
+<h2 id="beam-のクイックスタートを試す">Beam のクイックスタートを試す</h2>
+<p>Beam のクイックスタートをローカル実行する流れを通して、Maven の使い方を説明します。</p>
+<h3 id="準備-コード取得">準備: コード取得</h3>
+<p>Maven のコマンドを使って、Beam のクイックスタートのコードを取得します。</p>
 <ul>
-<li>ダウンロード</li>
+<li>ダウンロード
+<ul>
+<li>現状 2.24.0 以降では得られる Java ファイルが正しくありません…</li>
+</ul></li>
 </ul>
 <div class="sourceCode" id="cb1"><pre class="line-numbers"><code class="language-bash"><span id="cb1-1"><a href="#cb1-1"></a><span class="co"># Beam SDK バージョン指定</span></span>
-<span id="cb1-2"><a href="#cb1-2"></a>$ <span class="va">BEAM_VERSION=</span>2.20.0</span>
+<span id="cb1-2"><a href="#cb1-2"></a>$ <span class="va">BEAM_VERSION=</span>2.23.0</span>
 <span id="cb1-3"><a href="#cb1-3"></a></span>
 <span id="cb1-4"><a href="#cb1-4"></a><span class="co"># 雛形取得</span></span>
 <span id="cb1-5"><a href="#cb1-5"></a>$ <span class="ex">mvn</span> archetype:generate \</span>
-<span id="cb1-6"><a href="#cb1-6"></a>    -DinteractiveMode=false \</span>
-<span id="cb1-7"><a href="#cb1-7"></a>    -DarchetypeGroupId=org.apache.beam \</span>
-<span id="cb1-8"><a href="#cb1-8"></a>    -DarchetypeArtifactId=beam-sdks-java-maven-archetypes-starter \</span>
-<span id="cb1-9"><a href="#cb1-9"></a>    -DarchetypeVersion=<span class="st">&quot;</span><span class="va">${BEAM_VERSION}</span><span class="st">&quot;</span> \</span>
-<span id="cb1-10"><a href="#cb1-10"></a>    -DtargetPlatform=1.8 \</span>
-<span id="cb1-11"><a href="#cb1-11"></a>    -DartifactId=check-pipeline-dependencies \</span>
-<span id="cb1-12"><a href="#cb1-12"></a>    -DgroupId=org.apache.beam.samples</span>
+<span id="cb1-6"><a href="#cb1-6"></a>    -D interactiveMode=false \</span>
+<span id="cb1-7"><a href="#cb1-7"></a>    -D archetypeGroupId=org.apache.beam \</span>
+<span id="cb1-8"><a href="#cb1-8"></a>    -D archetypeArtifactId=beam-sdks-java-maven-archetypes-starter \</span>
+<span id="cb1-9"><a href="#cb1-9"></a>    -D archetypeVersion=<span class="st">&quot;</span><span class="va">${BEAM_VERSION}</span><span class="st">&quot;</span> \</span>
+<span id="cb1-10"><a href="#cb1-10"></a>    -D targetPlatform=1.8 \</span>
+<span id="cb1-11"><a href="#cb1-11"></a>    -D artifactId=check-pipeline-dependencies \</span>
+<span id="cb1-12"><a href="#cb1-12"></a>    -D groupId=org.apache.beam.samples</span>
 <span id="cb1-13"><a href="#cb1-13"></a></span>
 <span id="cb1-14"><a href="#cb1-14"></a><span class="co"># 変数開放</span></span>
 <span id="cb1-15"><a href="#cb1-15"></a>$ <span class="bu">unset</span> <span class="va">BEAM_VERSION</span></span></code></pre></div>
@@ -123,25 +133,29 @@
 <span id="cb2-3"><a href="#cb2-3"></a>$ <span class="fu">find</span> . -type f</span>
 <span id="cb2-4"><a href="#cb2-4"></a><span class="ex">./pom.xml</span></span>
 <span id="cb2-5"><a href="#cb2-5"></a><span class="ex">./src/main/java/org/apache/beam/samples/StarterPipeline.java</span></span></code></pre></div>
-<h2 id="build">Build</h2>
-<p>Maven プロジェクトのルートに移動し、次のコマンドを実行します。</p>
-<div class="sourceCode" id="cb3"><pre class="line-numbers"><code class="language-bash"><span id="cb3-1"><a href="#cb3-1"></a><span class="co"># ビルド</span></span>
-<span id="cb3-2"><a href="#cb3-2"></a>$ <span class="ex">mvn</span> compile</span>
-<span id="cb3-3"><a href="#cb3-3"></a></span>
-<span id="cb3-4"><a href="#cb3-4"></a><span class="co"># 確認</span></span>
-<span id="cb3-5"><a href="#cb3-5"></a>$ <span class="fu">find</span> target -type f</span>
-<span id="cb3-6"><a href="#cb3-6"></a><span class="ex">target/classes/org/apache/beam/samples/StarterPipeline.class</span></span>
-<span id="cb3-7"><a href="#cb3-7"></a><span class="ex">target/classes/org/apache/beam/samples/StarterPipeline</span><span class="va">$1</span><span class="ex">.class</span></span>
-<span id="cb3-8"><a href="#cb3-8"></a><span class="ex">target/classes/org/apache/beam/samples/StarterPipeline</span><span class="va">$2</span><span class="ex">.class</span></span>
-<span id="cb3-9"><a href="#cb3-9"></a><span class="ex">target/maven-status/maven-compiler-plugin/compile/default-compile/inputFiles.lst</span></span>
-<span id="cb3-10"><a href="#cb3-10"></a><span class="ex">target/maven-status/maven-compiler-plugin/compile/default-compile/createdFiles.lst</span></span></code></pre></div>
+<h4 id="pom.xml-についての補足">pom.xml についての補足</h4>
+<p>Maven では pom.xml を使って、依存ライブラリの管理などを行います。</p>
+<p>Maven で Beam プログラミングを行うにあたり、新規で pom.xml を作成しても良いですが、Beam 公式のサンプルを取得して pom.xml のみを流用するのが簡単です。</p>
+<p>最小構成の pom.xml を使いたければ<a href="https://beam.apache.org/documentation/sdks/java-dependencies/">こちら</a>、頻繁に使いそうなライブラリ (GCP用のライブラリなど) が入ったものを使いたければ <a href="https://beam.apache.org/get-started/quickstart-java/">こちら</a> を使うのが良いかと思います。</p>
+<h3 id="ビルド">ビルド</h3>
+<p>先程の Maven のコマンドで作成されたディレクトリのルート (pom.xml があるディレクトリ) にて、次のコマンドを実行すると Java コードがコンパイルできます。</p>
+<div class="sourceCode" id="cb3"><pre class="line-numbers"><code class="language-bash"><span id="cb3-1"><a href="#cb3-1"></a>$ <span class="ex">mvn</span> compile</span></code></pre></div>
+<p>上記コマンドの実行するとディレクトリ target が作成され、ここに class ファイルなどが作成されます。</p>
+<div class="sourceCode" id="cb4"><pre class="line-numbers"><code class="language-bash"><span id="cb4-1"><a href="#cb4-1"></a>$ <span class="fu">find</span> target -type f</span>
+<span id="cb4-2"><a href="#cb4-2"></a><span class="ex">target/classes/org/apache/beam/samples/StarterPipeline.class</span></span>
+<span id="cb4-3"><a href="#cb4-3"></a><span class="ex">target/classes/org/apache/beam/samples/StarterPipeline</span><span class="va">$1</span><span class="ex">.class</span></span>
+<span id="cb4-4"><a href="#cb4-4"></a><span class="ex">target/classes/org/apache/beam/samples/StarterPipeline</span><span class="va">$2</span><span class="ex">.class</span></span>
+<span id="cb4-5"><a href="#cb4-5"></a><span class="ex">target/maven-status/maven-compiler-plugin/compile/default-compile/inputFiles.lst</span></span>
+<span id="cb4-6"><a href="#cb4-6"></a><span class="ex">target/maven-status/maven-compiler-plugin/compile/default-compile/createdFiles.lst</span></span></code></pre></div>
 <p>初回はリポジトリから Beam SDK を落とすため、Build にやや時間が掛かかります。</p>
-<h2 id="サンプルコード実行">サンプルコード実行</h2>
-<p>サンプルコードの実行は<code>-D exec.mainClass</code>で、クラスパス <code>org.apache.beam.samples.StarterPipeline</code> を指定します。</p>
-<div class="sourceCode" id="cb4"><pre class="line-numbers"><code class="language-bash"><span id="cb4-1"><a href="#cb4-1"></a>$ <span class="ex">mvn</span> -q exec:java -D exec.mainClass=org.apache.beam.samples.StarterPipeline</span>
-<span id="cb4-2"><a href="#cb4-2"></a><span class="ex">May</span> 14, 2020 12:12:18 AM org.apache.beam.samples.StarterPipeline<span class="va">$2</span> processElement</span>
-<span id="cb4-3"><a href="#cb4-3"></a><span class="ex">INFO</span>: HELLO</span>
-<span id="cb4-4"><a href="#cb4-4"></a><span class="ex">May</span> 14, 2020 12:12:18 AM org.apache.beam.samples.StarterPipeline<span class="va">$2</span> processElement</span>
-<span id="cb4-5"><a href="#cb4-5"></a><span class="ex">INFO</span>: WORLD</span></code></pre></div>
+<h3 id="実行">実行</h3>
+<p>サンプルでは、maven-exec-plugin が pom.xml に記載されているため、Maven コマンドによりプログラムを実行できます (<a href="https://qiita.com/hide/items/0c8795054219d04e5e98">参考</a>)。</p>
+<p>maven-exec-plugin では、実行するクラスはオプション exec.mainClass で指定可能です。</p>
+<div class="sourceCode" id="cb5"><pre class="line-numbers"><code class="language-bash"><span id="cb5-1"><a href="#cb5-1"></a>$ <span class="ex">mvn</span> -q exec:java \</span>
+<span id="cb5-2"><a href="#cb5-2"></a>    -D exec.mainClass=org.apache.beam.samples.StarterPipeline</span>
+<span id="cb5-3"><a href="#cb5-3"></a><span class="ex">May</span> 14, 2020 12:12:18 AM org.apache.beam.samples.StarterPipeline<span class="va">$2</span> processElement</span>
+<span id="cb5-4"><a href="#cb5-4"></a><span class="ex">INFO</span>: HELLO</span>
+<span id="cb5-5"><a href="#cb5-5"></a><span class="ex">May</span> 14, 2020 12:12:18 AM org.apache.beam.samples.StarterPipeline<span class="va">$2</span> processElement</span>
+<span id="cb5-6"><a href="#cb5-6"></a><span class="ex">INFO</span>: WORLD</span></code></pre></div>
 </body>
 </html>

@@ -4,7 +4,7 @@
 
 1. 準備
     - [各種ツールのセットアップ](./chapter1/prepare.md)
-    - [Apache Mavenの使い方](./chapter1/usage.md)
+    - [Maven の使い方](./chapter1/usage.md)
 2. [Overview](./chapter2/overview.md)
 3. [Pipeline](./chapter3/pipeline.md)
 4. [PCollection](./chapter4/pcollection.md)
