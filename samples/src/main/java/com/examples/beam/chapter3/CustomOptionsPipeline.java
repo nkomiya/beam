@@ -56,6 +56,8 @@ public class CustomOptionsPipeline {
         .as(CustomOptions.class);
 
     Pipeline pipeline = Pipeline.create(opt);
+
+    // オプションの参照
     System.out.printf("option1=%s\n", opt.getOption1());
     System.out.printf("option2=%s\n", opt.getOption2());
   }

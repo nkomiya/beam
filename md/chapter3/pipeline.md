@@ -8,6 +8,7 @@
     - [インスタンス作成](#インスタンス作成)
         - [最小構成](#最小構成)
             - [サンプル](#サンプル)
+                - [補足: コード実行とオプション値の参照](#補足-コード実行とオプション値の参照)
         - [ユーザ定義 オプション](#ユーザ定義-オプション)
             - [オプションクラスの定義](#オプションクラスの定義)
                 - [オプションの必須化](#オプションの必須化)
@@ -26,13 +27,18 @@
 
 基本的に、以下の流れで `Pipeline` インスタンスを作ります。
 
-1. 実行時オプション定義のため、`PipelineOptions` インスタンスの作成
-2. `Pipeline` インスタンスの作成
+1. パイプラインにオプションを渡すため、`PipelineOptions` インスタンスを作成
+1. `PipelineOptions` を紐付けた、`Pipeline` インスタンスを作成
 
-Beam では runner (コードの実行環境) といった、パイプラインの構成に関するパラメータもオプション経由で指定します。
+`PipelineOptions` を使う理由は、主に下記二点です。
 
-`PipelineOptions` 無しでも `Pipeline` インスタンスを作れますが、デフォルトの構成でしか実行できなくなります。  
-※ Direct runner (ローカルPC) でしか実行できなくなったりします
+- パース済みのオプション値を Beam コード内で参照する
+- Beam SDK にオプション値を渡す
+
+Beam では runner (コードの実行環境) に関する構成もオプション経由で指定します。`PipelineOptions` を経由して Beam SDK に runner の情報等を渡すと、SDK が裏側で制御してくれます。
+
+たとえば Cloud Dataflow で実行する際、オプション経由で GCP プロジェクト渡すのみで、パイプラインを走らせる GCP プロジェクトが指定できます。
+
 
 #### サンプル
 
@@ -57,17 +63,19 @@ public class MinimumPipeline {
 }
 ```
 
-まず、コマンドライン引数 (args) 経由で `Pipeline` の実行時オプションを指定するため、`PipelineOptionsFactory` を使います。  
-`withValidation` を付けると、必須のオプションの指定有無や、値の検証が行えます。
+`PipelineOptions` インスタンスは、 `PipelineOptionsFactory` により作成します。`fromArgs` メソッドにコマンドライン引数 (args) を渡し、`create` メソッドでインスタンス化します。  
+インスタンス化の前に `withValidation` を呼び出すと、必須オプションが指定されているか、値が期待するフォーマットになっているか、などの検証してくれます。
 
-`Pipeline` インスタンスの作成は、`Pipeline.create` へ `PipelineOptions` インスタンスを渡すのみです。
+`Pipeline` インスタンスは、`Pipeline.create` により作成します。`create` メソッドの引数に `PipelineOptions` を渡すと、Beam SDK がオプション値を参照できるようになります。
 
-- 補足: 実行方法
+##### 補足: コード実行とオプション値の参照
 
-`fromArgs` は以下フォーマットの String 配列を引数に取ります。
+- コード実行
+
+`PipelineOptionsFactory.fromArgs` は、以下形式の要素を持つ String 型配列を想定しています。
 
 ```java
-{"--${オプション名}=${値}", ...}
+"--${オプション名}=${値}"
 ```
 
 そのため、コード実行は、以下形式のコマンドで行います。
@@ -80,25 +88,39 @@ $ mvn compile exec:java \
 --option2=fuga"
 ```
 
+- オプション値の参照
+
+`PipelineOptions` 型インスタンスの `get<オプション名>` メソッドから、コード内でオプション値を参照できます (オプション名は先頭が大文字です)。  
+以下は、String 型のオプション option1 を取得する例です。
+
+```java
+PipelineOptions opt = ...;
+String val = opt.getOption1();
+```
+
 ### ユーザ定義 オプション
 
-ユーザ定義のオプションを、コマンドライン引数経由で渡すこともできます。
+ユーザ定義のオプションを定義すると、コマンドライン引数経由でパイプライン実行時にパラメータを渡すことができます。
 
 #### オプションクラスの定義
 
-`PipelineOptions` を継承したインターフェースを定義します。オプションごとに、setter と getter を定義する必要があります。
+ユーザ定義のオプションの定義には、`PipelineOptions` を継承したインターフェース作ります。定義したいオプションごとに、setter と getter を定義する必要があります。
 
-下記サンプルでは、型 `T` のオプション `myOption` が定義されます。
+基本的には、以下のような形式となります。
 
 ```java
 public interface CustomOptions extends PipelineOptions {
-  T getMyOption();
-  void setMyOption(T t);
+  /** getter */
+  String getMyOption();
+
+  /** setter */
+  void setMyOption(String v);
 }
 ```
 
-オプション名は、setter, getter のメソッド名から決まります。それぞれ、`set{{オプション名}}`, `get{{オプション名}}` の形にします。  
-型は setter の仮引数、および getter の戻り値の型から決まり、両者は一致する必要があります。
+各オプションに対する setter / getter のメソッド名は、オプション名で決まります。それぞれ、`set<オプション名>`, `get<オプション名>` の形にします。  
+オプション値の型は setter の仮引数、および getter の戻り値の型から決まり、両者の型は一致する必要があります。  
+上のサンプルでは、String 型のオプション myOption が定義されます。
 
 getter にアノテーション付けることで、下記項目の設定が可能です。
 
@@ -112,12 +134,12 @@ getter にアノテーション付けることで、下記項目の設定が可�
 
 ```java
 @Validation.Required
-T getMyOption();
+String getMyOption();
 ```
 
 ##### デフォルト値
 
-`@Default.{{型}}({{デフォルト値}})` で、オプションのデフォルト値を設定できます。
+`@Default.<型>(<デフォルト値>)` で、オプションのデフォルト値を設定できます。
 
 ```java
 @Default.String("default_value")
@@ -126,11 +148,11 @@ String getMyOption();
 
 ##### ヘルプテキスト
 
-`@Description("{{ヘルプテキスト}}")` で、オプションのヘルプテキストを設定できます。
+`@Description("<ヘルプテキスト>")` で、オプションのヘルプテキストを設定できます。
 
 ```java
-@Description("This is a help text")
-T getMyOption();
+@Description("This is a help text for option myOption")
+String getMyOption();
 ```
 
 コマンドラインでヘルプテキストを表示できるようにするには、`PipelineOptionsFactory` へオプションを登録しておく必要があります。
@@ -143,8 +165,17 @@ PipelineOptionsFactory.register(CustomOptions.class);
 
 ```bash
 $ mvn -q compile exec:java \
-    -D exec.mainClass=path.to.class \
-    -D exec.args="--help=${オプション クラス名}"
+    -D exec.mainClass=path.to.main.class \
+    -D exec.args='--help=path.to.option.class'
+
+# 出力例
+com.examples.beam.chapter3.CustomOptionsPipeline$CustomOptions:
+
+  --option1=<String>
+    Description for option 1
+  --option2=<String>
+    Default: default_value
+    Description for option 2
 ```
 
 #### オプションクラスのインスタンス作成

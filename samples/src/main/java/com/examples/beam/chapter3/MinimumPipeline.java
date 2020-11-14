@@ -22,6 +22,8 @@ public class MinimumPipeline {
 
     // オプション付き Pipeline インスタンスの作成
     Pipeline pipeline = Pipeline.create(opt);
-    System.out.println(pipeline.toString());
+
+    // オプションの参照
+    System.out.println(opt.getRunner());
   }
 }
